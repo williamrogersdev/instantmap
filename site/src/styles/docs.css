@@ -46,3 +46,9 @@
 .sl-markdown-content td code {
   white-space: nowrap;
 }
+
+code,
+pre,
+.expressive-code * {
+  font-variant-ligatures: none;
+}

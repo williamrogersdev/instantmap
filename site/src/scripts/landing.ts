@@ -51,8 +51,12 @@ function setupHero(listings: Listing[]): void {
   const map = byId<InstantMapElement>("hero-map");
   map.markers = listings;
   const paint = byId("meter-paint");
+  const badge = byId("badge-paint");
   const showPaint = (): void => {
-    if (window.__heroPaint) paint.textContent = `${Math.round(window.__heroPaint)} ms`;
+    if (!window.__heroPaint) return;
+    const time = `${Math.round(window.__heroPaint)} ms`;
+    paint.textContent = time;
+    badge.textContent = `in ${time}`;
   };
   showPaint();
   document.addEventListener("heropaint", showPaint);

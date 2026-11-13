@@ -102,7 +102,7 @@ export function ListingsMap({ listings }) {
             <img src={heroPoster} alt="Map of 280 sample San Francisco rentals" fetchpriority="high" onload="requestAnimationFrame(function () { window.__heroPaint = window.__heroPaint || performance.now(); document.dispatchEvent(new Event('heropaint')); })" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
           </picture>
         </instant-map>
-        <p class="handoff" aria-live="polite"><span class="step image">Image<span class="long">, no JavaScript yet</span></span><span class="step live">Live map</span></p>
+        <p class="handoff" aria-live="polite"><span class="step image">Image<span class="long">, no JavaScript yet</span><span class="short" id="badge-paint"></span></span><span class="step live">Live map</span></p>
         <div class="hero-card">
           <h1 id="hero-title">The map is on the page before your JavaScript is.</h1>
           <p class="lede">
@@ -326,7 +326,7 @@ export function ListingsMap({ listings }) {
   h2 { font-size: clamp(32px, 4.2vw, 48px); font-weight: 800; text-wrap: balance; }
   h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
   p, dd { margin: 0; text-wrap: pretty; }
-  code, pre { font-family: var(--mono); }
+  code, pre { font-family: var(--mono); font-variant-ligatures: none; }
 
   .bar { position: absolute; z-index: 5; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px, 4vw, 40px); pointer-events: none; }
   .bar > * { pointer-events: auto; }
@@ -343,6 +343,7 @@ export function ListingsMap({ listings }) {
   .handoff .step { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; color: var(--ink-soft); transition: background 0.3s, color 0.3s; }
   .handoff .step::before { content: ""; margin-right: 8px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
   .handoff .image { background: var(--ink); color: #ffffff; }
+  .handoff .short { display: none; }
   #hero-map[interactive] ~ .handoff .image { background: none; color: var(--ink-soft); }
   #hero-map[interactive] ~ .handoff .live { background: var(--brand); color: var(--brand-ink); }
   .hero-card { position: absolute; z-index: 3; left: clamp(16px, 4vw, 40px); top: 50%; transform: translateY(-44%); width: min(540px, calc(100% - 32px)); background: var(--paper); border-radius: var(--radius-large); padding: clamp(22px, 3vw, 34px); box-shadow: 0 2px 4px #0f223312, 0 30px 70px #0f22333d; }
@@ -370,7 +371,7 @@ export function ListingsMap({ listings }) {
   .copy:hover { background: #ffffff2e; }
   .trust { margin-top: 16px; font-size: 14px; color: var(--ink-soft); }
 
-  section:not(.hero) { padding: clamp(48px, 6vw, 80px) clamp(16px, 4vw, 40px); max-width: 1320px; margin: 0 auto; }
+  section:not(.hero) { padding: clamp(28px, 3.5vw, 44px) clamp(16px, 4vw, 40px); max-width: 1320px; margin: 0 auto; }
   section:not(.hero) > h2 + p, .race-head p, .studio-copy > p { margin-top: 14px; color: var(--ink-soft); max-width: 66ch; }
 
   .studio { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: clamp(24px, 4vw, 56px); align-items: start; }
@@ -430,10 +431,12 @@ export function ListingsMap({ listings }) {
   .more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 12px; font-weight: 650; }
 
   .frameworks ul { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-  .frameworks li a { display: flex; flex-direction: column; gap: 2px; min-height: 76px; padding: 14px 16px; border-radius: var(--radius-small); background: var(--paper); color: var(--ink); text-decoration: none; border: 1px solid var(--line); }
+  .frameworks li a { box-sizing: border-box; height: 100%; display: flex; flex-direction: column; gap: 2px; min-height: 76px; padding: 14px 16px; border-radius: var(--radius-small); background: var(--paper); color: var(--ink); text-decoration: none; border: 1px solid var(--line); }
   .frameworks li a strong { font-weight: 700; }
   .frameworks li a span { font-size: 14px; color: var(--ink-soft); }
+  .frameworks li a::after { content: "Read the guide"; margin-top: auto; padding-top: 10px; font-size: 13px; font-weight: 650; color: var(--link); }
   .frameworks li a:hover { border-color: var(--ink); }
+  .frameworks li a:hover::after { text-decoration: underline; }
   .samples { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .sample { background: var(--code); color: var(--code-ink); border-radius: var(--radius-large); overflow: hidden; min-width: 0; }
   .sample-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 0 20px; }
@@ -448,7 +451,7 @@ export function ListingsMap({ listings }) {
   .prompt pre { white-space: pre-wrap; font-size: 14px; }
   .prompt .button { margin: 0 20px 20px; }
 
-  section.closing { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-bottom: 40px; background: var(--ink); color: #ffffff; border-radius: var(--radius-large); max-width: 1240px; }
+  section.closing { padding-top: clamp(32px, 4vw, 48px); padding-bottom: clamp(32px, 4vw, 48px); display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-bottom: 40px; background: var(--ink); color: #ffffff; border-radius: var(--radius-large); max-width: 1240px; }
   .closing h2 { flex: 1 1 360px; font-size: clamp(28px, 3.2vw, 38px); }
   .closing .install { margin: 0; background: #ffffff14; flex: 0 1 340px; }
 
@@ -468,6 +471,7 @@ export function ListingsMap({ listings }) {
     .handoff { position: static; align-self: flex-start; margin: 12px 12px 0; font-size: 13px; box-shadow: 0 1px 2px #0f223314; }
     .handoff .step { padding: 6px 12px; }
     .handoff .long { display: none; }
+    .handoff .short:not(:empty) { display: inline; margin-left: 0.3em; font-variant-numeric: tabular-nums; }
     .hero-card { display: flex; flex-direction: column; }
     .hero-card h1 { font-size: 34px; }
     .hero-card .install { order: 2; }

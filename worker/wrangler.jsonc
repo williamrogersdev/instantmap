@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "instantmap",
+  "account_id": "5bc563d42299762f9b48f5dec0531954",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": { "directory": "./public", "binding": "ASSETS" },
@@ -8,6 +9,7 @@
   "vars": {
     "TILE_URL": "https://www.repackify.com/map-tiles/v1/tiles/{z}/{x}/{y}.mvt"
   },
+  "routes": [{ "pattern": "instantmap.org", "custom_domain": true }],
   "limits": { "cpu_ms": 1000 },
   "observability": { "enabled": true }
 }

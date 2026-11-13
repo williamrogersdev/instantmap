@@ -189,7 +189,7 @@ impl<'a> Feature<'a> {
                         cursor_x += zigzag(delta_x);
                         cursor_y += zigzag(delta_y);
                         if opcode == 1 {
-                            if path.len() > 0 {
+                            if !path.is_empty() {
                                 visit(&path, false);
                                 path.clear();
                             }
@@ -202,7 +202,7 @@ impl<'a> Feature<'a> {
                     }
                 }
                 7 => {
-                    if path.len() > 0 {
+                    if !path.is_empty() {
                         visit(&path, true);
                         path.clear();
                     }
@@ -210,7 +210,7 @@ impl<'a> Feature<'a> {
                 _ => return Err(DecodeError("unknown geometry command")),
             }
         }
-        if path.len() > 0 {
+        if !path.is_empty() {
             visit(&path, false);
         }
         Ok(())

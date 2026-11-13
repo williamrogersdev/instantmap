@@ -1,7 +1,7 @@
 use instantmap_render::glyphs::FontStack;
 use instantmap_render::mvt::Tile;
-use instantmap_render::style::{Rgba, Theme, repackify_light};
-use instantmap_render::{Camera, Fonts, Marker, Scene, TileId, render_png};
+use instantmap_render::style::{Rgba, Theme, paper};
+use instantmap_render::{Camera, Fonts, Format, Marker, Scene, TileId, render_image};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -23,14 +23,17 @@ fn rgba(value: f64) -> Rgba {
 #[wasm_bindgen]
 impl Renderer {
     #[wasm_bindgen(constructor)]
-    pub fn new(regular: &[u8], medium: &[u8]) -> Result<Renderer, JsError> {
-        let regular = FontStack::from_pbf_ranges([regular])
-            .map_err(|error| JsError::new(&error.to_string()))?;
-        let medium = FontStack::from_pbf_ranges([medium])
-            .map_err(|error| JsError::new(&error.to_string()))?;
+    pub fn new(regular: &[u8], medium: &[u8], italic: &[u8]) -> Result<Renderer, JsError> {
+        let load = |bytes: &[u8]| {
+            FontStack::from_pbf_ranges([bytes]).map_err(|error| JsError::new(&error.to_string()))
+        };
         Ok(Renderer {
-            fonts: Fonts { regular, medium },
-            theme: repackify_light(),
+            fonts: Fonts {
+                regular: load(regular)?,
+                medium: load(medium)?,
+                italic: load(italic)?,
+            },
+            theme: paper(),
         })
     }
 
@@ -38,8 +41,10 @@ impl Renderer {
     /// tileIds: [z, x, y, ...] matching tileLengths; tileData: the tiles' bytes concatenated
     /// markers: [longitude, latitude, radius, fillRGBA, strokeRGBA, strokeWidth, labelRGBA, ...] (7 per marker)
     /// labels: one line per marker, empty for none
-    #[wasm_bindgen(js_name = renderPng)]
-    pub fn render_png(
+    /// quality: 0 for PNG, 1..=100 for JPEG
+    #[wasm_bindgen(js_name = render)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn render(
         &self,
         camera: &[f64],
         tile_ids: &[u32],
@@ -47,6 +52,7 @@ impl Renderer {
         tile_data: &[u8],
         markers: &[f64],
         labels: &str,
+        quality: u8,
     ) -> Result<Vec<u8>, JsError> {
         let [longitude, latitude, zoom, width, height, pixel_ratio] =
             <[f64; 6]>::try_from(camera).map_err(|_| JsError::new("camera needs 6 numbers"))?;
@@ -112,7 +118,14 @@ impl Renderer {
             fonts: Some(&self.fonts),
             markers: &markers,
         };
-        render_png(&scene).ok_or_else(|| JsError::new("render failed"))
+        let format = if quality == 0 {
+            Format::Png
+        } else {
+            Format::Jpeg {
+                quality: quality.min(100),
+            }
+        };
+        render_image(&scene, format).ok_or_else(|| JsError::new("render failed"))
     }
 }
 
@@ -127,7 +140,11 @@ pub fn tiles_for(longitude: f64, latitude: f64, zoom: f64, width: u32, height: u
         height,
         pixel_ratio: 1.0,
     };
-    let mut ids: Vec<TileId> = camera.tiles(256.0).into_iter().map(|(id, ..)| id).collect();
+    let mut ids: Vec<TileId> = camera
+        .tiles(256.0)
+        .into_iter()
+        .map(|placement| placement.id)
+        .collect();
     ids.sort();
     ids.dedup();
     ids.into_iter().flat_map(|id| [id.z, id.x, id.y]).collect()

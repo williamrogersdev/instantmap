@@ -1,0 +1,150 @@
+---
+title: Angular
+description: Render an Instant Map in Angular with server rendering and the first image in the HTML.
+sidebar:
+  order: 9
+---
+
+Use the `<instant-map>` element in a standalone Angular component. Server rendering puts the first image in the HTML, and the element takes over in the browser.
+
+## Install
+
+```sh
+npm install instantmap
+```
+
+## Add the map
+
+Define the element before Angular starts. If it is defined later, Angular binds `markers` to a plain element and the setter never runs.
+
+```ts title="src/main.ts"
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { App } from './app/app';
+
+import('instantmap').then(() => bootstrapApplication(App, appConfig));
+```
+
+Allow the custom element in the component and build the poster URL.
+
+```ts title="src/app/app.ts"
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import type { Marker } from 'instantmap';
+import { staticUrl } from 'instantmap/server';
+import { listings } from './listings';
+
+@Component({
+  selector: 'app-root',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+})
+export class App {
+  readonly center: [number, number] = [-97.74, 30.27];
+  readonly zoom = 12;
+  readonly markers: Marker[] = listings();
+  readonly poster = staticUrl({
+    center: this.center,
+    zoom: this.zoom,
+    width: 1200,
+    height: 640,
+    ratio: 2,
+    markers: this.markers,
+  });
+}
+```
+
+```html title="src/app/app.html"
+<instant-map
+  ngSkipHydration
+  [attr.center]="center.join(',')"
+  [attr.zoom]="zoom"
+  [markers]="markers"
+>
+  <img
+    [src]="poster"
+    alt="Map of Austin"
+    width="1200"
+    height="640"
+    fetchpriority="high"
+    style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover"
+  />
+</instant-map>
+```
+
+Size the map in the stylesheet, not with an inline `style`. Angular rewrites an inline `style` attribute on the element and removes the variables the map sets on itself.
+
+```css title="src/app/app.css"
+instant-map {
+  display: block;
+  position: relative;
+  height: 520px;
+}
+```
+
+## Render the first image on the server
+
+Create the app with server rendering and keep the render mode on `Server`.
+
+```ts title="src/app/app.routes.server.ts"
+import { RenderMode, ServerRoute } from '@angular/ssr';
+
+export const serverRoutes: ServerRoute[] = [{ path: '**', renderMode: RenderMode.Server }];
+```
+
+Build, start the server and check the HTML:
+
+```sh
+ng build
+node dist/angular/server/server.mjs
+curl -s https://your-site.example/ | grep -o '<img[^>]*static?[^>]*'
+```
+
+You should see an `<img>` whose `src` points at `/static?`.
+
+## Markers, popups, events
+
+Listen with `(markerclick)` and call methods through a template reference. Use a signal for anything the event changes, because a zoneless app does not refresh on a plain property.
+
+```ts title="src/app/app.ts"
+import { ElementRef, signal, ViewChild } from '@angular/core';
+import type { InstantMapElement } from 'instantmap';
+
+export class App {
+  @ViewChild('map') map?: ElementRef<InstantMapElement>;
+  opened = signal('Click a price to open its card.');
+
+  showDowntown() {
+    void this.map?.nativeElement.flyTo({ center: [-97.743, 30.267], zoom: 15 });
+  }
+
+  onMarkerClick(event: Event) {
+    const { marker } = (event as CustomEvent<{ marker: Marker }>).detail;
+    this.opened.set(`${marker.title}, ${marker.label}`);
+  }
+}
+```
+
+```html title="src/app/app.html"
+<instant-map #map (markerclick)="onMarkerClick($event)" ...></instant-map>
+<p>{{ opened() }}</p>
+<button type="button" (click)="showDowntown()">Show downtown</button>
+```
+
+## Common mistakes
+
+- Starting Angular before `import('instantmap')` finishes. `markers` is then bound to an undefined element and never reaches the map.
+- Putting `style="..."` on `<instant-map>`. Angular overwrites it and removes the theme variables the map sets on itself.
+- Leaving out `CUSTOM_ELEMENTS_SCHEMA`. Angular rejects the unknown tag.
+- Giving the map no height. It collapses to nothing.
+- Leaving out `ngSkipHydration`. Hydration then fights the element for its children.
+
+## Prompt for your agent
+
+```text
+Add an Instant Map to my Angular app with server rendering. Follow https://instantmap.org/docs/frameworks/angular.md exactly. Import instantmap before bootstrapApplication, add CUSTOM_ELEMENTS_SCHEMA, build the poster URL with staticUrl from instantmap/server and render it as an img inside instant-map with ngSkipHydration, and size the element in CSS rather than with an inline style. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
+```
+
+## Full example
+
+[examples/angular on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/angular)

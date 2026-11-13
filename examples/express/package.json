@@ -1,0 +1,19 @@
+{
+  "name": "instantmap-example-express",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "PORT=3304 bun --watch src/server.ts",
+    "start": "PORT=3304 bun src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "instantmap": "file:../../packages/instantmap"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.0",
+    "typescript": "5.9.3"
+  }
+}

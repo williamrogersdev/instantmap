@@ -1,0 +1,117 @@
+---
+title: SvelteKit
+description: Render an Instant Map in SvelteKit with the first image in the server HTML.
+sidebar:
+  order: 8
+---
+
+Use the `<instant-map>` element directly in a SvelteKit page. The load function builds the first image on the server, and the element takes over in the browser.
+
+## Install
+
+```sh
+npm install instantmap
+```
+
+## Add the map
+
+Build the poster URL in `+page.server.ts` so it is part of the server HTML.
+
+```ts title="src/routes/+page.server.ts"
+import { staticUrl } from 'instantmap/server';
+import { listings } from '$lib/listings';
+
+const center: [number, number] = [-97.74, 30.27];
+const zoom = 12;
+
+export function load() {
+	const markers = listings();
+	return {
+		markers,
+		center,
+		zoom,
+		poster: staticUrl({ center, zoom, width: 1200, height: 640, ratio: 2, markers })
+	};
+}
+```
+
+Define the element in `onMount`, then give it the markers. The element only exists in the browser, so import it there.
+
+```svelte title="src/routes/+page.svelte"
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import type { InstantMapElement } from 'instantmap';
+
+	let { data } = $props();
+	let map: InstantMapElement | undefined = $state();
+
+	onMount(async () => {
+		await import('instantmap');
+		if (map) map.markers = data.markers;
+	});
+</script>
+
+<instant-map
+	bind:this={map}
+	center={data.center.join(',')}
+	zoom={data.zoom}
+	style="display:block;position:relative;height:520px"
+>
+	<img
+		src={data.poster}
+		alt="Map of Austin"
+		width="1200"
+		height="640"
+		fetchpriority="high"
+		style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"
+	/>
+</instant-map>
+```
+
+## Render the first image on the server
+
+The `<img>` is inside the element and is rendered by SvelteKit, so it is in the HTML before any JavaScript runs. Check it:
+
+```sh
+curl -s https://your-site.example/ | grep -o '<img[^>]*static?[^>]*'
+```
+
+You should see an `<img>` whose `src` points at `/static?`.
+
+## Markers, popups, events
+
+Set `markers` as a property. Listen with an `on` attribute, and call methods on the bound element.
+
+```svelte title="src/routes/+page.svelte"
+<script lang="ts">
+	import type { Marker } from 'instantmap';
+
+	let opened = $state('Click a price to open its card.');
+
+	function onmarkerclick(event: Event) {
+		const { marker } = (event as CustomEvent<{ marker: Marker }>).detail;
+		opened = `${marker.title}, ${marker.label}`;
+	}
+</script>
+
+<instant-map bind:this={map} {onmarkerclick} ...></instant-map>
+<p>{opened}</p>
+<button onclick={() => map?.flyTo({ center: [-97.743, 30.267], zoom: 15 })}>Show downtown</button>
+```
+
+## Common mistakes
+
+- Importing `instantmap` at the top of the file. It touches `customElements`, which does not exist on the server. Import it inside `onMount`.
+- Giving the map no height. It collapses to nothing.
+- Setting `markers` as an attribute. It is a property, so assign `map.markers = ...`.
+- Building the poster URL in the browser. The server HTML then has no first image.
+
+## Prompt for your agent
+
+```text
+Add an Instant Map to my SvelteKit app. Follow https://instantmap.org/docs/frameworks/sveltekit.md exactly. Build the poster URL with staticUrl from instantmap/server in +page.server.ts, render it as an img inside the instant-map element, and import instantmap inside onMount before setting map.markers. Give the map a fixed height. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
+```
+
+## Full example
+
+[examples/sveltekit on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/sveltekit)

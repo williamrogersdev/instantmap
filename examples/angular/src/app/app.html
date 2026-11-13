@@ -1,0 +1,23 @@
+<main>
+  <h1>Austin stays</h1>
+  <instant-map
+    #map
+    ngSkipHydration
+    [attr.src]="src"
+    [attr.center]="center.join(',')"
+    [attr.zoom]="zoom"
+    [markers]="markers"
+    (markerclick)="onMarkerClick($event)"
+  >
+    <img
+      [src]="poster"
+      alt="Map of Austin"
+      width="1200"
+      height="640"
+      fetchpriority="high"
+      style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover"
+    />
+  </instant-map>
+  <p>{{ opened() }}</p>
+  <button type="button" (click)="showDowntown()">Show downtown</button>
+</main>

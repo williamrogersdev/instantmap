@@ -113,7 +113,8 @@ export function ListingsMap({ listings }) {
             <div class="lead-stat">
               <dt>First image on screen, this visit</dt>
               <dd><span id="meter-paint">…</span></dd>
-              <dd class="cache-note" id="meter-cache" hidden>Your browser had it cached. The race below loads everything fresh.</dd>
+              <dd class="cache-note">Counted from the start of this page load. The race below starts from nothing.</dd>
+              <dd class="cache-note" id="meter-cache" hidden>Your browser had the image cached on this visit.</dd>
             </div>
             <div>
               <dt>Script</dt>
@@ -357,12 +358,12 @@ export function ListingsMap({ listings }) {
   .proof { margin: 22px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; padding: 16px 0; border-block: 1px solid var(--line); }
   .proof dt { font-size: 14px; color: var(--ink-soft); }
   .proof dd { margin: 2px 0 0; font-size: 15px; font-weight: 600; }
-  .lead-stat { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .lead-stat { grid-column: 1 / -1; padding-bottom: 14px; margin-bottom: 2px; border-bottom: 1px dashed var(--line); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .lead-stat dt { font-size: 16px; color: var(--ink); font-weight: 600; }
   .lead-stat dd { margin: 0; font: 700 44px/1 var(--mono); letter-spacing: -0.04em; color: var(--ink); }
   .lead-stat dd span { box-shadow: inset 0 -0.1em 0 var(--brand); }
-  .lead-stat dd .unit { box-shadow: none; margin-left: 0.12em; font: 650 0.45em var(--sans, inherit); letter-spacing: 0; }
-  .lead-stat .cache-note { flex-basis: 100%; font: 400 14px/1.4 inherit; letter-spacing: 0; color: var(--ink-soft); }
+  .lead-stat dd .unit { box-shadow: none; margin-left: 0.3em; font: 650 0.45em var(--sans, inherit); letter-spacing: 0; }
+  .lead-stat .cache-note { flex-basis: 100%; font: 400 14px/1.45 var(--sans); letter-spacing: 0; color: var(--ink-soft); }
 
   .install { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--code); color: var(--code-ink); border-radius: var(--radius-small); padding: 6px 6px 6px 16px; min-height: 52px; }
   .install code { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

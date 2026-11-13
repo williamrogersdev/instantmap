@@ -1,0 +1,134 @@
+---
+title: Astro
+description: Add Instant Map to an Astro page, with the first image rendered on the server.
+sidebar:
+  order: 5
+---
+
+You will end up with an Astro page that ships the first map image in the HTML and becomes an interactive map on the first hover, touch or scroll.
+
+## Install
+
+```bash
+npm install instantmap
+```
+
+## Add the map
+
+Put your markers in a module so the page and the script share them.
+
+```ts
+// src/lib/listings.ts
+import type { Marker } from "instantmap";
+
+export const center: [number, number] = [-97.7431, 30.2672];
+export const zoom = 12;
+
+export const listings: Marker[] = [
+  { id: 1, lng: -97.75, lat: 30.26, label: "$120", title: "Apartment 1", subtitle: "$120 per night" },
+  { id: 2, lng: -97.73, lat: 30.28, label: "$85", title: "Apartment 2", subtitle: "$85 per night" },
+];
+```
+
+```astro
+---
+import { staticUrl } from "instantmap/server";
+import { center, listings, zoom } from "../lib/listings";
+
+const poster = staticUrl({ center, zoom, width: 1280, height: 720, ratio: 2, markers: listings });
+---
+
+<instant-map
+  id="map"
+  center={center.join(",")}
+  zoom={zoom}
+  style="display:block;position:relative;height:520px"
+>
+  <img
+    src={poster}
+    alt="Map of Austin"
+    width="1280"
+    height="720"
+    fetchpriority="high"
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"
+  />
+</instant-map>
+
+<script>
+  import { defineInstantMap } from "instantmap";
+  import { listings } from "../lib/listings";
+
+  defineInstantMap();
+  const map = document.querySelector("instant-map");
+  if (map) map.markers = listings;
+</script>
+```
+
+Astro bundles the `<script>` for you. It runs once in the browser.
+
+## Render the first image on the server
+
+`staticUrl` builds the URL of a server-rendered image. Astro puts that `<img>` in the HTML, so the map shows before any JavaScript loads.
+
+If you would rather not build the markup, `posterHtml` returns the whole element:
+
+```astro
+---
+import { posterHtml } from "instantmap/server";
+
+const map = posterHtml({ center: [-97.7431, 30.2672], zoom: 12, width: 1280, height: 720, alt: "Map of Austin" });
+---
+
+<Fragment set:html={map} />
+
+<script>
+  import { defineInstantMap } from "instantmap";
+
+  defineInstantMap();
+</script>
+```
+
+To check it, view the page source or run `curl`:
+
+```bash
+curl -s http://localhost:4321/ | grep "<img"
+```
+
+You should see an `<img src="https://.../static?...">` inside `<instant-map>`.
+
+## Markers, popups and events
+
+- Use attributes for simple values: `center`, `zoom`, `theme`. Attributes are strings.
+- Use properties for objects. Set `map.markers = listings` in the script. Astro cannot pass an array through an attribute.
+- Listen with `addEventListener`:
+
+```ts
+map?.addEventListener("markerclick", (event) => {
+  const { marker } = (event as CustomEvent).detail;
+  console.log(marker.title);
+});
+```
+
+- Call methods on the element, for example `map.fitBounds(listings, { padding: 40 })`.
+
+Markers set from the script do not change the server image. Pass the same markers to `staticUrl` so the first image matches.
+
+## Common mistakes
+
+- Do not use `client:only`. Astro would skip the server render and you lose the instant first image. Use a plain `<script>`.
+- Import the element with `defineInstantMap()`. A bare `import "instantmap"` can be removed by the production build, and the element never registers.
+- Keep the element and the poster in agreement: same `center`, `zoom` and size.
+- Give the element a height. It has none by default, so the map is invisible without one.
+- Set `position: relative` on the element, so the poster can fill it.
+
+## Prompt for your agent
+
+```text
+Add Instant Map to my Astro site. Follow https://instantmap.org/docs/frameworks/astro.md
+Show my listings as markers, render the first image on the server with staticUrl,
+and register the element with defineInstantMap() in a page script.
+```
+
+## Example
+
+A full working project is at [examples/astro](https://github.com/williamrogersdev/instantmap/tree/master/examples/astro).

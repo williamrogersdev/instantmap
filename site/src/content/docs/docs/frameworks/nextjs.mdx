@@ -1,0 +1,93 @@
+---
+title: Next.js
+description: Render an Instant Map from a Server Component with the first image in the server HTML.
+sidebar:
+  order: 2
+---
+
+Use `instantmap/react` in the App Router. The map works in a Server Component and sends its first image in the HTML.
+
+## Install
+
+```sh
+npm install instantmap
+```
+
+## Add the map
+
+Render `InstantMap` in a Server Component. Do not wrap it in `dynamic(..., { ssr: false })`.
+
+```tsx title="app/page.tsx"
+import { InstantMap } from "instantmap/react";
+import { listings } from "../lib/listings";
+
+export default function Page() {
+  return (
+    <InstantMap
+      center={[-97.7431, 30.2672]}
+      zoom={11.5}
+      markers={listings}
+      alt="Map of stays in Austin"
+      style={{ height: 480, borderRadius: 12 }}
+    />
+  );
+}
+```
+
+## Render the first image on the server
+
+Nothing to add. The server HTML contains an `<img>` whose `src` points at `/static?`. The browser paints it before any JavaScript loads, then the interactive map takes over.
+
+## Markers, popups, events
+
+Event handlers and refs need a Client Component. Mark the file `"use client"` and use the handle for camera calls.
+
+```tsx title="app/listings-map.tsx"
+"use client";
+
+import { useRef, useState } from "react";
+import { InstantMap, type InstantMapHandle } from "instantmap/react";
+import type { Marker } from "instantmap";
+import type { Listing } from "../lib/listings";
+
+export function ListingsMap({ listings }: { listings: Marker<Listing>[] }) {
+  const map = useRef<InstantMapHandle<Listing>>(null);
+  const [clicked, setClicked] = useState<Marker<Listing> | null>(null);
+
+  return (
+    <>
+      <button onClick={() => map.current?.fitBounds(listings, { padding: 48 })}>
+        Show all {listings.length} stays
+      </button>
+      <p>{clicked ? `Opened ${clicked.title}` : "Click a pin"}</p>
+      <InstantMap
+        ref={map}
+        center={[-97.7431, 30.2672]}
+        zoom={11.5}
+        markers={listings}
+        onMarkerClick={(marker) => setClicked(marker)}
+        alt="Map of stays in Austin"
+        style={{ height: 480, borderRadius: 12 }}
+      />
+    </>
+  );
+}
+```
+
+Pass `listings` from the Server Component as a prop. Each marker needs `id`, `lng` and `lat`. `label`, `title`, `subtitle` and `href` are optional.
+
+## Common mistakes
+
+- Passing a function prop such as `onMarkerClick` from a Server Component. Move it into a file with `"use client"`.
+- Using `ref` in a Server Component. Refs only work in Client Components.
+- Giving the map no height. Set `style={{ height: 480 }}` or a class that sets one.
+
+## Prompt for your agent
+
+```text
+Add an Instant Map to my Next.js App Router project. Follow https://instantmap.org/docs/frameworks/nextjs.md exactly. Render InstantMap from instantmap/react in a Server Component with a fixed height, and put onMarkerClick and refs in a separate "use client" file. Do not use next/dynamic with ssr: false. Run the build and confirm the server HTML contains an img with /static? in its src.
+```
+
+## Full example
+
+[examples/nextjs on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/nextjs)

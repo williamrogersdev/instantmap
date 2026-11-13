@@ -1,0 +1,129 @@
+---
+title: List and map together
+description: The search-results layout — hover a card to highlight its pin, click a pin to jump to its card, and filter the list to what is in view.
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+The search-results pattern Airbnb, Zillow and most marketplaces use takes three wires:
+
+| User does | Map does | Code |
+| --- | --- | --- |
+| Hovers a card in the list | Lifts that card's marker | `map.highlight(id)` / `map.highlight(null)` |
+| Clicks a marker | Opens its card, and the list scrolls to the matching item | `select` event |
+| Pans or zooms | The list shows what's in view | `moveend` event + `map.bounds` |
+
+<Tabs syncKey="framework">
+<TabItem label="HTML / JS">
+
+```html
+<div class="results">
+  <ol id="list"></ol>
+  <instant-map id="map" center="-97.7431,30.2672" zoom="12"></instant-map>
+</div>
+
+<style>
+  .results { display: grid; grid-template-columns: 420px 1fr; height: 100dvh; }
+  #list { overflow: auto; margin: 0; padding: 16px; }
+  #list li[aria-current="true"] { outline: 2px solid #1c1f24; }
+  #map { height: 100%; }
+  @media (max-width: 800px) { .results { grid-template-columns: 1fr; grid-template-rows: 45dvh 1fr; } #map { order: -1; } }
+</style>
+
+<script type="module">
+  import "https://instantmap.org/instant-map.js";
+
+  const listings = await (await fetch("/api/listings")).json();
+  const map = document.getElementById("map");
+  const list = document.getElementById("list");
+
+  map.markers = listings.map((l) => ({ id: l.id, lng: l.lng, lat: l.lat, label: `$${l.price}`, title: l.title, image: l.photo, href: `/listings/${l.id}` }));
+
+  function render() {
+    const [west, south, east, north] = map.bounds;
+    const visible = listings.filter((l) => l.lng >= west && l.lng <= east && l.lat >= south && l.lat <= north);
+    list.replaceChildren(...visible.map((l) => {
+      const item = document.createElement("li");
+      item.id = `listing-${l.id}`;
+      item.innerHTML = `<a href="/listings/${l.id}">${l.title}, $${l.price}</a>`;
+      item.addEventListener("pointerenter", () => map.highlight(l.id));
+      item.addEventListener("pointerleave", () => map.highlight(null));
+      return item;
+    }));
+  }
+
+  map.addEventListener("moveend", render);
+  map.addEventListener("select", (event) => {
+    const id = event.detail.marker?.id;
+    for (const item of list.children) item.toggleAttribute("aria-current", item.id === `listing-${id}`);
+    document.getElementById(`listing-${id}`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+  render();
+</script>
+```
+
+</TabItem>
+<TabItem label="React">
+
+```tsx
+"use client";
+import { useMemo, useRef, useState } from "react";
+import { InstantMap, type InstantMapHandle } from "instantmap/react";
+import type { Bounds } from "instantmap";
+
+export function SearchResults({ listings }: { listings: Listing[] }) {
+  const map = useRef<InstantMapHandle<Listing>>(null);
+  const [bounds, setBounds] = useState<Bounds | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const markers = useMemo(
+    () => listings.map((l) => ({ id: l.id, lng: l.lng, lat: l.lat, label: `$${l.price}`, title: l.title, image: l.photo, href: `/listings/${l.id}`, data: l })),
+    [listings],
+  );
+  const visible = bounds
+    ? listings.filter((l) => l.lng >= bounds[0] && l.lng <= bounds[2] && l.lat >= bounds[1] && l.lat <= bounds[3])
+    : listings;
+
+  return (
+    <div className="grid h-dvh grid-cols-[420px_1fr]">
+      <ol className="overflow-auto p-4">
+        {visible.map((l) => (
+          <li
+            key={l.id}
+            id={`listing-${l.id}`}
+            aria-current={selected === l.id}
+            onPointerEnter={() => map.current?.highlight(l.id)}
+            onPointerLeave={() => map.current?.highlight(null)}
+          >
+            <a href={`/listings/${l.id}`}>{l.title}, ${l.price}</a>
+          </li>
+        ))}
+      </ol>
+      <InstantMap
+        ref={map}
+        center={[-97.7431, 30.2672]}
+        zoom={12}
+        markers={markers}
+        style={{ height: "100%" }}
+        onMoveEnd={() => setBounds(map.current?.bounds ?? null)}
+        onSelect={(marker) => {
+          setSelected(marker ? String(marker.id) : null);
+          if (marker) document.getElementById(`listing-${marker.id}`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }}
+      />
+    </div>
+  );
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Details that matter
+
+- **Highlight, don't select, on hover.** `highlight()` only lifts the pin. `select()` opens a card, and opening cards as the pointer crosses a list is noisy.
+- **A highlighted marker inside a cluster** lifts the whole cluster, so the visitor still sees where it is.
+- **Show all results** after a search: `map.fitBounds(markers, { padding: 64 })`.
+- **On phones**, stack the map above the list at 40–50% of the viewport height. Keep the map's `scroll-zoom` at `cooperative` so the page still scrolls past it.

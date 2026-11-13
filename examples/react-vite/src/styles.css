@@ -1,0 +1,11 @@
+body { margin: 0; font-family: system-ui, sans-serif; }
+.results { display: grid; grid-template-columns: 360px 1fr; height: 100dvh; }
+.list { overflow: auto; margin: 0; padding: 12px; list-style: none; }
+.list li { padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+.list li:hover, .list li[aria-current="true"] { background: #eef0f3; }
+.list strong { display: block; }
+.map { height: 100%; }
+.card { width: 220px; padding: 12px; border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgb(0 0 0 / 0.18); }
+.card h3 { margin: 0 0 4px; font-size: 15px; }
+.card p { margin: 0 0 8px; color: #555; }
+@media (max-width: 800px) { .results { grid-template-columns: 1fr; grid-template-rows: 45dvh 1fr; } .map { order: -1; } }

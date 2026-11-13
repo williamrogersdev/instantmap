@@ -1,0 +1,104 @@
+---
+title: React Router
+description: Render an Instant Map in React Router v7 framework mode with the first image in the server HTML.
+sidebar:
+  order: 4
+---
+
+Use `instantmap/react` in React Router v7 framework mode. The loader supplies the markers and the server renders the first image.
+
+## Install
+
+```sh
+npm install instantmap
+```
+
+## Add the map
+
+Return the markers from the route loader and render `InstantMap` in the component.
+
+```tsx title="app/routes/home.tsx"
+import { InstantMap } from "instantmap/react";
+import { listings } from "../listings";
+import type { Route } from "./+types/home";
+
+export function loader() {
+  return { listings };
+}
+
+export default function Home({ loaderData }: Route.ComponentProps) {
+  return (
+    <InstantMap
+      center={[-97.7431, 30.2672]}
+      zoom={11.5}
+      markers={loaderData.listings}
+      alt="Map of stays in Austin"
+      style={{ height: 560, borderRadius: 12 }}
+    />
+  );
+}
+```
+
+## Render the first image on the server
+
+Keep `ssr: true` in `react-router.config.ts`.
+
+```ts title="react-router.config.ts"
+import type { Config } from "@react-router/dev/config";
+
+export default { ssr: true } satisfies Config;
+```
+
+The server HTML contains an `<img>` whose `src` points at `/static?`. The browser paints it before JavaScript loads.
+
+## Markers, popups, events
+
+Use a ref for camera calls and `onMarkerClick` for clicks. Both work in the route component.
+
+```tsx title="app/routes/home.tsx"
+import { useRef, useState } from "react";
+import { InstantMap, type InstantMapHandle } from "instantmap/react";
+import type { Marker } from "instantmap";
+import type { Listing } from "../listings";
+import type { Route } from "./+types/home";
+
+export default function Home({ loaderData }: Route.ComponentProps) {
+  const { listings } = loaderData;
+  const map = useRef<InstantMapHandle<Listing>>(null);
+  const [clicked, setClicked] = useState<Marker<Listing> | null>(null);
+
+  return (
+    <>
+      <button onClick={() => map.current?.fitBounds(listings, { padding: 48 })}>
+        Show all {listings.length} stays
+      </button>
+      <p>{clicked ? `Opened ${clicked.title}` : "Click a pin"}</p>
+      <InstantMap
+        ref={map}
+        center={[-97.7431, 30.2672]}
+        zoom={11.5}
+        markers={listings}
+        onMarkerClick={setClicked}
+        alt="Map of stays in Austin"
+        style={{ height: 560, borderRadius: 12 }}
+      />
+    </>
+  );
+}
+```
+
+## Common mistakes
+
+- Setting `ssr: false`. The page then has no first image in its HTML.
+- Giving the map no height. It collapses to nothing.
+- Two copies of React on the server, which fails with `Cannot read properties of null (reading 'useRef')`. This happens when `instantmap` is installed from a local folder. Add `resolve: { dedupe: ["react", "react-dom"] }` and `ssr: { noExternal: ["instantmap"] }` to `vite.config.ts`.
+
+## Prompt for your agent
+
+```text
+Add an Instant Map to my React Router v7 framework-mode app. Follow https://instantmap.org/docs/frameworks/react-router.md exactly. Return the markers from the route loader, render InstantMap from instantmap/react in the component with a fixed height, and keep ssr: true. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
+```
+
+## Full example
+
+[examples/react-router on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/react-router)

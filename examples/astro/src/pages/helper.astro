@@ -1,0 +1,28 @@
+---
+import { posterHtml } from "instantmap/server";
+
+const src = import.meta.env.PUBLIC_INSTANTMAP_SRC ?? "https://instantmap.org";
+const map = posterHtml({
+  src,
+  center: [-97.7431, 30.2672],
+  zoom: 12,
+  width: 1280,
+  height: 720,
+  alt: "Map of Austin",
+});
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>posterHtml in Astro</title>
+  </head>
+  <body style="margin:0">
+    <Fragment set:html={map} />
+    <script>
+      import { defineInstantMap } from "instantmap";
+
+      defineInstantMap();
+    </script>
+  </body>
+</html>

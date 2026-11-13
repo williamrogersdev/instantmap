@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instant Map race lane</title>
+<style>html,body{margin:0;height:100%;background:#e9eef2}instant-map{height:100%}</style>
+<script type="module" src="/instant-map.js"></script>
+</head>
+<body>
+<instant-map id="map" aria-label="Map of San Francisco"></instant-map>
+<script>
+  const query = new URLSearchParams(location.search);
+  const center = query.get("center") || "-122.4194,37.7749";
+  const zoom = query.get("zoom") || "12";
+  const map = document.getElementById("map");
+  map.setAttribute("center", center);
+  map.setAttribute("zoom", zoom);
+  const width = Math.min(1280, innerWidth);
+  const height = Math.min(1280, innerHeight);
+  const image = document.createElement("img");
+  image.alt = "Map of San Francisco";
+  image.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:cover";
+  image.onload = () => requestAnimationFrame(() => parent.postMessage({ lane: "instant", ms: performance.now() }, location.origin));
+  image.src = `/static?center=${encodeURIComponent(center)}&zoom=${zoom}&size=${width}x${height}${devicePixelRatio > 1 ? "&r=2" : ""}&v=2`;
+  map.append(image);
+</script>
+</body>
+</html>

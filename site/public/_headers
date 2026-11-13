@@ -1,0 +1,9 @@
+/fonts/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+/instant-map.js
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=0, must-revalidate
+/instant-map.js.map
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=0, must-revalidate

@@ -49,12 +49,11 @@ pub fn interpolate(stops: &[(f32, f32)], zoom: f32, base: f32) -> f32 {
 
 pub type Filter = fn(&Properties, GeometryType) -> bool;
 pub type LabelFilter = fn(&Properties, f32) -> bool;
-pub type FillColor = fn(&Properties, f32) -> Option<Rgba>;
 
 #[derive(Clone, Copy)]
 pub enum Paint {
     Fill {
-        color: FillColor,
+        color: FillStyle,
     },
     Line {
         color: Rgba,
@@ -115,7 +114,7 @@ pub struct LabelRule {
     pub font: fn(&Properties) -> Font,
     pub uppercase: bool,
     pub letter_spacing: f32,
-    pub color: fn(&Properties) -> Rgba,
+    pub color: Rgba,
     pub halo: Rgba,
     pub halo_width: f32,
     pub dot: Option<(Dot, f32)>,
@@ -125,9 +124,16 @@ pub struct LabelRule {
 }
 
 pub struct MarkerStyle {
+    pub pill_fill: Rgba,
+    pub pill_text: Rgba,
+    pub dot_fill: Rgba,
+    pub dot_ring: Rgba,
+    pub cluster_fill: Rgba,
+    pub cluster_text: Rgba,
+    pub cluster_ring: Rgba,
+    pub selected_fill: Rgba,
+    pub selected_text: Rgba,
     pub shadow: Rgba,
-    pub shadow_blur: f32,
-    pub shadow_offset: f32,
 }
 
 pub struct Theme {
@@ -137,13 +143,226 @@ pub struct Theme {
     pub markers: MarkerStyle,
 }
 
-pub const PAPER: Rgba = hex(0xf3f1ec);
-const WATER: Rgba = hex(0xd0dee8);
-const SHORE: Rgba = hex(0x9fbad0);
-const WATER_INK: Rgba = hex(0x5f849f);
-const PARK: Rgba = hex(0xe3ead9);
-const MAJOR_INK: Rgba = hex(0x3d3a35);
-const MINOR_INK: Rgba = hex(0x7a756d);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Palette {
+    pub land: Rgba,
+    pub water: Rgba,
+    pub water_line: Rgba,
+    pub water_label: Rgba,
+    pub park: Rgba,
+    pub landuse: Rgba,
+    pub sand: Rgba,
+    pub building: Rgba,
+    pub road: Rgba,
+    pub road_casing: Rgba,
+    pub major_road: Rgba,
+    pub major_road_casing: Rgba,
+    pub highway: Rgba,
+    pub highway_casing: Rgba,
+    pub rail: Rgba,
+    pub path: Rgba,
+    pub boundary: Rgba,
+    pub country_boundary: Rgba,
+    pub label: Rgba,
+    pub label_minor: Rgba,
+    pub label_halo: Rgba,
+    pub neighbourhood: Rgba,
+    pub region: Rgba,
+    pub shield: Rgba,
+    pub shield_text: Rgba,
+    pub shield_line: Rgba,
+    pub interstate: Rgba,
+    pub interstate_text: Rgba,
+    pub marker: Rgba,
+    pub marker_text: Rgba,
+    pub accent: Rgba,
+    pub cluster: Rgba,
+    pub cluster_text: Rgba,
+    pub selected: Rgba,
+    pub selected_text: Rgba,
+    pub shadow: Rgba,
+}
+
+const fn hex_word(word: u32) -> Rgba {
+    [
+        (word >> 24) as u8,
+        (word >> 16) as u8,
+        (word >> 8) as u8,
+        word as u8,
+    ]
+}
+
+impl Palette {
+    pub const SLOTS: usize = 36;
+
+    pub fn from_words(words: &[u32]) -> Option<Palette> {
+        if words.len() != Self::SLOTS {
+            return None;
+        }
+        let mut colors = words.iter().map(|word| hex_word(*word));
+        Some(Palette {
+            land: colors.next()?,
+            water: colors.next()?,
+            water_line: colors.next()?,
+            water_label: colors.next()?,
+            park: colors.next()?,
+            landuse: colors.next()?,
+            sand: colors.next()?,
+            building: colors.next()?,
+            road: colors.next()?,
+            road_casing: colors.next()?,
+            major_road: colors.next()?,
+            major_road_casing: colors.next()?,
+            highway: colors.next()?,
+            highway_casing: colors.next()?,
+            rail: colors.next()?,
+            path: colors.next()?,
+            boundary: colors.next()?,
+            country_boundary: colors.next()?,
+            label: colors.next()?,
+            label_minor: colors.next()?,
+            label_halo: colors.next()?,
+            neighbourhood: colors.next()?,
+            region: colors.next()?,
+            shield: colors.next()?,
+            shield_text: colors.next()?,
+            shield_line: colors.next()?,
+            interstate: colors.next()?,
+            interstate_text: colors.next()?,
+            marker: colors.next()?,
+            marker_text: colors.next()?,
+            accent: colors.next()?,
+            cluster: colors.next()?,
+            cluster_text: colors.next()?,
+            selected: colors.next()?,
+            selected_text: colors.next()?,
+            shadow: colors.next()?,
+        })
+    }
+
+    pub fn paper() -> Palette {
+        Palette {
+            land: hex_word(0xf3f1ecff),
+            water: hex_word(0xd0dee8ff),
+            water_line: hex_word(0xb9d0e0ff),
+            water_label: hex_word(0x5f849fff),
+            park: hex_word(0xe3ead9ff),
+            landuse: hex_word(0xeceae5ff),
+            sand: hex_word(0xf1ece0ff),
+            building: hex_word(0xe4e0d8ff),
+            road: hex_word(0xffffffff),
+            road_casing: hex_word(0xdfd9cfff),
+            major_road: hex_word(0xffffffff),
+            major_road_casing: hex_word(0xd2cbc0ff),
+            highway: hex_word(0xecdcbdff),
+            highway_casing: hex_word(0xb3a790ff),
+            rail: hex_word(0xd6d1c9ff),
+            path: hex_word(0xe2ddd5ff),
+            boundary: hex_word(0xc9c1b4ff),
+            country_boundary: hex_word(0x9d9384ff),
+            label: hex_word(0x3d3a35ff),
+            label_minor: hex_word(0x7a756dff),
+            label_halo: hex_word(0xf3f1ecff),
+            neighbourhood: hex_word(0x857f75ff),
+            region: hex_word(0x9a948aff),
+            shield: hex_word(0xffffffff),
+            shield_text: hex_word(0x5c564eff),
+            shield_line: hex_word(0xbdb6aaff),
+            interstate: hex_word(0x4a5563ff),
+            interstate_text: hex_word(0xffffffff),
+            marker: hex_word(0xfffdf8ff),
+            marker_text: hex_word(0x2f2b26ff),
+            accent: hex_word(0xc2410cff),
+            cluster: hex_word(0x2f2b26ff),
+            cluster_text: hex_word(0xfffdf8ff),
+            selected: hex_word(0xc2410cff),
+            selected_text: hex_word(0xffffffff),
+            shadow: hex_word(0x2b24184d),
+        }
+    }
+
+    pub fn daylight() -> Palette {
+        Palette {
+            land: hex_word(0xf6f5f2ff),
+            water: hex_word(0xa9d4f1ff),
+            water_line: hex_word(0x8cc2e6ff),
+            water_label: hex_word(0x3a76a6ff),
+            park: hex_word(0xd5ebcfff),
+            landuse: hex_word(0xefede8ff),
+            sand: hex_word(0xf4ecd6ff),
+            building: hex_word(0xe7e4deff),
+            road: hex_word(0xffffffff),
+            road_casing: hex_word(0xdfdad2ff),
+            major_road: hex_word(0xffffffff),
+            major_road_casing: hex_word(0xd3cdc3ff),
+            highway: hex_word(0xfde2a4ff),
+            highway_casing: hex_word(0xe6bb63ff),
+            rail: hex_word(0xcbc7c0ff),
+            path: hex_word(0xe5e1daff),
+            boundary: hex_word(0xbdb6c8ff),
+            country_boundary: hex_word(0x9a93a8ff),
+            label: hex_word(0x272a2fff),
+            label_minor: hex_word(0x5b6068ff),
+            label_halo: hex_word(0xffffffff),
+            neighbourhood: hex_word(0x7b8089ff),
+            region: hex_word(0x8b8794ff),
+            shield: hex_word(0xffffffff),
+            shield_text: hex_word(0x3f434aff),
+            shield_line: hex_word(0xc9c3b8ff),
+            interstate: hex_word(0x3d4b63ff),
+            interstate_text: hex_word(0xffffffff),
+            marker: hex_word(0xffffffff),
+            marker_text: hex_word(0x1c1f24ff),
+            accent: hex_word(0xe5484dff),
+            cluster: hex_word(0x1c1f24ff),
+            cluster_text: hex_word(0xffffffff),
+            selected: hex_word(0x1c1f24ff),
+            selected_text: hex_word(0xffffffff),
+            shadow: hex_word(0x0000004d),
+        }
+    }
+
+    pub fn midnight() -> Palette {
+        Palette {
+            land: hex_word(0x11151cff),
+            water: hex_word(0x0a1d31ff),
+            water_line: hex_word(0x173452ff),
+            water_label: hex_word(0x5d8db8ff),
+            park: hex_word(0x122319ff),
+            landuse: hex_word(0x141922ff),
+            sand: hex_word(0x1c1b17ff),
+            building: hex_word(0x1a2029ff),
+            road: hex_word(0x232a35ff),
+            road_casing: hex_word(0x11151cff),
+            major_road: hex_word(0x2c3543ff),
+            major_road_casing: hex_word(0x11151cff),
+            highway: hex_word(0x3b485bff),
+            highway_casing: hex_word(0x161b23ff),
+            rail: hex_word(0x2a313cff),
+            path: hex_word(0x1d232cff),
+            boundary: hex_word(0x3d4656ff),
+            country_boundary: hex_word(0x5a6479ff),
+            label: hex_word(0xe2e7eeff),
+            label_minor: hex_word(0x9ba5b3ff),
+            label_halo: hex_word(0x11151cff),
+            neighbourhood: hex_word(0x7e8896ff),
+            region: hex_word(0x6d7786ff),
+            shield: hex_word(0x2c3543ff),
+            shield_text: hex_word(0xc9d1dcff),
+            shield_line: hex_word(0x3b485bff),
+            interstate: hex_word(0x3a6ea5ff),
+            interstate_text: hex_word(0xffffffff),
+            marker: hex_word(0xf4f6f9ff),
+            marker_text: hex_word(0x11151cff),
+            accent: hex_word(0x4cc2ffff),
+            cluster: hex_word(0x4cc2ffff),
+            cluster_text: hex_word(0x05121fff),
+            selected: hex_word(0x4cc2ffff),
+            selected_text: hex_word(0x05121fff),
+            shadow: hex_word(0x00000099),
+        }
+    }
+}
 
 fn polygon(_: &Properties, geometry: GeometryType) -> bool {
     geometry == GeometryType::Polygon
@@ -225,25 +444,82 @@ const LINK: Width = Width::Exponential(&[(12.0, 0.5), (14.0, 2.0), (18.0, 10.0)]
 const LINK_CASING: Width =
     Width::Exponential(&[(12.5, 0.0), (13.0, 2.2), (14.0, 3.6), (18.0, 12.5)]);
 
-fn landuse(properties: &Properties, zoom: f32) -> Option<Rgba> {
+#[derive(Clone, Copy)]
+pub enum FillStyle {
+    Solid(Rgba),
+    Landuse {
+        park: Rgba,
+        sand: Rgba,
+        landuse: Rgba,
+    },
+    Fade {
+        color: Rgba,
+        from: f32,
+        to: f32,
+    },
+}
+
+impl FillStyle {
+    pub fn color(&self, properties: &Properties, zoom: f32) -> Option<Rgba> {
+        match *self {
+            FillStyle::Solid(color) => Some(color),
+            FillStyle::Fade { color, from, to } => {
+                let opacity = interpolate(&[(from, 0.0), (to, 255.0)], zoom, 1.0) as u8;
+                Some(alpha(color, opacity))
+            }
+            FillStyle::Landuse {
+                park,
+                sand,
+                landuse,
+            } => landuse_color(properties, zoom, park, sand, landuse),
+        }
+    }
+}
+
+fn landuse_color(
+    properties: &Properties,
+    zoom: f32,
+    park: Rgba,
+    sand: Rgba,
+    landuse: Rgba,
+) -> Option<Rgba> {
     let kind = properties.str("kind")?;
     let park_opacity = interpolate(&[(8.0, 0.0), (10.0, 160.0), (14.0, 255.0)], zoom, 1.0) as u8;
     match kind {
         "park" | "national_park" | "nature_reserve" | "protected_area" | "garden"
         | "golf_course" | "zoo" | "wood" | "forest" => {
-            (park_opacity > 0).then_some(alpha(PARK, park_opacity))
+            (park_opacity > 0).then_some(alpha(park, park_opacity))
         }
         "cemetery" | "pitch" | "grass" | "village_green" | "playground" if zoom >= 13.0 => {
-            Some(hex(0xe6ebdd))
+            Some(park)
         }
-        "beach" | "sand" if zoom >= 11.0 => Some(hex(0xf1ece0)),
-        "school" | "university" | "college" | "hospital" if zoom >= 13.0 => Some(hex(0xefebe4)),
-        "industrial" | "aerodrome" | "airfield" | "military" | "railway" if zoom >= 13.0 => {
-            Some(hex(0xeceae5))
+        "beach" | "sand" if zoom >= 11.0 => Some(sand),
+        "school" | "university" | "college" | "hospital" | "industrial" | "aerodrome"
+        | "airfield" | "military" | "railway" | "runway" | "taxiway"
+            if zoom >= 13.0 =>
+        {
+            Some(landuse)
         }
-        "runway" | "taxiway" if zoom >= 12.0 => Some(hex(0xe2dfd8)),
         _ => None,
     }
+}
+
+fn luminance(color: Rgba) -> f32 {
+    0.299 * f32::from(color[0]) + 0.587 * f32::from(color[1]) + 0.114 * f32::from(color[2])
+}
+
+fn further_from(base: Rgba, first: Rgba, second: Rgba) -> Rgba {
+    let distance = |color: Rgba| (luminance(color) - luminance(base)).abs();
+    if distance(second) > distance(first) {
+        second
+    } else {
+        first
+    }
+}
+
+fn shade(color: Rgba, percent: u32) -> Rgba {
+    let scale = |channel: u8| (u32::from(channel) * percent / 100).min(255) as u8;
+    [scale(color[0]), scale(color[1]), scale(color[2]), color[3]]
 }
 
 fn population(properties: &Properties) -> f64 {
@@ -267,6 +543,19 @@ fn is_major_city(properties: &Properties) -> bool {
     population(properties) >= 250_000.0
 }
 
+const GREAT_CITY_POPULATION: f64 = 1_000_000.0;
+const GREAT_CITY_PRIORITY: f32 = 40.0;
+
+fn city_priority(properties: &Properties) -> f32 {
+    let population = population(properties);
+    let base = -(population.max(1.0).log10() as f32) * 10.0;
+    if population >= GREAT_CITY_POPULATION {
+        base - GREAT_CITY_PRIORITY
+    } else {
+        base
+    }
+}
+
 fn name(properties: &Properties) -> Option<String> {
     properties
         .str("name:en")
@@ -279,7 +568,9 @@ fn shield(properties: &Properties) -> Option<String> {
     (!text.is_empty() && text.len() <= 4).then(|| text.to_owned())
 }
 
-pub fn paper() -> Theme {
+pub fn theme(palette: &Palette) -> Theme {
+    let low_major = further_from(palette.land, palette.road, palette.major_road_casing);
+    let low_highway = further_from(palette.land, palette.highway, palette.highway_casing);
     let layers = vec![
         Layer {
             id: "earth",
@@ -288,7 +579,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: polygon,
             paint: Paint::Fill {
-                color: |_, _| Some(PAPER),
+                color: FillStyle::Solid(palette.land),
             },
         },
         Layer {
@@ -297,7 +588,13 @@ pub fn paper() -> Theme {
             min_zoom: 8.0,
             max_zoom: 24.0,
             filter: polygon,
-            paint: Paint::Fill { color: landuse },
+            paint: Paint::Fill {
+                color: FillStyle::Landuse {
+                    park: palette.park,
+                    sand: palette.sand,
+                    landuse: palette.landuse,
+                },
+            },
         },
         Layer {
             id: "water",
@@ -306,7 +603,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: polygon,
             paint: Paint::Fill {
-                color: |_, _| Some(WATER),
+                color: FillStyle::Solid(palette.water),
             },
         },
         Layer {
@@ -316,7 +613,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: polygon,
             paint: Paint::ShoreShade {
-                color: alpha(SHORE, 120),
+                color: alpha(palette.water_line, 170),
                 radius: 10.0,
                 land_layer: "earth",
             },
@@ -330,7 +627,7 @@ pub fn paper() -> Theme {
                 line(geometry) && properties.kind_in(&["river", "canal"])
             },
             paint: Paint::Line {
-                color: hex(0xb9d0e0),
+                color: palette.water_line,
                 width: Width::Exponential(&[(9.0, 0.5), (12.0, 1.2), (18.0, 9.0)]),
                 dash: None,
             },
@@ -345,11 +642,10 @@ pub fn paper() -> Theme {
                     && properties.kind_in(&["building", "building_part"])
             },
             paint: Paint::Fill {
-                color: |_, zoom| {
-                    Some(alpha(
-                        hex(0xe4e0d8),
-                        interpolate(&[(14.0, 0.0), (15.0, 255.0)], zoom, 1.0) as u8,
-                    ))
+                color: FillStyle::Fade {
+                    color: palette.building,
+                    from: 14.0,
+                    to: 15.0,
                 },
             },
         },
@@ -360,7 +656,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: |properties, geometry| boundary(properties, geometry, &["country"]),
             paint: Paint::Line {
-                color: alpha(hex(0xd8cfc2), 150),
+                color: alpha(palette.country_boundary, 70),
                 width: Width::Exponential(&[(2.0, 3.5), (6.0, 6.0), (10.0, 8.0)]),
                 dash: None,
             },
@@ -372,7 +668,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: |properties, geometry| boundary(properties, geometry, &["county"]),
             paint: Paint::Line {
-                color: hex(0xdad4ca),
+                color: palette.boundary,
                 width: Width::Fixed(0.7),
                 dash: Some((3.0, 2.5)),
             },
@@ -384,7 +680,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: |properties, geometry| boundary(properties, geometry, &["region"]),
             paint: Paint::Line {
-                color: hex(0xc9c1b4),
+                color: palette.boundary,
                 width: Width::Exponential(&[(3.0, 0.6), (6.0, 0.8)]),
                 dash: Some((4.0, 2.0)),
             },
@@ -396,7 +692,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: |properties, geometry| boundary(properties, geometry, &["country"]),
             paint: Paint::Line {
-                color: hex(0x9d9384),
+                color: palette.country_boundary,
                 width: Width::Exponential(&[(2.0, 1.0), (6.0, 1.5)]),
                 dash: None,
             },
@@ -414,7 +710,7 @@ pub fn paper() -> Theme {
                         .is_none_or(|detail| detail == "rail")
             },
             paint: Paint::Line {
-                color: hex(0xd6d1c9),
+                color: palette.rail,
                 width: Width::Exponential(&[(10.0, 0.5), (14.0, 0.75), (18.0, 1.5)]),
                 dash: None,
             },
@@ -426,7 +722,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: path,
             paint: Paint::Line {
-                color: hex(0xe0dbd2),
+                color: palette.path,
                 width: Width::Exponential(&[(14.0, 0.6), (18.0, 2.5)]),
                 dash: Some((2.0, 1.5)),
             },
@@ -438,7 +734,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: minor,
             paint: Paint::Line {
-                color: hex(0xe2ddd5),
+                color: palette.road_casing,
                 width: MINOR_CASING,
                 dash: None,
             },
@@ -450,7 +746,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: link,
             paint: Paint::Line {
-                color: hex(0xcfc8bd),
+                color: palette.major_road_casing,
                 width: LINK_CASING,
                 dash: None,
             },
@@ -462,7 +758,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: major,
             paint: Paint::Line {
-                color: hex(0xd2cbc0),
+                color: palette.major_road_casing,
                 width: MAJOR_CASING,
                 dash: None,
             },
@@ -474,7 +770,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: highway,
             paint: Paint::Line {
-                color: hex(0xb3a790),
+                color: palette.highway_casing,
                 width: HIGHWAY_CASING,
                 dash: None,
             },
@@ -486,7 +782,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: minor,
             paint: Paint::Line {
-                color: hex(0xffffff),
+                color: palette.road,
                 width: MINOR,
                 dash: None,
             },
@@ -498,7 +794,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: link,
             paint: Paint::Line {
-                color: hex(0xffffff),
+                color: palette.road,
                 width: LINK,
                 dash: None,
             },
@@ -510,7 +806,7 @@ pub fn paper() -> Theme {
             max_zoom: 10.5,
             filter: major,
             paint: Paint::Line {
-                color: hex(0xdfd9cf),
+                color: low_major,
                 width: MAJOR,
                 dash: None,
             },
@@ -522,7 +818,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: major,
             paint: Paint::Line {
-                color: hex(0xffffff),
+                color: palette.major_road,
                 width: MAJOR,
                 dash: None,
             },
@@ -534,7 +830,7 @@ pub fn paper() -> Theme {
             max_zoom: 8.0,
             filter: highway,
             paint: Paint::Line {
-                color: hex(0xbcae96),
+                color: low_highway,
                 width: HIGHWAY,
                 dash: None,
             },
@@ -546,18 +842,18 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: highway,
             paint: Paint::Line {
-                color: hex(0xecdcbd),
+                color: palette.highway,
                 width: HIGHWAY,
                 dash: None,
             },
         },
     ];
 
-    let halo = PAPER;
+    let halo = palette.label_halo;
     let city_dot = Dot {
         radius: 1.6,
-        fill: hex(0x8a857c),
-        stroke: alpha(PAPER, 0),
+        fill: palette.label_minor,
+        stroke: alpha(palette.label_halo, 0),
         stroke_width: 0.0,
     };
     let labels = vec![
@@ -571,8 +867,8 @@ pub fn paper() -> Theme {
             font: |_| Font::Italic,
             uppercase: false,
             letter_spacing: 0.2,
-            color: |_| WATER_INK,
-            halo: alpha(WATER, 0),
+            color: palette.water_label,
+            halo: alpha(palette.water, 0),
             halo_width: 0.0,
             dot: None,
             priority: |_| -300.0,
@@ -603,7 +899,7 @@ pub fn paper() -> Theme {
             font: |_| Font::Medium,
             uppercase: true,
             letter_spacing: 0.18,
-            color: |_| hex(0x4a463f),
+            color: palette.label,
             halo,
             halo_width: 1.6,
             dot: None,
@@ -628,7 +924,7 @@ pub fn paper() -> Theme {
             font: |_| Font::Regular,
             uppercase: true,
             letter_spacing: 0.24,
-            color: |_| hex(0x9a948a),
+            color: palette.region,
             halo,
             halo_width: 1.4,
             dot: None,
@@ -651,15 +947,15 @@ pub fn paper() -> Theme {
             font: |_| Font::Medium,
             uppercase: false,
             letter_spacing: 0.0,
-            color: |_| hex(0xffffff),
+            color: palette.interstate_text,
             halo: [0, 0, 0, 0],
             halo_width: 0.0,
             dot: None,
             priority: |_| 40.0,
             padding: 6.0,
             placement: Placement::Shield {
-                fill: hex(0x4a5563),
-                stroke: hex(0x3b4452),
+                fill: palette.interstate,
+                stroke: shade(palette.interstate, 80),
                 spacing: 260.0,
             },
         },
@@ -676,15 +972,15 @@ pub fn paper() -> Theme {
             font: |_| Font::Medium,
             uppercase: false,
             letter_spacing: 0.0,
-            color: |_| hex(0x5c564e),
+            color: palette.shield_text,
             halo: [0, 0, 0, 0],
             halo_width: 0.0,
             dot: None,
             priority: |_| 60.0,
             padding: 6.0,
             placement: Placement::Shield {
-                fill: hex(0xffffff),
-                stroke: hex(0xbdb6aa),
+                fill: palette.shield,
+                stroke: palette.shield_line,
                 spacing: 260.0,
             },
         },
@@ -699,40 +995,52 @@ pub fn paper() -> Theme {
                         Some("city") | Some("town") | None
                     )
                     && population(properties) >= city_threshold(zoom)
+                    && is_major_city(properties)
                     && (zoom >= 9.0 || properties.str("kind_detail") != Some("town"))
             },
             text: name,
-            size: |properties, zoom| {
-                if is_major_city(properties) {
-                    interpolate(
-                        &[(3.0, 12.0), (6.0, 13.5), (10.0, 15.0), (14.0, 17.0)],
-                        zoom,
-                        1.0,
-                    )
-                } else {
-                    interpolate(&[(4.0, 10.5), (8.0, 11.0), (12.0, 12.5)], zoom, 1.0)
-                }
+            size: |_, zoom| {
+                interpolate(
+                    &[(3.0, 12.0), (6.0, 13.5), (10.0, 15.0), (14.0, 17.0)],
+                    zoom,
+                    1.0,
+                )
             },
-            font: |properties| {
-                if is_major_city(properties) {
-                    Font::Medium
-                } else {
-                    Font::Regular
-                }
-            },
+            font: |_| Font::Medium,
             uppercase: false,
             letter_spacing: 0.01,
-            color: |properties| {
-                if is_major_city(properties) {
-                    MAJOR_INK
-                } else {
-                    MINOR_INK
-                }
-            },
+            color: palette.label,
             halo,
             halo_width: 1.6,
             dot: Some((city_dot, 6.0)),
-            priority: |properties| -(population(properties).max(1.0).log10() as f32) * 10.0,
+            priority: city_priority,
+            padding: 8.0,
+            placement: Placement::Point,
+        },
+        LabelRule {
+            source_layer: "places",
+            min_zoom: 2.0,
+            max_zoom: 24.0,
+            filter: |properties, zoom| {
+                properties.kind_in(&["locality"])
+                    && matches!(
+                        properties.str("kind_detail"),
+                        Some("city") | Some("town") | None
+                    )
+                    && population(properties) >= city_threshold(zoom)
+                    && !is_major_city(properties)
+                    && (zoom >= 9.0 || properties.str("kind_detail") != Some("town"))
+            },
+            text: name,
+            size: |_, zoom| interpolate(&[(4.0, 10.5), (8.0, 11.0), (12.0, 12.5)], zoom, 1.0),
+            font: |_| Font::Regular,
+            uppercase: false,
+            letter_spacing: 0.01,
+            color: palette.label_minor,
+            halo,
+            halo_width: 1.6,
+            dot: Some((city_dot, 6.0)),
+            priority: city_priority,
             padding: 8.0,
             placement: Placement::Point,
         },
@@ -752,7 +1060,7 @@ pub fn paper() -> Theme {
             font: |_| Font::Regular,
             uppercase: false,
             letter_spacing: 0.01,
-            color: |_| MINOR_INK,
+            color: palette.label_minor,
             halo,
             halo_width: 1.4,
             dot: None,
@@ -770,7 +1078,7 @@ pub fn paper() -> Theme {
             font: |_| Font::Medium,
             uppercase: true,
             letter_spacing: 0.16,
-            color: |_| hex(0x857f75),
+            color: palette.neighbourhood,
             halo,
             halo_width: 1.6,
             dot: None,
@@ -780,18 +1088,18 @@ pub fn paper() -> Theme {
         },
         LabelRule {
             source_layer: "water",
-            min_zoom: 6.0,
+            min_zoom: 3.0,
             max_zoom: 24.0,
             filter: |properties, _| {
                 properties.kind_in(&["bay", "strait", "fjord", "lake", "water", "reservoir"])
             },
             text: name,
-            size: |_, zoom| interpolate(&[(6.0, 10.5), (12.0, 12.0)], zoom, 1.0),
+            size: |_, zoom| interpolate(&[(3.0, 10.0), (6.0, 10.5), (12.0, 12.0)], zoom, 1.0),
             font: |_| Font::Italic,
             uppercase: false,
             letter_spacing: 0.06,
-            color: |_| WATER_INK,
-            halo: alpha(WATER, 220),
+            color: palette.water_label,
+            halo: alpha(palette.water, 220),
             halo_width: 1.0,
             dot: None,
             priority: |properties| 150.0 + properties.number("min_zoom").unwrap_or(10.0) as f32,
@@ -801,13 +1109,20 @@ pub fn paper() -> Theme {
     ];
 
     Theme {
-        background: WATER,
+        background: palette.water,
         layers,
         labels,
         markers: MarkerStyle {
-            shadow: alpha(hex(0x2b2418), 60),
-            shadow_blur: 3.0,
-            shadow_offset: 1.5,
+            pill_fill: palette.marker,
+            pill_text: palette.marker_text,
+            dot_fill: palette.accent,
+            dot_ring: palette.land,
+            cluster_fill: palette.cluster,
+            cluster_text: palette.cluster_text,
+            cluster_ring: palette.land,
+            selected_fill: palette.selected,
+            selected_text: palette.selected_text,
+            shadow: palette.shadow,
         },
     }
 }

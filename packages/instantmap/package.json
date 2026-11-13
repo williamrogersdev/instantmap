@@ -1,7 +1,7 @@
 {
   "name": "instantmap",
   "version": "0.1.0",
-  "description": "A map that arrives as one image and becomes interactive when you touch it. 7 KB, zero dependencies, any framework.",
+  "description": "A map that arrives as one image and becomes interactive when you touch it. 13 KB gzipped, no dependencies, any framework.",
   "license": "MIT",
   "type": "module",
   "homepage": "https://instantmap.org",

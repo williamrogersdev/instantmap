@@ -56,7 +56,7 @@ export function sanFranciscoListings(count: number, seed = 20261113): Listing[] 
       lat: Math.round((lat + Math.sin(angle) * distance * spreadLat) * 1e5) / 1e5,
       label: `$${price.toLocaleString("en-US")}`,
       title: `${pick(ADJECTIVES, random)} ${KINDS[kind]}`,
-      subtitle: `${name}, ${beds === 0 ? "studio" : `${beds} bed`}, $${price.toLocaleString("en-US")}/mo`,
+      subtitle: `${name}, ${beds === 0 ? "studio" : `${beds} bed`}, per month`,
       href: `#listing-${id}`,
     };
   });

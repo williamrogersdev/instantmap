@@ -65,9 +65,14 @@ function setupHero(listings: Listing[]): void {
     else poster?.addEventListener("load", () => setTimeout(fallback, 0), { once: true });
   }
   const script = performance.getEntriesByType("resource").find((entry) => entry.name.endsWith("/instant-map.js")) as PerformanceResourceTiming | undefined;
-  if (script?.encodedBodySize) byId("meter-script").textContent = `${(script.encodedBodySize / 1024).toFixed(1)} KB, loaded after the image`;
+  if (script?.encodedBodySize) byId("meter-script").textContent = `${(script.encodedBodySize / 1024).toFixed(1)} KB, loaded after the map showed`;
+  let touched = 0;
+  for (const type of ["pointerdown", "touchstart", "wheel", "focusin"]) {
+    map.addEventListener(type, () => (touched ||= performance.now()), { capture: true, once: true, passive: true });
+  }
   map.addEventListener("interactive", () => {
-    byId("meter-state").textContent = `awake, ${listings.length} listings`;
+    const after = touched ? Math.max(0, Math.round(performance.now() - touched)) : 0;
+    byId("meter-state").textContent = touched ? `${after} ms after your touch` : "ready";
   });
 }
 
@@ -185,7 +190,7 @@ function runLane(lane: "instant" | "maplibre", center: string, zoom: string): Pr
   const started = performance.now();
   let ticking = 0;
   const tick = (): void => {
-    time.textContent = `${Math.round(performance.now() - started)} ms`;
+    time.textContent = `${Math.round(performance.now() - started).toLocaleString("en-US")} ms`;
     ticking = requestAnimationFrame(tick);
   };
   tick();
@@ -194,7 +199,7 @@ function runLane(lane: "instant" | "maplibre", center: string, zoom: string): Pr
       cancelAnimationFrame(ticking);
       window.removeEventListener("message", listen);
       clearTimeout(timer);
-      time.textContent = result.ms ? `${Math.round(result.ms)} ms` : "did not finish";
+      time.textContent = result.ms ? `${Math.round(result.ms).toLocaleString("en-US")} ms` : "did not finish";
       resolve(result);
     };
     const listen = (event: MessageEvent<LaneResult>): void => {
@@ -208,20 +213,51 @@ function runLane(lane: "instant" | "maplibre", center: string, zoom: string): Pr
   });
 }
 
+function showResult(results: LaneResult[], fresh: boolean): void {
+  const finished = results.filter((result) => result.ms);
+  const slowest = Math.max(...finished.map((result) => result.ms!), 1);
+  for (const result of results) {
+    const lane = document.querySelector<HTMLElement>(`.lane[data-lane="${result.lane}"]`)!;
+    lane.querySelector<HTMLElement>("[data-track]")!.style.width = result.ms ? `${(result.ms / slowest) * 100}%` : "100%";
+  }
+  const [instant, maplibre] = results;
+  const output = byId("race-result");
+  if (!instant?.ms || !maplibre?.ms) {
+    output.textContent = "One lane did not finish. Try the race again.";
+    return;
+  }
+  const winner = instant.ms <= maplibre.ms ? instant : maplibre;
+  document.querySelector(`.lane[data-lane="${winner.lane}"]`)!.classList.add("won");
+  const ratio = Math.max(instant.ms, maplibre.ms) / Math.min(instant.ms, maplibre.ms);
+  const name = winner.lane === "instant" ? "Instant Map" : "MapLibre";
+  const format = (ms: number): string => `${Math.round(ms).toLocaleString("en-US")} ms`;
+  output.innerHTML = "";
+  output.append(`${name} finished ${ratio >= 1.95 ? `${ratio.toFixed(1)}× sooner` : `${format(Math.abs(maplibre.ms - instant.ms))} sooner`}.`);
+  const detail = document.createElement("small");
+  detail.textContent = `${format(instant.ms)} against ${format(maplibre.ms)} on this connection, ${fresh ? "nothing cached" : "browser cache allowed"}.`;
+  output.append(detail);
+}
+
 function setupRace(): void {
   const start = byId<HTMLButtonElement>("race-start");
   const fresh = byId<HTMLInputElement>("race-fresh");
   start.addEventListener("click", async () => {
     start.disabled = true;
     start.textContent = "Racing";
+    byId("race-result").textContent = "";
+    for (const lane of document.querySelectorAll<HTMLElement>(".lane")) {
+      lane.classList.remove("won");
+      lane.querySelector<HTMLElement>("[data-track]")!.style.width = "0";
+      lane.querySelector<HTMLElement>("[data-time]")!.textContent = "–";
+    }
     const jitter = fresh.checked;
     const lng = -122.4194 + (jitter ? (Math.random() - 0.5) * 0.01 : 0);
     const lat = 37.7749 + (jitter ? (Math.random() - 0.5) * 0.008 : 0);
     const center = `${lng.toFixed(5)},${lat.toFixed(5)}`;
     const zoom = jitter ? (12 + Math.random() * 0.3).toFixed(2) : "12";
-    for (const time of document.querySelectorAll<HTMLElement>(".lane [data-time]")) time.textContent = "–";
-    await runLane("instant", center, zoom);
-    await runLane("maplibre", center, zoom);
+    const instant = await runLane("instant", center, zoom);
+    const maplibre = await runLane("maplibre", center, zoom);
+    showResult([instant, maplibre], jitter);
     start.disabled = false;
     start.textContent = "Race again";
   });

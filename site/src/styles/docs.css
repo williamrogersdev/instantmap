@@ -1,32 +1,32 @@
 :root {
   --sl-font: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --sl-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --sl-color-accent-low: #241a5c;
-  --sl-color-accent: #a594ff;
-  --sl-color-accent-high: #e4deff;
+  --sl-color-accent-low: #0b3a31;
+  --sl-color-accent: #19d3a2;
+  --sl-color-accent-high: #c9f5e8;
   --sl-color-white: #ffffff;
-  --sl-color-gray-1: #ebe8f7;
-  --sl-color-gray-2: #c6c0de;
-  --sl-color-gray-3: #9188b3;
-  --sl-color-gray-4: #5c5480;
-  --sl-color-gray-5: #2c2550;
-  --sl-color-gray-6: #1a1438;
-  --sl-color-black: #100b27;
+  --sl-color-gray-1: #e6ecef;
+  --sl-color-gray-2: #bcc8d0;
+  --sl-color-gray-3: #8798a5;
+  --sl-color-gray-4: #536574;
+  --sl-color-gray-5: #263a4b;
+  --sl-color-gray-6: #142838;
+  --sl-color-black: #0a1824;
   --sl-content-width: 48rem;
 }
 
 :root[data-theme="light"] {
-  --sl-color-accent-low: #e9e4ff;
-  --sl-color-accent: #5b3df5;
-  --sl-color-accent-high: #2a1a8f;
-  --sl-color-white: #160f3d;
-  --sl-color-gray-1: #1e1747;
-  --sl-color-gray-2: #322a5e;
-  --sl-color-gray-3: #5c5480;
-  --sl-color-gray-4: #9188b3;
-  --sl-color-gray-5: #dcd6f0;
-  --sl-color-gray-6: #f1eefb;
-  --sl-color-gray-7: #f8f7fd;
+  --sl-color-accent-low: #d4f5ea;
+  --sl-color-accent: #0a7a60;
+  --sl-color-accent-high: #063f32;
+  --sl-color-white: #0f2233;
+  --sl-color-gray-1: #172b3c;
+  --sl-color-gray-2: #2d4153;
+  --sl-color-gray-3: #4a5866;
+  --sl-color-gray-4: #8796a2;
+  --sl-color-gray-5: #d9ddd5;
+  --sl-color-gray-6: #eef0ea;
+  --sl-color-gray-7: #f6f7f3;
   --sl-color-black: #ffffff;
 }
 

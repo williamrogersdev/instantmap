@@ -14,7 +14,7 @@ const scriptOrigin = (): string | null => {
 
 export const DEFAULT_SRC = scriptOrigin() ?? "https://instantmap.org";
 export const MAX_STATIC_SIZE = 1280;
-export const STYLE_VERSION = "2";
+export const STYLE_VERSION = "3";
 
 const coordinate = (value: number): string => String(Math.round(value * 1e5) / 1e5);
 

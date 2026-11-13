@@ -130,7 +130,12 @@ fn sample(glyph: &Glyph, x: f32, y: f32) -> f32 {
         if column < 0 || row < 0 || column >= width || row >= height {
             return 0.0;
         }
-        glyph.bitmap.get((row * width + column) as usize).copied().unwrap_or(0) as f32 / 255.0
+        glyph
+            .bitmap
+            .get((row * width + column) as usize)
+            .copied()
+            .unwrap_or(0) as f32
+            / 255.0
     };
     let top = at(x0, y0) * (1.0 - fraction_x) + at(x0 + 1, y0) * fraction_x;
     let bottom = at(x0, y0 + 1) * (1.0 - fraction_x) + at(x0 + 1, y0 + 1) * fraction_x;
@@ -159,7 +164,9 @@ pub fn draw_text(
         }
         let mut pen = left;
         for character in text.chars() {
-            let Some(glyph) = font.glyph(character) else { continue };
+            let Some(glyph) = font.glyph(character) else {
+                continue;
+            };
             if glyph.width > 0 && glyph.height > 0 && !glyph.bitmap.is_empty() {
                 let x0 = pen + (glyph.left - SDF_BUFFER) as f32 * scale;
                 let y0 = baseline - (BASELINE_OFFSET + glyph.top + SDF_BUFFER) as f32 * scale;
@@ -167,7 +174,11 @@ pub fn draw_text(
                 let box_height = (glyph.height + 2 * SDF_BUFFER) as f32 * scale;
                 for row in y0.floor() as i32..(y0 + box_height).ceil() as i32 {
                     for column in x0.floor() as i32..(x0 + box_width).ceil() as i32 {
-                        let distance = sample(glyph, (column as f32 + 0.5 - x0) / scale, (row as f32 + 0.5 - y0) / scale);
+                        let distance = sample(
+                            glyph,
+                            (column as f32 + 0.5 - x0) / scale,
+                            (row as f32 + 0.5 - y0) / scale,
+                        );
                         let coverage = ((distance - edge) / per_pixel + 0.5).clamp(0.0, 1.0);
                         canvas.blend(column, row, color, coverage);
                     }
@@ -184,11 +195,18 @@ mod tests {
 
     #[test]
     fn parses_noto_latin_range() {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../../fixtures/noto-sans-regular-0-255.pbf")).unwrap();
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../fixtures/noto-sans-regular-0-255.pbf"
+        ))
+        .unwrap();
         let stack = FontStack::from_pbf_ranges([bytes.as_slice()]).unwrap();
         let glyph = stack.glyph('A').expect("A glyph");
         assert!(glyph.width > 0 && glyph.advance > 0);
-        assert_eq!(glyph.bitmap.len() as i32, (glyph.width + 6) * (glyph.height + 6));
+        assert_eq!(
+            glyph.bitmap.len() as i32,
+            (glyph.width + 6) * (glyph.height + 6)
+        );
         assert!(stack.measure("Dallas", 12.0, 0.0) > 30.0);
     }
 }

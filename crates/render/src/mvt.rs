@@ -85,7 +85,13 @@ fn utf8(bytes: &[u8]) -> &str {
 impl<'a> Layer<'a> {
     fn decode(bytes: &'a [u8]) -> Result<Self> {
         let mut reader = Reader::new(bytes);
-        let mut layer = Layer { name: "", extent: 4096, keys: Vec::new(), values: Vec::new(), features: Vec::new() };
+        let mut layer = Layer {
+            name: "",
+            extent: 4096,
+            keys: Vec::new(),
+            values: Vec::new(),
+            features: Vec::new(),
+        };
         while !reader.done() {
             match reader.tag()? {
                 (1, 2) => layer.name = utf8(reader.bytes()?),
@@ -93,7 +99,8 @@ impl<'a> Layer<'a> {
                 (3, 2) => layer.keys.push(utf8(reader.bytes()?)),
                 (4, 2) => layer.values.push(decode_value(reader.bytes()?)?),
                 (5, 0) => {
-                    layer.extent = u32::try_from(reader.varint()?).map_err(|_| DecodeError("extent overflow"))?
+                    layer.extent = u32::try_from(reader.varint()?)
+                        .map_err(|_| DecodeError("extent overflow"))?
                 }
                 (_, wire) => reader.skip(wire)?,
             }
@@ -105,7 +112,10 @@ impl<'a> Layer<'a> {
     }
 
     pub fn properties<'l>(&'l self, feature: &'l Feature<'a>) -> Properties<'l, 'a> {
-        Properties { layer: self, feature }
+        Properties {
+            layer: self,
+            feature,
+        }
     }
 }
 
@@ -120,7 +130,9 @@ fn decode_value(bytes: &[u8]) -> Result<Value<'_>> {
             (4, 0) => Value::Int(reader.varint()? as i64),
             (5, 0) => {
                 let number = reader.varint()?;
-                i64::try_from(number).map(Value::Int).unwrap_or(Value::Float(number as f64))
+                i64::try_from(number)
+                    .map(Value::Int)
+                    .unwrap_or(Value::Float(number as f64))
             }
             (6, 0) => Value::Int(zigzag(reader.varint()?)),
             (7, 0) => Value::Bool(reader.varint()? != 0),
@@ -136,7 +148,11 @@ fn decode_value(bytes: &[u8]) -> Result<Value<'_>> {
 impl<'a> Feature<'a> {
     fn decode(bytes: &'a [u8]) -> Result<Self> {
         let mut reader = Reader::new(bytes);
-        let mut feature = Feature { geometry_type: GeometryType::Unknown, tags: &[], geometry: &[] };
+        let mut feature = Feature {
+            geometry_type: GeometryType::Unknown,
+            tags: &[],
+            geometry: &[],
+        };
         while !reader.done() {
             match reader.tag()? {
                 (2, 2) => feature.tags = reader.bytes()?,
@@ -251,16 +267,27 @@ mod tests {
 
     #[test]
     fn decodes_real_tile() {
-        let bytes = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../../fixtures/7-29-52.mvt")).unwrap();
+        let bytes = std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../fixtures/7-29-52.mvt"
+        ))
+        .unwrap();
         let tile = Tile::decode(&bytes).unwrap();
         let roads = tile.layer("roads").expect("roads layer");
         assert!(roads.features.len() > 10);
         let mut points = 0;
         for feature in &roads.features {
-            feature.for_each_path(|path, _| points += path.len()).unwrap();
+            feature
+                .for_each_path(|path, _| points += path.len())
+                .unwrap();
         }
         assert!(points > 100);
         let places = tile.layer("places").expect("places layer");
-        assert!(places.features.iter().any(|feature| places.properties(feature).str("name").is_some()));
+        assert!(
+            places
+                .features
+                .iter()
+                .any(|feature| places.properties(feature).str("name").is_some())
+        );
     }
 }

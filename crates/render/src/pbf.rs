@@ -29,7 +29,10 @@ impl<'a> Reader<'a> {
         let mut result = 0_u64;
         let mut shift = 0;
         loop {
-            let byte = *self.bytes.get(self.offset).ok_or(DecodeError("truncated varint"))?;
+            let byte = *self
+                .bytes
+                .get(self.offset)
+                .ok_or(DecodeError("truncated varint"))?;
             self.offset += 1;
             if shift == 63 && byte > 1 {
                 return Err(DecodeError("varint overflow"));
@@ -52,15 +55,27 @@ impl<'a> Reader<'a> {
 
     pub fn bytes(&mut self) -> Result<&'a [u8]> {
         let length = usize::try_from(self.varint()?).map_err(|_| DecodeError("length overflow"))?;
-        let end = self.offset.checked_add(length).ok_or(DecodeError("length overflow"))?;
-        let slice = self.bytes.get(self.offset..end).ok_or(DecodeError("truncated field"))?;
+        let end = self
+            .offset
+            .checked_add(length)
+            .ok_or(DecodeError("length overflow"))?;
+        let slice = self
+            .bytes
+            .get(self.offset..end)
+            .ok_or(DecodeError("truncated field"))?;
         self.offset = end;
         Ok(slice)
     }
 
     pub fn fixed<const N: usize>(&mut self) -> Result<[u8; N]> {
-        let end = self.offset.checked_add(N).ok_or(DecodeError("length overflow"))?;
-        let slice = self.bytes.get(self.offset..end).ok_or(DecodeError("truncated fixed"))?;
+        let end = self
+            .offset
+            .checked_add(N)
+            .ok_or(DecodeError("length overflow"))?;
+        let slice = self
+            .bytes
+            .get(self.offset..end)
+            .ok_or(DecodeError("truncated fixed"))?;
         self.offset = end;
         slice.try_into().map_err(|_| DecodeError("truncated fixed"))
     }
@@ -95,7 +110,9 @@ pub struct Packed<'a> {
 
 impl<'a> Packed<'a> {
     pub fn new(bytes: &'a [u8]) -> Self {
-        Self { reader: Reader::new(bytes) }
+        Self {
+            reader: Reader::new(bytes),
+        }
     }
 }
 

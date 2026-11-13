@@ -22,7 +22,9 @@ impl Width {
 }
 
 pub fn interpolate(stops: &[(f32, f32)], zoom: f32, base: f32) -> f32 {
-    let Some(first) = stops.first() else { return 0.0 };
+    let Some(first) = stops.first() else {
+        return 0.0;
+    };
     if zoom <= first.0 {
         return first.1;
     }
@@ -46,8 +48,15 @@ pub type ColorFor = fn(&Properties) -> Rgba;
 
 #[derive(Clone, Copy)]
 pub enum Paint {
-    Fill { color: ColorFor },
-    Line { color: Rgba, width: Width, gap: Option<Width>, dash: Option<(f32, f32)> },
+    Fill {
+        color: ColorFor,
+    },
+    Line {
+        color: Rgba,
+        width: Width,
+        gap: Option<Width>,
+        dash: Option<(f32, f32)>,
+    },
 }
 
 #[derive(Clone, Copy)]
@@ -118,16 +127,31 @@ fn road_other(properties: &Properties, geometry: GeometryType) -> bool {
         && not_bridge_or_tunnel(properties)
 }
 
-const HIGHWAY_WIDTH: Width = Width::Exponential(&[(3.0, 0.0), (6.0, 1.1), (12.0, 1.6), (15.0, 5.0), (18.0, 15.0)]);
-const MAJOR_WIDTH: Width = Width::Exponential(&[(6.0, 0.0), (12.0, 1.6), (15.0, 3.0), (18.0, 13.0)]);
-const MINOR_WIDTH: Width = Width::Exponential(&[(11.0, 0.0), (12.5, 0.5), (15.0, 2.0), (18.0, 11.0)]);
+const HIGHWAY_WIDTH: Width = Width::Exponential(&[
+    (3.0, 0.0),
+    (6.0, 1.1),
+    (12.0, 1.6),
+    (15.0, 5.0),
+    (18.0, 15.0),
+]);
+const MAJOR_WIDTH: Width =
+    Width::Exponential(&[(6.0, 0.0), (12.0, 1.6), (15.0, 3.0), (18.0, 13.0)]);
+const MINOR_WIDTH: Width =
+    Width::Exponential(&[(11.0, 0.0), (12.5, 0.5), (15.0, 2.0), (18.0, 11.0)]);
 const LINK_WIDTH: Width = Width::Exponential(&[(13.0, 0.0), (13.5, 1.0), (18.0, 11.0)]);
 
 pub fn repackify_light() -> Theme {
     const EARTH: Rgba = hex(0xf4f4f2);
     const PARK: Rgba = hex(0xe5ebde);
     let layers = vec![
-        Layer { id: "earth", source_layer: "earth", min_zoom: 0.0, max_zoom: 24.0, filter: polygon, paint: Paint::Fill { color: |_| EARTH } },
+        Layer {
+            id: "earth",
+            source_layer: "earth",
+            min_zoom: 0.0,
+            max_zoom: 24.0,
+            filter: polygon,
+            paint: Paint::Fill { color: |_| EARTH },
+        },
         Layer {
             id: "landcover",
             source_layer: "landcover",
@@ -154,10 +178,36 @@ pub fn repackify_light() -> Theme {
             filter: |properties, geometry| {
                 geometry == GeometryType::Polygon
                     && properties.kind_in(&[
-                        "national_park", "park", "cemetery", "protected_area", "nature_reserve", "forest", "golf_course",
-                        "wood", "scrub", "grassland", "grass", "glacier", "sand", "military", "allotments",
-                        "village_green", "playground", "hospital", "industrial", "school", "university", "college",
-                        "beach", "zoo", "aerodrome", "runway", "taxiway", "pedestrian", "dam", "pier",
+                        "national_park",
+                        "park",
+                        "cemetery",
+                        "protected_area",
+                        "nature_reserve",
+                        "forest",
+                        "golf_course",
+                        "wood",
+                        "scrub",
+                        "grassland",
+                        "grass",
+                        "glacier",
+                        "sand",
+                        "military",
+                        "allotments",
+                        "village_green",
+                        "playground",
+                        "hospital",
+                        "industrial",
+                        "school",
+                        "university",
+                        "college",
+                        "beach",
+                        "zoo",
+                        "aerodrome",
+                        "runway",
+                        "taxiway",
+                        "pedestrian",
+                        "dam",
+                        "pier",
                     ])
             },
             paint: Paint::Fill {
@@ -172,30 +222,58 @@ pub fn repackify_light() -> Theme {
                 },
             },
         },
-        Layer { id: "water", source_layer: "water", min_zoom: 0.0, max_zoom: 24.0, filter: polygon, paint: Paint::Fill { color: |_| hex(0xcddbe6) } },
+        Layer {
+            id: "water",
+            source_layer: "water",
+            min_zoom: 0.0,
+            max_zoom: 24.0,
+            filter: polygon,
+            paint: Paint::Fill {
+                color: |_| hex(0xcddbe6),
+            },
+        },
         Layer {
             id: "water_river",
             source_layer: "water",
             min_zoom: 9.0,
             max_zoom: 24.0,
-            filter: |properties, geometry| geometry == GeometryType::Line && properties.kind_in(&["river"]),
-            paint: Paint::Line { color: hex(0xcddbe6), width: Width::Exponential(&[(9.0, 0.0), (9.5, 1.0), (18.0, 12.0)]), gap: None, dash: None },
+            filter: |properties, geometry| {
+                geometry == GeometryType::Line && properties.kind_in(&["river"])
+            },
+            paint: Paint::Line {
+                color: hex(0xcddbe6),
+                width: Width::Exponential(&[(9.0, 0.0), (9.5, 1.0), (18.0, 12.0)]),
+                gap: None,
+                dash: None,
+            },
         },
         Layer {
             id: "water_stream",
             source_layer: "water",
             min_zoom: 14.0,
             max_zoom: 24.0,
-            filter: |properties, geometry| geometry == GeometryType::Line && properties.kind_in(&["stream"]),
-            paint: Paint::Line { color: hex(0xcddbe6), width: Width::Fixed(0.5), gap: None, dash: None },
+            filter: |properties, geometry| {
+                geometry == GeometryType::Line && properties.kind_in(&["stream"])
+            },
+            paint: Paint::Line {
+                color: hex(0xcddbe6),
+                width: Width::Fixed(0.5),
+                gap: None,
+                dash: None,
+            },
         },
         Layer {
             id: "buildings",
             source_layer: "buildings",
             min_zoom: 13.0,
             max_zoom: 24.0,
-            filter: |properties, geometry| geometry == GeometryType::Polygon && properties.kind_in(&["building", "building_part"]),
-            paint: Paint::Fill { color: |_| hex(0xe8e8e5) },
+            filter: |properties, geometry| {
+                geometry == GeometryType::Polygon
+                    && properties.kind_in(&["building", "building_part"])
+            },
+            paint: Paint::Fill {
+                color: |_| hex(0xe8e8e5),
+            },
         },
         Layer {
             id: "roads_minor_casing",
@@ -203,7 +281,12 @@ pub fn repackify_light() -> Theme {
             min_zoom: 12.0,
             max_zoom: 24.0,
             filter: road_minor,
-            paint: Paint::Line { color: hex(0xe4e4e1), width: Width::Exponential(&[(12.0, 0.0), (12.5, 1.0)]), gap: Some(MINOR_WIDTH), dash: None },
+            paint: Paint::Line {
+                color: hex(0xe4e4e1),
+                width: Width::Exponential(&[(12.0, 0.0), (12.5, 1.0)]),
+                gap: Some(MINOR_WIDTH),
+                dash: None,
+            },
         },
         Layer {
             id: "roads_link_casing",
@@ -211,7 +294,12 @@ pub fn repackify_light() -> Theme {
             min_zoom: 13.0,
             max_zoom: 24.0,
             filter: road_link,
-            paint: Paint::Line { color: hex(0xdcdcd8), width: Width::Exponential(&[(13.0, 0.0), (13.5, 1.5)]), gap: Some(LINK_WIDTH), dash: None },
+            paint: Paint::Line {
+                color: hex(0xdcdcd8),
+                width: Width::Exponential(&[(13.0, 0.0), (13.5, 1.5)]),
+                gap: Some(LINK_WIDTH),
+                dash: None,
+            },
         },
         Layer {
             id: "roads_major_casing",
@@ -219,7 +307,12 @@ pub fn repackify_light() -> Theme {
             min_zoom: 9.0,
             max_zoom: 24.0,
             filter: road_major,
-            paint: Paint::Line { color: hex(0xd6d6d2), width: Width::Exponential(&[(9.0, 0.0), (9.5, 1.0)]), gap: Some(MAJOR_WIDTH), dash: None },
+            paint: Paint::Line {
+                color: hex(0xd6d6d2),
+                width: Width::Exponential(&[(9.0, 0.0), (9.5, 1.0)]),
+                gap: Some(MAJOR_WIDTH),
+                dash: None,
+            },
         },
         Layer {
             id: "roads_highway_casing",
@@ -227,7 +320,12 @@ pub fn repackify_light() -> Theme {
             min_zoom: 7.0,
             max_zoom: 24.0,
             filter: road_highway,
-            paint: Paint::Line { color: hex(0xd9cbbd), width: Width::Exponential(&[(7.0, 0.0), (7.5, 1.0), (20.0, 15.0)]), gap: Some(HIGHWAY_WIDTH), dash: None },
+            paint: Paint::Line {
+                color: hex(0xd9cbbd),
+                width: Width::Exponential(&[(7.0, 0.0), (7.5, 1.0), (20.0, 15.0)]),
+                gap: Some(HIGHWAY_WIDTH),
+                dash: None,
+            },
         },
         Layer {
             id: "roads_other",
@@ -235,35 +333,115 @@ pub fn repackify_light() -> Theme {
             min_zoom: 14.0,
             max_zoom: 24.0,
             filter: road_other,
-            paint: Paint::Line { color: hex(0xffffff), width: Width::Exponential(&[(14.0, 0.5), (20.0, 12.0)]), gap: None, dash: None },
+            paint: Paint::Line {
+                color: hex(0xffffff),
+                width: Width::Exponential(&[(14.0, 0.5), (20.0, 12.0)]),
+                gap: None,
+                dash: None,
+            },
         },
-        Layer { id: "roads_link", source_layer: "roads", min_zoom: 13.0, max_zoom: 24.0, filter: road_link, paint: Paint::Line { color: hex(0xffffff), width: LINK_WIDTH, gap: None, dash: None } },
-        Layer { id: "roads_minor", source_layer: "roads", min_zoom: 11.0, max_zoom: 24.0, filter: road_minor, paint: Paint::Line { color: hex(0xffffff), width: MINOR_WIDTH, gap: None, dash: None } },
-        Layer { id: "roads_major", source_layer: "roads", min_zoom: 6.0, max_zoom: 24.0, filter: road_major, paint: Paint::Line { color: hex(0xffffff), width: MAJOR_WIDTH, gap: None, dash: None } },
-        Layer { id: "roads_highway", source_layer: "roads", min_zoom: 3.0, max_zoom: 24.0, filter: road_highway, paint: Paint::Line { color: hex(0xfdf1e6), width: HIGHWAY_WIDTH, gap: None, dash: None } },
+        Layer {
+            id: "roads_link",
+            source_layer: "roads",
+            min_zoom: 13.0,
+            max_zoom: 24.0,
+            filter: road_link,
+            paint: Paint::Line {
+                color: hex(0xffffff),
+                width: LINK_WIDTH,
+                gap: None,
+                dash: None,
+            },
+        },
+        Layer {
+            id: "roads_minor",
+            source_layer: "roads",
+            min_zoom: 11.0,
+            max_zoom: 24.0,
+            filter: road_minor,
+            paint: Paint::Line {
+                color: hex(0xffffff),
+                width: MINOR_WIDTH,
+                gap: None,
+                dash: None,
+            },
+        },
+        Layer {
+            id: "roads_major",
+            source_layer: "roads",
+            min_zoom: 6.0,
+            max_zoom: 24.0,
+            filter: road_major,
+            paint: Paint::Line {
+                color: hex(0xffffff),
+                width: MAJOR_WIDTH,
+                gap: None,
+                dash: None,
+            },
+        },
+        Layer {
+            id: "roads_highway",
+            source_layer: "roads",
+            min_zoom: 3.0,
+            max_zoom: 24.0,
+            filter: road_highway,
+            paint: Paint::Line {
+                color: hex(0xfdf1e6),
+                width: HIGHWAY_WIDTH,
+                gap: None,
+                dash: None,
+            },
+        },
         Layer {
             id: "roads_rail",
             source_layer: "roads",
             min_zoom: 3.0,
             max_zoom: 24.0,
-            filter: |properties, geometry| geometry == GeometryType::Line && properties.kind_in(&["rail"]),
-            paint: Paint::Line { color: hex(0xcfcfcb), width: Width::Exponential(&[(3.0, 0.0), (6.0, 0.15), (18.0, 9.0)]), gap: None, dash: None },
+            filter: |properties, geometry| {
+                geometry == GeometryType::Line && properties.kind_in(&["rail"])
+            },
+            paint: Paint::Line {
+                color: hex(0xcfcfcb),
+                width: Width::Exponential(&[(3.0, 0.0), (6.0, 0.15), (18.0, 9.0)]),
+                gap: None,
+                dash: None,
+            },
         },
         Layer {
             id: "boundaries_country",
             source_layer: "boundaries",
             min_zoom: 0.0,
             max_zoom: 24.0,
-            filter: |properties, geometry| geometry == GeometryType::Line && properties.number("kind_detail").is_some_and(|level| level <= 2.0),
-            paint: Paint::Line { color: hex(0xc4c4c0), width: Width::Fixed(0.7), gap: None, dash: Some((2.0, 1.0)) },
+            filter: |properties, geometry| {
+                geometry == GeometryType::Line
+                    && properties
+                        .number("kind_detail")
+                        .is_some_and(|level| level <= 2.0)
+            },
+            paint: Paint::Line {
+                color: hex(0xc4c4c0),
+                width: Width::Fixed(0.7),
+                gap: None,
+                dash: Some((2.0, 1.0)),
+            },
         },
         Layer {
             id: "boundaries",
             source_layer: "boundaries",
             min_zoom: 0.0,
             max_zoom: 24.0,
-            filter: |properties, geometry| geometry == GeometryType::Line && properties.number("kind_detail").is_some_and(|level| level > 2.0),
-            paint: Paint::Line { color: hex(0xc4c4c0), width: Width::Fixed(0.4), gap: None, dash: Some((2.0, 1.0)) },
+            filter: |properties, geometry| {
+                geometry == GeometryType::Line
+                    && properties
+                        .number("kind_detail")
+                        .is_some_and(|level| level > 2.0)
+            },
+            paint: Paint::Line {
+                color: hex(0xc4c4c0),
+                width: Width::Fixed(0.4),
+                gap: None,
+                dash: Some((2.0, 1.0)),
+            },
         },
     ];
     let labels = vec![
@@ -273,7 +451,15 @@ pub fn repackify_light() -> Theme {
             filter: |properties, _| properties.kind_in(&["country"]),
             size: |properties, zoom| {
                 let large = properties.number("population_rank").unwrap_or(0.0) >= 10.0;
-                interpolate(if large { &[(2.0, 12.0), (6.0, 18.0), (8.0, 20.0)] } else { &[(2.0, 8.0), (6.0, 10.0), (8.0, 11.0)] }, zoom, 1.0)
+                interpolate(
+                    if large {
+                        &[(2.0, 12.0), (6.0, 18.0), (8.0, 20.0)]
+                    } else {
+                        &[(2.0, 8.0), (6.0, 10.0), (8.0, 11.0)]
+                    },
+                    zoom,
+                    1.0,
+                )
             },
             font: |_| Font::Medium,
             uppercase: true,
@@ -281,7 +467,13 @@ pub fn repackify_light() -> Theme {
             color: hex(0x8a8a87),
             halo: hex(0xf4f4f2),
             dot_below_zoom: 0.0,
-            priority: |properties| properties.number("sort_key").or_else(|| properties.number("min_zoom")).unwrap_or(0.0) as f32 - 1000.0,
+            priority: |properties| {
+                properties
+                    .number("sort_key")
+                    .or_else(|| properties.number("min_zoom"))
+                    .unwrap_or(0.0) as f32
+                    - 1000.0
+            },
         },
         LabelRule {
             source_layer: "places",
@@ -312,13 +504,27 @@ pub fn repackify_light() -> Theme {
                 ];
                 interpolate(&stops, zoom, 1.0)
             },
-            font: |properties| if properties.number("min_zoom").is_some_and(|zoom| zoom <= 5.0) { Font::Medium } else { Font::Regular },
+            font: |properties| {
+                if properties
+                    .number("min_zoom")
+                    .is_some_and(|zoom| zoom <= 5.0)
+                {
+                    Font::Medium
+                } else {
+                    Font::Regular
+                }
+            },
             uppercase: false,
             letter_spacing: 0.0,
             color: hex(0x3b3b39),
             halo: hex(0xffffff),
             dot_below_zoom: 8.0,
-            priority: |properties| properties.number("sort_key").or_else(|| properties.number("min_zoom")).unwrap_or(0.0) as f32,
+            priority: |properties| {
+                properties
+                    .number("sort_key")
+                    .or_else(|| properties.number("min_zoom"))
+                    .unwrap_or(0.0) as f32
+            },
         },
         LabelRule {
             source_layer: "places",
@@ -331,12 +537,22 @@ pub fn repackify_light() -> Theme {
             color: hex(0x7a7a77),
             halo: hex(0xf4f4f2),
             dot_below_zoom: 0.0,
-            priority: |properties| properties.number("sort_key").or_else(|| properties.number("min_zoom")).unwrap_or(0.0) as f32 + 100.0,
+            priority: |properties| {
+                properties
+                    .number("sort_key")
+                    .or_else(|| properties.number("min_zoom"))
+                    .unwrap_or(0.0) as f32
+                    + 100.0
+            },
         },
         LabelRule {
             source_layer: "water",
             min_zoom: 0.0,
-            filter: |properties, geometry| geometry == GeometryType::Point && properties.kind_in(&["sea", "ocean", "bay", "strait", "fjord", "lake", "water"]),
+            filter: |properties, geometry| {
+                geometry == GeometryType::Point
+                    && properties
+                        .kind_in(&["sea", "ocean", "bay", "strait", "fjord", "lake", "water"])
+            },
             size: |_, _| 12.0,
             font: |_| Font::Regular,
             uppercase: false,
@@ -347,5 +563,9 @@ pub fn repackify_light() -> Theme {
             priority: |properties| properties.number("min_zoom").unwrap_or(0.0) as f32 + 50.0,
         },
     ];
-    Theme { background: EARTH, layers, labels }
+    Theme {
+        background: EARTH,
+        layers,
+        labels,
+    }
 }

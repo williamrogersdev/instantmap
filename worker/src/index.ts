@@ -107,7 +107,7 @@ async function renderStatic(url: URL, env: Env): Promise<Response> {
   );
   const ratio = number(url.searchParams.get("r"), "r", 1, 2, 1);
   const png = url.searchParams.get("format") === "png";
-  const clusterDistance = number(url.searchParams.get("cluster"), "cluster", 0, 80, 28);
+  const clusterDistance = number(url.searchParams.get("cluster"), "cluster", 0, 80, 44);
   const markers = parseMarkers(url.searchParams.get("markers"));
   const instance = getRenderer();
   const camera = Float64Array.from([longitude, latitude, zoom, Math.round(width), Math.round(height), Math.round(ratio)]);

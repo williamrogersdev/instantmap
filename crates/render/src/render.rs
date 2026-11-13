@@ -1100,7 +1100,7 @@ pub fn cluster(camera: &Camera, markers: &[Marker], distance: f32) -> Vec<Marker
         if count == 1 {
             6.0
         } else {
-            10.0 + 3.0 * (count as f64).log2().min(5.0)
+            10.0 + 3.5 * (count as f64).log2().min(7.0)
         }
     };
     loop {
@@ -1148,8 +1148,8 @@ pub fn cluster(camera: &Camera, markers: &[Marker], distance: f32) -> Vec<Marker
             Marker {
                 longitude: group.longitude,
                 latitude: group.latitude,
-                radius: 10.0 + 3.0 * (count as f32).log2().min(5.0),
-                fill,
+                radius: 10.0 + 3.5 * (count as f32).log2().min(7.0),
+                fill: if count > 100 { [196, 90, 0, 255] } else { fill },
                 stroke: [255, 255, 255, 255],
                 stroke_width: 2.0,
                 label: Some(if count >= 1000 {

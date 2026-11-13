@@ -546,7 +546,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: highway,
             paint: Paint::Line {
-                color: hex(0xffffff),
+                color: hex(0xecdcbd),
                 width: HIGHWAY,
                 dash: None,
             },
@@ -583,7 +583,10 @@ pub fn paper() -> Theme {
             source_layer: "places",
             min_zoom: 0.0,
             max_zoom: 6.0,
-            filter: |properties, _| properties.kind_in(&["country"]),
+            filter: |properties, zoom| {
+                properties.kind_in(&["country"])
+                    && (zoom >= 4.0 || properties.number("population_rank").unwrap_or(0.0) >= 13.0)
+            },
             text: name,
             size: |properties, zoom| {
                 let large = properties.number("population_rank").unwrap_or(0.0) >= 14.0;

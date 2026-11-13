@@ -109,7 +109,7 @@ fn main() {
             label_color: hex(0xffffff),
         });
     }
-    let markers = instantmap_render::cluster(&camera, &markers, 28.0);
+    let markers = instantmap_render::cluster(&camera, &markers, 44.0);
     let scene = Scene {
         camera,
         theme: &theme,

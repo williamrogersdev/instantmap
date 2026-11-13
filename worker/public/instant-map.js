@@ -1,7 +1,7 @@
 const TILE = 512;
 const MAX_ZOOM = 18;
 const MAX_TILE_ZOOM = 15;
-const CLUSTER = 28;
+const CLUSTER = 44;
 
 const mercX = (lng) => (lng + 180) / 360;
 const mercY = (lat) => {
@@ -337,13 +337,13 @@ class InstantMap extends HTMLElement {
     context.textBaseline = "middle";
     for (const group of groups) {
       const label = group.count > 1 ? String(group.count) : group.label;
-      const radius = group.count > 1 ? 10 + 3 * Math.min(5, Math.log2(group.count)) : label ? 16 : 5;
+      const radius = group.count > 1 ? 10 + 3.5 * Math.min(7, Math.log2(group.count)) : label ? 16 : 5;
       context.shadowColor = "#2b24183c";
       context.shadowBlur = 3;
       context.shadowOffsetY = 1.5;
       context.beginPath();
       context.arc(group.x, group.y, radius, 0, Math.PI * 2);
-      context.fillStyle = "#ee7904";
+      context.fillStyle = group.count > 100 ? "#c45a00" : "#ee7904";
       context.fill();
       context.shadowColor = "transparent";
       context.lineWidth = radius > 5 ? 2 : 1.5;

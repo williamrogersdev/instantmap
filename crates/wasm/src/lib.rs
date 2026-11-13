@@ -1,7 +1,8 @@
 use instantmap_render::glyphs::FontStack;
 use instantmap_render::mvt::Tile;
+use instantmap_render::render::TILE_SIZE;
 use instantmap_render::style::{Rgba, Theme, paper};
-use instantmap_render::{Camera, Fonts, Format, Marker, Scene, TileId, render_image};
+use instantmap_render::{Camera, Fonts, Format, Marker, Scene, TileId, cluster, render_image};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -18,6 +19,28 @@ fn rgba(value: f64) -> Rgba {
         (packed >> 8) as u8,
         packed as u8,
     ]
+}
+
+fn camera_from(values: &[f64]) -> Result<Camera, JsError> {
+    let [longitude, latitude, zoom, width, height, pixel_ratio] =
+        <[f64; 6]>::try_from(values).map_err(|_| JsError::new("camera needs 6 numbers"))?;
+    if !(1.0..=2048.0).contains(&width)
+        || !(1.0..=2048.0).contains(&height)
+        || !(1.0..=3.0).contains(&pixel_ratio)
+    {
+        return Err(JsError::new("camera size out of range"));
+    }
+    if !longitude.is_finite() || !latitude.is_finite() || !zoom.is_finite() {
+        return Err(JsError::new("camera must be finite"));
+    }
+    Ok(Camera {
+        longitude,
+        latitude: latitude.clamp(-85.0, 85.0),
+        zoom: zoom.clamp(0.0, 20.0),
+        width: width as u32,
+        height: height as u32,
+        pixel_ratio: pixel_ratio as f32,
+    })
 }
 
 #[wasm_bindgen]
@@ -41,8 +64,8 @@ impl Renderer {
     /// tileIds: [z, x, y, ...] matching tileLengths; tileData: the tiles' bytes concatenated
     /// markers: [longitude, latitude, radius, fillRGBA, strokeRGBA, strokeWidth, labelRGBA, ...] (7 per marker)
     /// labels: one line per marker, empty for none
+    /// clusterDistance: CSS pixels within which markers merge into a count bubble, 0 to keep every marker
     /// quality: 0 for PNG, 1..=100 for JPEG
-    #[wasm_bindgen(js_name = render)]
     #[allow(clippy::too_many_arguments)]
     pub fn render(
         &self,
@@ -52,24 +75,10 @@ impl Renderer {
         tile_data: &[u8],
         markers: &[f64],
         labels: &str,
+        cluster_distance: f32,
         quality: u8,
     ) -> Result<Vec<u8>, JsError> {
-        let [longitude, latitude, zoom, width, height, pixel_ratio] =
-            <[f64; 6]>::try_from(camera).map_err(|_| JsError::new("camera needs 6 numbers"))?;
-        if !(1.0..=4096.0).contains(&width)
-            || !(1.0..=4096.0).contains(&height)
-            || !(0.5..=4.0).contains(&pixel_ratio)
-        {
-            return Err(JsError::new("camera size out of range"));
-        }
-        let camera = Camera {
-            longitude,
-            latitude,
-            zoom: zoom.clamp(0.0, 22.0),
-            width: width as u32,
-            height: height as u32,
-            pixel_ratio: pixel_ratio as f32,
-        };
+        let camera = camera_from(camera)?;
         if tile_ids.len() != tile_lengths.len() * 3 {
             return Err(JsError::new("tileIds must hold 3 numbers per tile"));
         }
@@ -94,23 +103,25 @@ impl Renderer {
         let mut label_lines = labels.split('\n');
         let markers: Vec<Marker> = markers
             .chunks_exact(7)
-            .map(|values| {
-                let label = label_lines
+            .map(|values| Marker {
+                longitude: values[0],
+                latitude: values[1],
+                radius: values[2] as f32,
+                fill: rgba(values[3]),
+                stroke: rgba(values[4]),
+                stroke_width: values[5] as f32,
+                label: label_lines
                     .next()
                     .filter(|text| !text.is_empty())
-                    .map(str::to_owned);
-                Marker {
-                    longitude: values[0],
-                    latitude: values[1],
-                    radius: values[2] as f32,
-                    fill: rgba(values[3]),
-                    stroke: rgba(values[4]),
-                    stroke_width: values[5] as f32,
-                    label,
-                    label_color: rgba(values[6]),
-                }
+                    .map(str::to_owned),
+                label_color: rgba(values[6]),
             })
             .collect();
+        let markers = if cluster_distance > 0.0 {
+            cluster(&camera, &markers, cluster_distance)
+        } else {
+            markers
+        };
         let scene = Scene {
             camera,
             theme: &self.theme,
@@ -129,23 +140,30 @@ impl Renderer {
     }
 }
 
-/// [z, x, y, ...] of the tiles a camera needs, for fetching before renderPng.
+/// [z, x, y, ...] of the source tiles a camera needs, including the margin the shoreline shade reads.
 #[wasm_bindgen(js_name = tilesFor)]
-pub fn tiles_for(longitude: f64, latitude: f64, zoom: f64, width: u32, height: u32) -> Vec<u32> {
-    let camera = Camera {
-        longitude,
-        latitude,
-        zoom: zoom.clamp(0.0, 22.0),
-        width,
-        height,
-        pixel_ratio: 1.0,
-    };
+pub fn tiles_for(camera: &[f64]) -> Result<Vec<u32>, JsError> {
+    let camera = camera_from(camera)?;
     let mut ids: Vec<TileId> = camera
-        .tiles(256.0)
+        .tiles(TILE_SIZE / 4.0)
         .into_iter()
         .map(|placement| placement.id)
         .collect();
     ids.sort();
     ids.dedup();
-    ids.into_iter().flat_map(|id| [id.z, id.x, id.y]).collect()
+    Ok(ids.into_iter().flat_map(|id| [id.z, id.x, id.y]).collect())
+}
+
+/// The camera that renders exactly tile z/x/y: [longitude, latitude, zoom, 512, 512, pixelRatio].
+#[wasm_bindgen(js_name = tileCamera)]
+pub fn tile_camera(z: u32, x: u32, y: u32, pixel_ratio: f32) -> Vec<f64> {
+    let camera = Camera::for_tile(TileId { z, x, y }, pixel_ratio);
+    vec![
+        camera.longitude,
+        camera.latitude,
+        camera.zoom,
+        f64::from(camera.width),
+        f64::from(camera.height),
+        f64::from(pixel_ratio),
+    ]
 }

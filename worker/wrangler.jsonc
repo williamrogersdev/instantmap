@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "instantmap",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "rules": [{ "type": "Data", "globs": ["**/*.pbf"], "fallthrough": false }],
+  "vars": {
+    "TILE_URL": "https://www.repackify.com/map-tiles/v1/tiles/{z}/{x}/{y}.mvt"
+  },
+  "limits": { "cpu_ms": 1000 },
+  "observability": { "enabled": true }
+}

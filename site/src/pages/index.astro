@@ -102,7 +102,7 @@ export function ListingsMap({ listings }) {
             <img src={heroPoster} alt="Map of 280 sample San Francisco rentals" fetchpriority="high" onload="requestAnimationFrame(function () { window.__heroPaint = window.__heroPaint || performance.now(); document.dispatchEvent(new Event('heropaint')); })" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
           </picture>
         </instant-map>
-        <p class="handoff" aria-live="polite"><span class="step image">Image<span class="long">, no JavaScript yet</span><span class="short" id="badge-paint"></span></span><span class="step live">Live map</span></p>
+        <p class="handoff" aria-live="polite"><span class="step image">Image<span class="long">, no JavaScript yet</span><span class="short" id="badge-paint"></span></span><span class="step live">Live map, drag it</span></p>
         <div class="hero-card">
           <h1 id="hero-title">The map is on the page before your JavaScript is.</h1>
           <p class="lede">
@@ -111,8 +111,9 @@ export function ListingsMap({ listings }) {
           </p>
           <dl class="proof" aria-live="polite">
             <div class="lead-stat">
-              <dt>On this visit, the map appeared in</dt>
+              <dt>On this visit, the first image was on screen in</dt>
               <dd><span id="meter-paint">…</span></dd>
+              <dd class="cache-note" id="meter-cache" hidden>Your browser had it cached. The race below loads everything fresh.</dd>
             </div>
             <div>
               <dt>Script</dt>
@@ -138,7 +139,7 @@ export function ListingsMap({ listings }) {
       <section class="race" id="race" aria-labelledby="race-title">
         <div class="race-head">
           <h2 id="race-title">Race it against MapLibre on your connection</h2>
-          <p>Both lanes load the same San Francisco view from nothing, one after the other. Each clock starts when its lane starts loading and stops when its map is fully drawn on screen.</p>
+          <p>Both lanes load the same San Francisco centre and zoom from nothing, one after the other, each in its own map style. Each clock starts when its lane starts loading and stops when its map is fully drawn on screen.</p>
           <div class="race-controls">
             <button type="button" class="button primary" id="race-start">Start the race</button>
             <label class="toggle"><input type="checkbox" id="race-fresh" checked /> Fresh view, nothing cached</label>
@@ -343,6 +344,9 @@ export function ListingsMap({ listings }) {
   .handoff .step { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; color: var(--ink-soft); transition: background 0.3s, color 0.3s; }
   .handoff .step::before { content: ""; margin-right: 8px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
   .handoff .image { background: var(--ink); color: #ffffff; }
+  .handoff .live { display: none; }
+  #hero-map[interactive] ~ .handoff .image { display: none; }
+  #hero-map[interactive] ~ .handoff .live { display: inline-flex; }
   .handoff .short { display: none; }
   #hero-map[interactive] ~ .handoff .image { background: none; color: var(--ink-soft); }
   #hero-map[interactive] ~ .handoff .live { background: var(--brand); color: var(--brand-ink); }
@@ -356,7 +360,9 @@ export function ListingsMap({ listings }) {
   .lead-stat { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .lead-stat dt { font-size: 16px; color: var(--ink); font-weight: 600; }
   .lead-stat dd { margin: 0; font: 700 44px/1 var(--mono); letter-spacing: -0.04em; color: var(--ink); }
-  .lead-stat dd span { box-shadow: inset 0 -0.28em 0 #19d3a266; }
+  .lead-stat dd span { box-shadow: inset 0 -0.1em 0 var(--brand); }
+  .lead-stat dd .unit { box-shadow: none; margin-left: 0.12em; font: 650 0.45em var(--sans, inherit); letter-spacing: 0; }
+  .lead-stat .cache-note { flex-basis: 100%; font: 400 14px/1.4 inherit; letter-spacing: 0; color: var(--ink-soft); }
 
   .install { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--code); color: var(--code-ink); border-radius: var(--radius-small); padding: 6px 6px 6px 16px; min-height: 52px; }
   .install code { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -385,6 +391,8 @@ export function ListingsMap({ listings }) {
   .swatch { width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(var(--a) 0 50%, var(--b) 50% 80%, var(--c) 80%); box-shadow: inset 0 0 0 1px #0f223326; flex: none; }
   .tokens { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .tokens label { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; }
+  .tokens input::-webkit-color-swatch { border: 1px solid #0f223333; border-radius: 4px; }
+  .tokens input::-moz-color-swatch { border: 1px solid #0f223333; border-radius: 4px; }
   .tokens input { width: 44px; height: 32px; padding: 2px; border: 1px solid #0f223340; border-radius: 6px; background: var(--paper); cursor: pointer; }
   .presets div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .chip { min-height: 44px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font: 600 14px var(--sans); color: var(--ink); cursor: pointer; }
@@ -434,9 +442,10 @@ export function ListingsMap({ listings }) {
   .frameworks li a { box-sizing: border-box; height: 100%; display: flex; flex-direction: column; gap: 2px; min-height: 76px; padding: 14px 16px; border-radius: var(--radius-small); background: var(--paper); color: var(--ink); text-decoration: none; border: 1px solid var(--line); }
   .frameworks li a strong { font-weight: 700; }
   .frameworks li a span { font-size: 14px; color: var(--ink-soft); }
-  .frameworks li a::after { content: "Read the guide"; margin-top: auto; padding-top: 10px; font-size: 13px; font-weight: 650; color: var(--link); }
-  .frameworks li a:hover { border-color: var(--ink); }
-  .frameworks li a:hover::after { text-decoration: underline; }
+  .frameworks li a { position: relative; padding-right: 40px; transition: border-color 0.15s, transform 0.15s; }
+  .frameworks li a::after { content: ""; position: absolute; top: 16px; right: 14px; width: 16px; height: 16px; background: var(--link); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M5 11 11 5M6 5h5v5'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M5 11 11 5M6 5h5v5'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .frameworks li a:hover { border-color: var(--link); transform: translateY(-1px); }
+  @media (prefers-reduced-motion: reduce) { .frameworks li a:hover { transform: none; } }
   .samples { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .sample { background: var(--code); color: var(--code-ink); border-radius: var(--radius-large); overflow: hidden; min-width: 0; }
   .sample-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 0 20px; }
@@ -466,14 +475,15 @@ export function ListingsMap({ listings }) {
     .bar nav, .brand { box-shadow: none; }
     #hero-map::part(controls) { top: 12px; }
     .hero { height: auto; min-height: 0; display: flex; flex-direction: column; }
-    #hero-map { position: relative; inset: auto; height: 38svh; min-height: 260px; }
+    #hero-map { position: relative; inset: auto; height: 32svh; min-height: 220px; }
     .hero-card { position: relative; left: auto; top: auto; transform: none; width: auto; margin: 12px 12px 0; box-shadow: 0 1px 2px #0f223312; }
     .handoff { position: static; align-self: flex-start; margin: 12px 12px 0; font-size: 13px; box-shadow: 0 1px 2px #0f223314; }
     .handoff .step { padding: 6px 12px; }
     .handoff .long { display: none; }
     .handoff .short:not(:empty) { display: inline; margin-left: 0.3em; font-variant-numeric: tabular-nums; }
     .hero-card { display: flex; flex-direction: column; }
-    .hero-card h1 { font-size: 34px; }
+    .hero-card h1 { font-size: 30px; }
+    .hero-card .lede { order: 4; }
     .hero-card .install { order: 2; }
     .hero-card .actions { order: 3; }
     .hero-card .proof { order: 4; }

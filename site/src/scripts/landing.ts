@@ -54,9 +54,11 @@ function setupHero(listings: Listing[]): void {
   const badge = byId("badge-paint");
   const showPaint = (): void => {
     if (!window.__heroPaint) return;
-    const time = `${Math.round(window.__heroPaint)} ms`;
-    paint.textContent = time;
-    badge.textContent = `in ${time}`;
+    const milliseconds = Math.round(window.__heroPaint);
+    paint.replaceChildren(String(milliseconds), Object.assign(document.createElement("span"), { className: "unit", textContent: "ms" }));
+    badge.textContent = `in ${milliseconds} ms`;
+    const poster = performance.getEntriesByType("resource").find((entry) => entry.name.includes("/static?")) as PerformanceResourceTiming | undefined;
+    if (poster && poster.transferSize === 0 && poster.decodedBodySize > 0) byId("meter-cache").hidden = false;
   };
   showPaint();
   document.addEventListener("heropaint", showPaint);
@@ -205,11 +207,9 @@ function runLane(lane: "instant" | "maplibre", center: string, zoom: string): Pr
 }
 
 function showResult(results: LaneResult[], fresh: boolean): void {
-  const finished = results.filter((result) => result.ms);
-  const slowest = Math.max(...finished.map((result) => result.ms!), 1);
   for (const result of results) {
     const lane = document.querySelector<HTMLElement>(`.lane[data-lane="${result.lane}"]`)!;
-    lane.querySelector<HTMLElement>("[data-track]")!.style.width = result.ms ? `${(result.ms / slowest) * 100}%` : "100%";
+    lane.querySelector<HTMLElement>("[data-track]")!.style.width = "100%";
     lane.classList.toggle("done", !!result.ms);
   }
   const [instant, maplibre] = results;

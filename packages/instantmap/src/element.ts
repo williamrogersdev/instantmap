@@ -1,7 +1,7 @@
 import { boundsOf, clusterAt, DEFAULT_CLUSTER_DISTANCE, type Group, latitudeOf, longitudeOf, MAX_LABEL_LENGTH, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
 import { DEFAULT_SRC, MAX_STATIC_SIZE, staticUrl, tileUrl } from "./static-url.ts";
 import { decodeColors, type Palette, resolvePalette } from "./themes.ts";
-import type { AnimationOptions, Bounds, Camera, CameraOptions, Cluster, FitOptions, LngLat, Marker, PopupRenderer, Theme } from "./types.ts";
+import type { AnimationOptions, Bounds, Camera, CameraOptions, Cluster, FitOptions, InstantMapEventMap, LngLat, Marker, PopupRenderer, Theme } from "./types.ts";
 
 const MAX_ZOOM = 19;
 const MAX_TILE_ZOOM = 15;
@@ -147,6 +147,16 @@ export function defaultPopup(marker: Marker): HTMLElement | null {
 
 const Base = (typeof HTMLElement === "undefined" ? class {} : HTMLElement) as typeof HTMLElement;
 
+export interface InstantMapElement<Data = unknown> {
+  addEventListener<K extends keyof InstantMapEventMap<Data>>(type: K, listener: (this: InstantMapElement<Data>, event: InstantMapEventMap<Data>[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: InstantMapElement<Data>, event: HTMLElementEventMap[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  removeEventListener<K extends keyof InstantMapEventMap<Data>>(type: K, listener: (this: InstantMapElement<Data>, event: InstantMapEventMap<Data>[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: InstantMapElement<Data>, event: HTMLElementEventMap[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+// oxlint-disable-next-line no-unsafe-declaration-merging
 export class InstantMapElement<Data = unknown> extends Base {
   static observedAttributes = ["center", "zoom", "theme", "colors", "markers", "cluster", "selected", "src"];
 
@@ -195,14 +205,27 @@ export class InstantMapElement<Data = unknown> extends Base {
   #popupFor: string | null = null;
   #fontReady: Promise<void> | null = null;
   #ownPoster = false;
+  #variables = "";
+  #variableSheet: HTMLStyleElement | null = null;
   #posterQueued = false;
 
   connectedCallback(): void {
     if (this.#connected) return;
+    this.#upgradeProperties();
     this.#connected = true;
     this.#build();
     this.#readAttributes();
     queueMicrotask(() => this.#start());
+  }
+
+  #upgradeProperties(): void {
+    const own = this as unknown as Record<string, unknown>;
+    for (const key of ["markers", "popup", "theme", "colors"]) {
+      if (!Object.prototype.hasOwnProperty.call(this, key)) continue;
+      const value = own[key];
+      delete own[key];
+      own[key] = value;
+    }
   }
 
   disconnectedCallback(): void {
@@ -511,7 +534,9 @@ export class InstantMapElement<Data = unknown> extends Base {
 
   #build(): void {
     this.#root = this.attachShadow({ mode: "open" });
-    this.#root.innerHTML = `<style>${SHADOW_CSS}</style><div class="viewport" part="viewport"><slot></slot><div class="tiles"></div><canvas></canvas><div class="popups"><slot name="popup"></slot></div><div class="controls" part="controls"><button type="button" data-zoom="1" aria-label="Zoom in">${ICON_PLUS}</button><button type="button" data-zoom="-1" aria-label="Zoom out">${ICON_MINUS}</button></div><div class="credit" part="attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a></div><div class="hint" aria-hidden="true"></div><ul class="sr" aria-label="Places on the map"></ul></div>`;
+    this.#root.innerHTML = `<style>${SHADOW_CSS}</style><style class="variables"></style><div class="viewport" part="viewport"><slot></slot><div class="tiles"></div><canvas></canvas><div class="popups"><slot name="popup"></slot></div><div class="controls" part="controls"><button type="button" data-zoom="1" aria-label="Zoom in">${ICON_PLUS}</button><button type="button" data-zoom="-1" aria-label="Zoom out">${ICON_MINUS}</button></div><div class="credit" part="attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a></div><div class="hint" aria-hidden="true"></div><ul class="sr" aria-label="Places on the map"></ul></div>`;
+    this.#variableSheet = this.#root.querySelector("style.variables");
+    this.#variableSheet!.textContent = this.#variables;
     this.#viewport = this.#root.querySelector(".viewport")!;
     this.#tileLayer = this.#root.querySelector(".tiles")!;
     this.#canvas = this.#root.querySelector("canvas")!;
@@ -656,17 +681,22 @@ export class InstantMapElement<Data = unknown> extends Base {
     const palette = this.#palette;
     const dark = luminance(palette.land) < 0.18;
     const card = dark ? "#1b2029" : "#ffffff";
-    const style = this.style;
-    style.setProperty("--im-land", palette.land);
-    style.setProperty("--im-card", card);
-    style.setProperty("--im-ink", palette.label);
-    style.setProperty("--im-muted", palette.labelMinor);
-    style.setProperty("--im-accent", palette.accent);
-    style.setProperty("--im-marker", palette.marker);
-    style.setProperty("--im-marker-text", palette.markerText);
-    style.setProperty("--im-hairline", dark ? "#ffffff1f" : "#0000001a");
-    style.setProperty("--im-hover", dark ? "#ffffff12" : "#0000000a");
-    style.setProperty("--im-shadow", palette.shadow);
+    const variables: Record<string, string> = {
+      "--im-land": palette.land,
+      "--im-card": card,
+      "--im-ink": palette.label,
+      "--im-muted": palette.labelMinor,
+      "--im-accent": palette.accent,
+      "--im-marker": palette.marker,
+      "--im-marker-text": palette.markerText,
+      "--im-hairline": dark ? "#ffffff1f" : "#0000001a",
+      "--im-hover": dark ? "#ffffff12" : "#0000000a",
+      "--im-shadow": palette.shadow,
+    };
+    this.#variables = `:host{${Object.entries(variables)
+      .map(([name, value]) => `${name}:${value}`)
+      .join(";")}}`;
+    if (this.#variableSheet) this.#variableSheet.textContent = this.#variables;
     this.#look = `${this.#theme}|${JSON.stringify(this.#colors)}`;
     if (this.#ownPoster && !this.#active) this.#refreshPoster();
     this.#schedule();

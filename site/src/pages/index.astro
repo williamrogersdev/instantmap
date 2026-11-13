@@ -3,11 +3,11 @@ import { staticUrl } from "instantmap/server";
 import { sanFranciscoListings } from "../data/listings.ts";
 
 const HERO_CENTER: [number, number] = [-122.4295, 37.7668];
-const HERO_ZOOM = 13.25;
+const HERO_ZOOM = 13;
 const listings = sanFranciscoListings(280);
 const heroPoster = staticUrl({ src: "", center: HERO_CENTER, zoom: HERO_ZOOM, width: 1280, height: 800, ratio: 2, markers: listings });
-const phonePoster = staticUrl({ src: "", center: [-122.4135, 37.7625], zoom: 13.4, width: 400, height: 320, ratio: 2, markers: listings });
-const studioPoster = staticUrl({ src: "", center: [-122.4215, 37.7745], zoom: 13.2, width: 960, height: 720, ratio: 2, markers: listings });
+const phonePoster = staticUrl({ src: "", center: [-122.4135, 37.7625], zoom: 13, width: 400, height: 320, ratio: 2, markers: listings });
+const studioPoster = staticUrl({ src: "", center: [-122.4215, 37.7745], zoom: 13, width: 960, height: 720, ratio: 2, markers: listings });
 
 const frameworks = [
   ["Next.js", "nextjs", "App Router, server-rendered first image"],
@@ -135,6 +135,40 @@ export function ListingsMap({ listings }) {
         </div>
       </section>
 
+      <section class="race" id="race" aria-labelledby="race-title">
+        <div class="race-head">
+          <h2 id="race-title">Race it against MapLibre on your connection</h2>
+          <p>Both lanes load the same San Francisco view from nothing, one after the other. Each clock starts when its lane starts loading and stops when its map is fully drawn on screen.</p>
+          <div class="race-controls">
+            <button type="button" class="button primary" id="race-start">Start the race</button>
+            <label class="toggle"><input type="checkbox" id="race-fresh" checked /> Fresh view, nothing cached</label>
+          </div>
+        </div>
+        <p class="race-result" id="race-result" aria-live="polite"></p>
+        <div class="lanes">
+          <figure class="lane" data-lane="instant">
+            <figcaption>
+              <span><strong>Instant Map</strong><span class="weight">0 KB of JavaScript before the map shows</span></span>
+              <span class="time" data-time>–</span>
+            </figcaption>
+            <div class="track" aria-hidden="true"><span data-track></span></div>
+            <div class="screen"><p class="idle">Press start</p></div>
+          </figure>
+          <figure class="lane" data-lane="maplibre">
+            <figcaption>
+              <span><strong>MapLibre GL 6.16</strong><span class="weight">288 KB of JavaScript (gzipped) before the map shows</span></span>
+              <span class="time" data-time>–</span>
+            </figcaption>
+            <div class="track" aria-hidden="true"><span data-track></span></div>
+            <div class="screen"><p class="idle">Press start</p></div>
+          </figure>
+        </div>
+        <p class="fine">
+          MapLibre uses the free OpenFreeMap Liberty style. A second run with "nothing cached" off uses your browser cache for both.
+          MapLibre draws vectors and can rotate and tilt; if you need those, use it.
+        </p>
+      </section>
+
       <section class="studio" id="studio" aria-labelledby="studio-title">
         <div class="studio-copy">
           <h2 id="studio-title">Make it yours</h2>
@@ -169,7 +203,7 @@ export function ListingsMap({ listings }) {
           </fieldset>
         </div>
         <div class="studio-map">
-          <instant-map id="studio-map" center="-122.4215,37.7745" zoom="13.2" aria-label="Map you can restyle with the controls">
+          <instant-map id="studio-map" center="-122.4215,37.7745" zoom="13" aria-label="Map you can restyle with the controls">
             <img src={studioPoster} alt="Map you can restyle with the controls" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
           </instant-map>
           <div class="code">
@@ -184,39 +218,6 @@ export function ListingsMap({ listings }) {
         </div>
       </section>
 
-      <section class="race" id="race" aria-labelledby="race-title">
-        <div class="race-head">
-          <h2 id="race-title">Race it against MapLibre on your connection</h2>
-          <p>Both lanes load the same San Francisco view from nothing, one after the other. Each clock stops when its map is fully drawn.</p>
-          <div class="race-controls">
-            <button type="button" class="button primary" id="race-start">Start the race</button>
-            <label class="toggle"><input type="checkbox" id="race-fresh" checked /> Fresh view, nothing cached</label>
-          </div>
-        </div>
-        <p class="race-result" id="race-result" aria-live="polite"></p>
-        <div class="lanes">
-          <figure class="lane" data-lane="instant">
-            <figcaption>
-              <span><strong>Instant Map</strong><span class="weight">0 KB of JavaScript before the map shows</span></span>
-              <span class="time" data-time>–</span>
-            </figcaption>
-            <div class="track" aria-hidden="true"><span data-track></span></div>
-            <div class="screen"><p class="idle">Press start</p></div>
-          </figure>
-          <figure class="lane" data-lane="maplibre">
-            <figcaption>
-              <span><strong>MapLibre GL 6.16</strong><span class="weight">288 KB of JavaScript (gzipped) before the map shows</span></span>
-              <span class="time" data-time>–</span>
-            </figcaption>
-            <div class="track" aria-hidden="true"><span data-track></span></div>
-            <div class="screen"><p class="idle">Press start</p></div>
-          </figure>
-        </div>
-        <p class="fine">
-          MapLibre uses the free OpenFreeMap Liberty style. A second run with "nothing cached" off uses your browser cache for both.
-          MapLibre draws vectors and can rotate and tilt; if you need those, use it.
-        </p>
-      </section>
 
       <section class="runs" aria-labelledby="runs-title">
         <h2 id="runs-title">What runs where</h2>
@@ -322,9 +323,9 @@ export function ListingsMap({ listings }) {
   a { color: var(--link); text-underline-offset: 3px; }
   :focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
   h1, h2, h3 { margin: 0; line-height: 1.06; letter-spacing: -0.025em; }
-  h2 { font-size: clamp(32px, 4.2vw, 48px); font-weight: 800; }
+  h2 { font-size: clamp(32px, 4.2vw, 48px); font-weight: 800; text-wrap: balance; }
   h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
-  p { margin: 0; }
+  p, dd { margin: 0; text-wrap: pretty; }
   code, pre { font-family: var(--mono); }
 
   .bar { position: absolute; z-index: 5; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px, 4vw, 40px); pointer-events: none; }
@@ -411,10 +412,11 @@ export function ListingsMap({ listings }) {
   .lane figcaption strong { display: block; font-weight: 750; font-size: 18px; }
   .weight { display: block; font-size: 14px; color: var(--ink-soft); }
   .time { font: 700 clamp(30px, 3.4vw, 44px)/1 var(--mono); letter-spacing: -0.04em; white-space: nowrap; }
-  .lane.won .time::after { content: "Done"; margin-left: 10px; vertical-align: middle; font: 700 13px var(--sans); letter-spacing: 0; background: var(--brand); color: var(--brand-ink); padding: 4px 8px; border-radius: 999px; }
+  .lane.done .time::after { content: "Done"; margin-left: 10px; vertical-align: middle; font: 700 13px var(--sans); letter-spacing: 0; background: var(--brand); color: var(--brand-ink); padding: 4px 8px; border-radius: 999px; }
   .track { height: 6px; border-radius: 999px; background: var(--wash); overflow: hidden; margin: 0 4px 12px; }
   .track span { display: block; height: 100%; width: 0; background: var(--ink); border-radius: inherit; }
   .lane.won .track span { background: var(--brand); }
+  .lane.done:not(.won) .time::after { background: var(--wash); color: var(--ink); }
   .screen { position: relative; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: var(--wash); }
   .screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .idle { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-soft); font-weight: 600; }

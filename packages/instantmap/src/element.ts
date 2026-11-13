@@ -435,23 +435,9 @@ export class InstantMapElement<Data = unknown> extends Base {
   activate(): void {
     if (this.#active || !this.#connected) return;
     this.#active = true;
-    if (this.#poster && this.#posterCamera) {
-      const rect = this.#poster.getBoundingClientRect();
-      const natural = readPosterCamera(this.#poster);
-      if (natural && rect.width > 0) {
-        const camera = this.#posterCamera;
-        if (camera.x === this.#x && camera.y === this.#y && camera.zoom === this.#zoom) {
-          camera.x = this.#x = mercatorX(natural.center[0]);
-          camera.y = this.#y = mercatorY(natural.center[1]);
-          camera.zoom = natural.zoom;
-        }
-        const cover = Math.max(rect.width / natural.width, rect.height / natural.height);
-        this.#zoom = this.#posterCamera.zoom + Math.log2(cover);
-        this.#posterCamera.zoom = this.#zoom;
-        this.#posterGrouping = { level: Math.floor(natural.zoom), zoom: this.#zoom };
-        this.#groupCache = null;
-        this.#drawMarkers(this.clientWidth, this.clientHeight, false);
-      }
+    if (this.#poster) {
+      this.#syncPosterCamera();
+      this.#drawMarkers(this.clientWidth, this.clientHeight, false);
     }
     for (const type of ["pointerdown", "pointermove", "pointerup", "pointercancel", "pointerleave", "dblclick", "keydown"]) {
       this.addEventListener(type, this);
@@ -683,6 +669,23 @@ export class InstantMapElement<Data = unknown> extends Base {
     img.draggable = false;
     if (img.parentElement !== this) Object.assign(img.style, { position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", transformOrigin: "50% 50%", transition: "opacity .32s ease" });
     this.#posterCamera = { x: this.#x, y: this.#y, zoom: this.#zoom };
+    if (img.complete) this.#syncPosterCamera();
+    else img.addEventListener("load", () => this.#syncPosterCamera(), { once: true });
+  }
+
+  #syncPosterCamera(): void {
+    const poster = this.#poster;
+    const camera = this.#posterCamera;
+    if (!poster || !camera || camera.x !== this.#x || camera.y !== this.#y || camera.zoom !== this.#zoom) return;
+    const natural = readPosterCamera(poster);
+    const rect = poster.getBoundingClientRect();
+    if (!natural || rect.width <= 0) return;
+    const cover = Math.max(rect.width / natural.width, rect.height / natural.height);
+    camera.x = this.#x = mercatorX(natural.center[0]);
+    camera.y = this.#y = mercatorY(natural.center[1]);
+    camera.zoom = this.#zoom = natural.zoom + Math.log2(cover);
+    this.#posterGrouping = { level: Math.floor(natural.zoom), zoom: this.#zoom };
+    this.#groupCache = null;
   }
 
   #applyPalette(): void {

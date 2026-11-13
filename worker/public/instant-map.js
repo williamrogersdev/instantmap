@@ -221,6 +221,11 @@ class InstantMap extends HTMLElement {
     return [this.clientWidth / 2 + dx, this.clientHeight / 2 + (mercY(lat) - this.y) * world];
   }
 
+  whenIdle() {
+    if (!this.layer) return this.poster.complete ? Promise.resolve() : new Promise((resolve) => this.poster.addEventListener("load", resolve, { once: true }));
+    return this.idle && !this.frame ? Promise.resolve() : new Promise((resolve) => this.addEventListener("idle", resolve, { once: true }));
+  }
+
   onMove(listener) {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -282,6 +287,8 @@ class InstantMap extends HTMLElement {
         img.style.transform = `translate(${column * TILE * scale - left}px,${row * TILE * scale - top}px) scale(${scale})`;
       }
     }
+    this.idle = pending === 0;
+    if (this.idle) this.dispatchEvent(new Event("idle"));
     if (pending === 0 && this.poster) {
       this.poster.style.opacity = 0;
       const poster = this.poster;

@@ -29,7 +29,7 @@ Most pages that show a map load a 200–800 KB library, fetch a style, fonts and
 
 `/static` takes `center=lng,lat`, `zoom` (0–18), `size=WxH` (up to 1280), `r` (1 or 2), `markers=lng,lat[,label];…` (up to 2,000), `cluster` (pixels, 0 to turn off) and `format=png`.
 
-The element exposes `camera`, `setCamera({ center, zoom })`, `project(lng, lat)` and `onMove(listener)`, and fires a `move` event.
+The element exposes `camera`, `setCamera({ center, zoom })`, `project(lng, lat)`, `onMove(listener)` and `whenIdle()`, and fires `move` and `idle` events.
 
 ## Develop
 

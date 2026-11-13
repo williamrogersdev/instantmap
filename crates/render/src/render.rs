@@ -829,11 +829,12 @@ fn place_label(
             right: left + text_width,
             bottom: top + text_height,
         };
-        if dot.is_some() {
-            footprint.left = footprint.left.min(candidate.x - gap);
-            footprint.right = footprint.right.max(candidate.x + gap);
-            footprint.top = footprint.top.min(candidate.y - gap);
-            footprint.bottom = footprint.bottom.max(candidate.y + gap);
+        if let Some(dot) = dot {
+            let reach = dot.radius + dot.stroke_width + 1.0;
+            footprint.left = footprint.left.min(candidate.x - reach);
+            footprint.right = footprint.right.max(candidate.x + reach);
+            footprint.top = footprint.top.min(candidate.y - reach);
+            footprint.bottom = footprint.bottom.max(candidate.y + reach);
         }
         if cell.contains(&footprint) && !placed.iter().any(|other| other.overlaps(&bounds)) {
             chosen = Some((left, top, bounds));

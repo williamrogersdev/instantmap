@@ -224,7 +224,7 @@ function showResult(results: LaneResult[], fresh: boolean): void {
   const name = winner.lane === "instant" ? "Instant Map" : "MapLibre";
   const format = (ms: number): string => `${Math.round(ms).toLocaleString("en-US")} ms`;
   output.innerHTML = "";
-  output.append(`${name} had the map on screen ${ratio >= 1.95 ? `${ratio.toFixed(1)}× sooner` : `${format(Math.abs(maplibre.ms - instant.ms))} sooner`}.`);
+  output.append(`${name} had the map fully drawn ${ratio >= 1.95 ? `${ratio.toFixed(1)}× sooner` : `${format(Math.abs(maplibre.ms - instant.ms))} sooner`}.`);
   const detail = document.createElement("small");
   detail.textContent = `${format(instant.ms)} against ${format(maplibre.ms)} on this connection, ${fresh ? "nothing cached" : "browser cache allowed"}.`;
   output.append(detail);

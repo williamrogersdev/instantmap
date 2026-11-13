@@ -1,49 +1,68 @@
 # Instant Map
 
-A map that arrives as one image and becomes interactive when you touch it.
+A map for the web that is on the page before your JavaScript is.
 
-Most pages that show a map load a 200–800 KB library, fetch a style, fonts and dozens of tiles, then draw on the GPU before the visitor sees anything. Instant Map turns that around: the first view is a single cached JPEG rendered at the edge, with your markers already in it. A 4.5 KB custom element takes over with raster tiles only when someone pans or zooms.
+Instant Map sends a finished image of your map first, markers and all, as a plain `<img>`. The moment someone reaches for it, a 13 KB custom element turns that image into a smooth, clickable map: drag, zoom, clusters, keyboard and a listing card. One web component works in every framework.
 
-| Tier | What loads | When |
-| --- | --- | --- |
-| **Still** | One `<img>` from `/static` | Always. 0 KB of JavaScript. |
-| **Glide** | `instant-map.js` (4.5 KB gzipped) and 512 px tiles from `/tiles` | On the first pointer, touch, focus or wheel. |
-| **Vector** | Not built yet | For apps that need rotation or live restyling. |
-
-## How it works
-
-- `crates/render` is a Rust renderer. It decodes Mapbox Vector Tiles in the [Protomaps](https://protomaps.com) schema, draws them with [tiny-skia](https://github.com/linebender/tiny-skia), sets type from SDF glyphs, and encodes a progressive JPEG (or PNG). A 1280×800 frame with labels renders in 20–80 ms natively.
-- Labels are placed per tile, so a static image is pixel-for-pixel the same picture as the tile mosaic at the same integer zoom. The static image and the interactive map never disagree.
-- Markers in static images are clustered into count bubbles and block labels, so a city name steps aside instead of hiding under a listing.
-- `crates/wasm` compiles the renderer to WebAssembly (SIMD, 490 KB) for Cloudflare Workers. The browser never downloads it.
-- `worker/` serves `/static`, `/tiles/{z}/{x}/{y}[@2x].jpg`, the client and a demo page. Upstream vector tiles and rendered images both sit in Cloudflare's cache.
+- **Site and docs:** [instantmap.org](https://instantmap.org)
+- **Quick start:** [instantmap.org/docs/start/quick-start](https://instantmap.org/docs/start/quick-start/)
+- **For AI agents:** [instantmap.org/llms.txt](https://instantmap.org/llms.txt). Every docs page is also Markdown at its address plus `.md`.
 
 ## Use it
 
-```html
-<instant-map center="-96.95,32.85" zoom="9" markers="-96.8,32.78,$42;-97.33,32.75">
-  <img src="https://your-worker/static?center=-96.95,32.85&zoom=9&size=1280x560&markers=-96.8,32.78,$42;-97.33,32.75" alt="Map">
-</instant-map>
-<script type="module" src="https://your-worker/instant-map.js"></script>
+```bash
+npm install instantmap
 ```
 
-`/static` takes `center=lng,lat`, `zoom` (0–18), `size=WxH` (up to 1280), `r` (1 or 2), `markers=lng,lat[,label];…` (up to 2,000), `cluster` (pixels, 0 to turn off) and `format=png`.
+```html
+<script type="module" src="https://instantmap.org/instant-map.js"></script>
 
-The element exposes `camera`, `setCamera({ center, zoom })`, `project(lng, lat)`, `onMove(listener)` and `whenIdle()`, and fires `move` and `idle` events.
+<instant-map center="-122.42,37.77" zoom="12" style="height:480px"></instant-map>
+
+<script type="module">
+  const map = document.querySelector("instant-map");
+  map.markers = [{ id: 1, lng: -122.41, lat: 37.78, label: "$4,950", title: "Sunny 2-bed flat", href: "/listings/1" }];
+</script>
+```
+
+With a server-rendered framework, render the first image on the server so it paints with the HTML:
+
+```tsx
+import { InstantMap } from "instantmap/react";
+
+<InstantMap center={[-122.42, 37.77]} zoom={12} markers={listings} style={{ height: 480 }} />;
+```
+
+Guides with a working example app for each: [Next.js](https://instantmap.org/docs/frameworks/nextjs/), [React](https://instantmap.org/docs/frameworks/react/), [React Router](https://instantmap.org/docs/frameworks/react-router/), [Astro](https://instantmap.org/docs/frameworks/astro/), [Vue](https://instantmap.org/docs/frameworks/vue/), [Nuxt](https://instantmap.org/docs/frameworks/nuxt/), [SvelteKit](https://instantmap.org/docs/frameworks/sveltekit/), [Angular](https://instantmap.org/docs/frameworks/angular/), [Solid](https://instantmap.org/docs/frameworks/solid/) and [plain HTML](https://instantmap.org/docs/frameworks/html/). The apps are in [`examples/`](examples/).
+
+## How it works
+
+| Step | What loads | When |
+| --- | --- | --- |
+| **Image** | One JPEG from `/static`, with your markers drawn in | With the HTML. No JavaScript. |
+| **Map** | `instant-map.js` (13 KB gzipped) and 512 px tiles from `/tiles` | On the first pointer, touch, focus or wheel. |
+
+- `crates/render` is a Rust renderer. It decodes Mapbox Vector Tiles in the [Protomaps](https://protomaps.com) schema, draws them with [tiny-skia](https://github.com/linebender/tiny-skia), sets type from SDF glyphs, and encodes a JPEG or PNG.
+- Labels are placed per tile, so the first image and the live tiles show the same picture. Markers are clustered the same way on the server and in the browser, so nothing jumps at the hand-off.
+- `crates/wasm` compiles the renderer to WebAssembly for Cloudflare Workers. The browser never downloads it.
+- `worker/` serves `/static`, `/tiles/{z}/{x}/{y}[@2x].jpg` and the site. Upstream tiles and rendered images are cached at the edge.
+- `packages/instantmap` is the npm package: the element, the React component and `staticUrl()` for the server.
+- `site/` is the landing page and the docs (Astro and Starlight).
 
 ## Develop
 
 ```bash
+bun install
 cargo test
-cargo run --release --example render -- regional out.png   # national | regional | metro | city
-./scripts/build-wasm.sh                                       # needs wasm-bindgen-cli 0.2.129
-cd worker && bun install && bunx wrangler dev
+./scripts/build-wasm.sh          # needs wasm-bindgen-cli 0.2.129
+bun run build                    # wasm, package and site
+cd worker && bunx wrangler dev   # site, /static and /tiles on localhost:8787
 ```
 
-Set `TILE_URL` in `worker/wrangler.jsonc` to your own Protomaps-schema tile endpoint before deploying. Rendering takes more CPU than the Workers free plan allows per request, so deploy on the paid plan.
+To run your own server, set `TILE_URL` in `worker/wrangler.jsonc` to a Protomaps-schema tile endpoint and deploy the Worker. Rendering uses more CPU than the Workers free plan allows per request, so it needs the paid plan. See [Self-hosting](https://instantmap.org/docs/guides/self-hosting/).
 
 ## Attribution
 
-Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL). Show this credit wherever the map appears; the client adds it for you. Type is Noto Sans (SIL Open Font License). The fixtures in `fixtures/` carry the same terms.
+Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL). Show this credit wherever the map appears; the element adds it for you. Type is Noto Sans (SIL Open Font License). The fixtures in `fixtures/` carry the same terms.
 
 MIT licensed.

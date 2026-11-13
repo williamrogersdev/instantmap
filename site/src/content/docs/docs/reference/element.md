@@ -21,6 +21,21 @@ instant-map { height: 480px; }
 instant-map { aspect-ratio: 16 / 9; }
 ```
 
+## The first image
+
+Put the server-rendered image inside the element as an `<img>`, or as a `<picture>` when phones should get their own, smaller view:
+
+```html
+<instant-map style="height: 480px">
+  <picture>
+    <source media="(max-width: 900px)" srcset="/static?center=...&size=400x320&r=2" />
+    <img src="/static?center=...&size=1280x800&r=2" alt="Map of listings" />
+  </picture>
+</instant-map>
+```
+
+Without `center` and `zoom` attributes, the map starts from the view of whichever image the browser shows, so each image can frame its own view. Use `<picture>` with `media`, not `srcset` width descriptors: the browser may pick either image by pixel density, so a phone could get the large view.
+
 ## Attributes
 
 Attributes are for HTML and server templates. Every attribute also has a JavaScript route (a property or a method) listed under it.

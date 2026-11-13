@@ -138,7 +138,7 @@ pub struct Theme {
 }
 
 pub const PAPER: Rgba = hex(0xf3f1ec);
-const WATER: Rgba = hex(0xc9dbe6);
+const WATER: Rgba = hex(0xd0dee8);
 const SHORE: Rgba = hex(0x9fbad0);
 const WATER_INK: Rgba = hex(0x5f849f);
 const PARK: Rgba = hex(0xe3ead9);
@@ -191,8 +191,8 @@ fn boundary(properties: &Properties, geometry: GeometryType, kinds: &[&str]) -> 
 }
 
 const HIGHWAY: Width = Width::Exponential(&[
-    (5.0, 0.6),
-    (8.0, 1.2),
+    (5.0, 0.8),
+    (8.0, 1.6),
     (10.0, 2.0),
     (14.0, 6.0),
     (18.0, 22.0),
@@ -252,7 +252,7 @@ fn population(properties: &Properties) -> f64 {
 
 fn city_threshold(zoom: f32) -> f64 {
     match zoom {
-        zoom if zoom < 4.0 => 1_500_000.0,
+        zoom if zoom < 4.0 => 1_000_000.0,
         zoom if zoom < 5.0 => 600_000.0,
         zoom if zoom < 6.0 => 200_000.0,
         zoom if zoom < 7.0 => 80_000.0,
@@ -384,9 +384,9 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: |properties, geometry| boundary(properties, geometry, &["region"]),
             paint: Paint::Line {
-                color: hex(0xb8b0a3),
-                width: Width::Exponential(&[(3.0, 0.6), (6.0, 1.0)]),
-                dash: None,
+                color: hex(0xc9c1b4),
+                width: Width::Exponential(&[(3.0, 0.6), (6.0, 0.8)]),
+                dash: Some((4.0, 2.0)),
             },
         },
         Layer {
@@ -462,7 +462,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: major,
             paint: Paint::Line {
-                color: hex(0xd9d4cc),
+                color: hex(0xd2cbc0),
                 width: MAJOR_CASING,
                 dash: None,
             },
@@ -474,7 +474,7 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: highway,
             paint: Paint::Line {
-                color: hex(0xc4bdb1),
+                color: hex(0xb3a790),
                 width: HIGHWAY_CASING,
                 dash: None,
             },
@@ -534,7 +534,7 @@ pub fn paper() -> Theme {
             max_zoom: 8.0,
             filter: highway,
             paint: Paint::Line {
-                color: hex(0xcfc8bc),
+                color: hex(0xbcae96),
                 width: HIGHWAY,
                 dash: None,
             },
@@ -605,7 +605,12 @@ pub fn paper() -> Theme {
             halo_width: 1.6,
             dot: None,
             priority: |properties| {
-                -200.0 - properties.number("population_rank").unwrap_or(0.0) as f32
+                let rank = properties.number("population_rank").unwrap_or(0.0) as f32;
+                if rank >= 13.0 {
+                    -200.0 - rank
+                } else {
+                    -20.0 - rank
+                }
             },
             padding: 8.0,
             placement: Placement::Area,
@@ -636,7 +641,32 @@ pub fn paper() -> Theme {
             max_zoom: 24.0,
             filter: |properties, _| {
                 properties.kind_in(&["highway", "major_road"])
-                    && matches!(properties.str("network"), Some("US:I") | Some("US:US"))
+                    && properties.str("network") == Some("US:I")
+            },
+            text: shield,
+            size: |_, _| 9.5,
+            font: |_| Font::Medium,
+            uppercase: false,
+            letter_spacing: 0.0,
+            color: |_| hex(0xffffff),
+            halo: [0, 0, 0, 0],
+            halo_width: 0.0,
+            dot: None,
+            priority: |_| 40.0,
+            padding: 6.0,
+            placement: Placement::Shield {
+                fill: hex(0x4a5563),
+                stroke: hex(0x3b4452),
+                spacing: 260.0,
+            },
+        },
+        LabelRule {
+            source_layer: "roads",
+            min_zoom: 8.0,
+            max_zoom: 24.0,
+            filter: |properties, _| {
+                properties.kind_in(&["highway", "major_road"])
+                    && properties.str("network") == Some("US:US")
             },
             text: shield,
             size: |_, _| 9.5,
@@ -647,13 +677,7 @@ pub fn paper() -> Theme {
             halo: [0, 0, 0, 0],
             halo_width: 0.0,
             dot: None,
-            priority: |properties| {
-                if properties.str("network") == Some("US:I") {
-                    40.0
-                } else {
-                    60.0
-                }
-            },
+            priority: |_| 60.0,
             padding: 6.0,
             placement: Placement::Shield {
                 fill: hex(0xffffff),
@@ -743,9 +767,9 @@ pub fn paper() -> Theme {
             font: |_| Font::Medium,
             uppercase: true,
             letter_spacing: 0.16,
-            color: |_| hex(0xa39c90),
+            color: |_| hex(0x857f75),
             halo,
-            halo_width: 1.4,
+            halo_width: 1.6,
             dot: None,
             priority: |properties| 300.0 + properties.number("min_zoom").unwrap_or(14.0) as f32,
             padding: 8.0,

@@ -775,12 +775,19 @@ fn place_label(
         .filter(|(_, below)| zoom < *below)
         .map(|(dot, _)| dot);
     let gap = dot.map_or(0.0, |dot| dot.radius + dot.stroke_width + 3.0);
+    let area = rule.placement == LabelPlacement::Area;
     let anchors: &[(f32, f32)] = if dot.is_some() {
         &[(1.0, 0.0), (-1.0, 0.0), (0.0, -1.0), (0.0, 1.0)]
-    } else {
+    } else if area {
         &[(0.0, 0.0)]
+    } else {
+        &[(0.0, 0.0), (0.0, -1.0), (0.0, 1.0), (1.0, 0.0), (-1.0, 0.0)]
     };
-    let area = rule.placement == LabelPlacement::Area;
+    let gap = if dot.is_some() {
+        gap
+    } else {
+        text_height * 2.2
+    };
     let mut chosen = None;
     for &(direction_x, direction_y) in anchors {
         let mut left = match direction_x {
@@ -793,6 +800,9 @@ fn place_label(
             -1.0 => candidate.y - gap - text_height,
             _ => candidate.y - text_height / 2.0,
         };
+        if dot.is_none() && direction_x != 0.0 {
+            top = candidate.y - text_height / 2.0;
+        }
         if area {
             let inner = Bounds {
                 left: cell.left + padding,
@@ -1038,6 +1048,121 @@ fn draw_shadow(pixmap: &mut Pixmap, x: f32, y: f32, radius: f32, color: Rgba, bl
     }
 }
 
+/// Merges markers closer than `distance` CSS pixels into one count bubble.
+pub fn cluster(camera: &Camera, markers: &[Marker], distance: f32) -> Vec<Marker> {
+    struct Group {
+        x: f64,
+        y: f64,
+        longitude: f64,
+        latitude: f64,
+        members: Vec<usize>,
+    }
+    let mut cells: std::collections::HashMap<(i64, i64), Vec<usize>> =
+        std::collections::HashMap::new();
+    let mut groups: Vec<Group> = Vec::new();
+    let reach = f64::from(distance);
+    for (index, marker) in markers.iter().enumerate() {
+        let (x, y) = camera.project(marker.longitude, marker.latitude);
+        let cell = ((x / reach).floor() as i64, (y / reach).floor() as i64);
+        let mut joined = None;
+        'search: for row in cell.1 - 1..=cell.1 + 1 {
+            for column in cell.0 - 1..=cell.0 + 1 {
+                for &group_index in cells.get(&(column, row)).into_iter().flatten() {
+                    let group = &groups[group_index];
+                    if (group.x - x).hypot(group.y - y) < reach {
+                        joined = Some(group_index);
+                        break 'search;
+                    }
+                }
+            }
+        }
+        match joined {
+            Some(group_index) => {
+                let group = &mut groups[group_index];
+                let count = group.members.len() as f64;
+                group.longitude = (group.longitude * count + marker.longitude) / (count + 1.0);
+                group.latitude = (group.latitude * count + marker.latitude) / (count + 1.0);
+                group.members.push(index);
+            }
+            None => {
+                cells.entry(cell).or_default().push(groups.len());
+                groups.push(Group {
+                    x,
+                    y,
+                    longitude: marker.longitude,
+                    latitude: marker.latitude,
+                    members: vec![index],
+                });
+            }
+        }
+    }
+    let bubble = |count: usize| {
+        if count == 1 {
+            6.0
+        } else {
+            10.0 + 3.0 * (count as f64).log2().min(5.0)
+        }
+    };
+    loop {
+        let mut merged = false;
+        'outer: for first in 0..groups.len() {
+            for second in first + 1..groups.len() {
+                let (a, b) = (&groups[first], &groups[second]);
+                if (a.x - b.x).hypot(a.y - b.y)
+                    < bubble(a.members.len()) + bubble(b.members.len()) + 2.0
+                    && a.members.len() + b.members.len() > 2
+                {
+                    let removed = groups.swap_remove(second);
+                    let target = &mut groups[first];
+                    let (left, right) = (target.members.len() as f64, removed.members.len() as f64);
+                    let total = left + right;
+                    target.x = (target.x * left + removed.x * right) / total;
+                    target.y = (target.y * left + removed.y * right) / total;
+                    target.longitude =
+                        (target.longitude * left + removed.longitude * right) / total;
+                    target.latitude = (target.latitude * left + removed.latitude * right) / total;
+                    target.members.extend(removed.members);
+                    merged = true;
+                    break 'outer;
+                }
+            }
+        }
+        if !merged {
+            break;
+        }
+    }
+    groups
+        .into_iter()
+        .map(|group| {
+            let first = &markers[group.members[0]];
+            if group.members.len() == 1 {
+                return first.clone();
+            }
+            let count = group.members.len();
+            let fill = group
+                .members
+                .iter()
+                .map(|index| markers[*index].fill)
+                .find(|fill| *fill != [255, 255, 255, 255])
+                .unwrap_or(first.stroke);
+            Marker {
+                longitude: group.longitude,
+                latitude: group.latitude,
+                radius: 10.0 + 3.0 * (count as f32).log2().min(5.0),
+                fill,
+                stroke: [255, 255, 255, 255],
+                stroke_width: 2.0,
+                label: Some(if count >= 1000 {
+                    format!("{}k", count / 1000)
+                } else {
+                    count.to_string()
+                }),
+                label_color: [255, 255, 255, 255],
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1074,6 +1199,32 @@ mod tests {
                 .iter()
                 .all(|placement| placement.id.z == 2 && placement.id.y < 4)
         );
+    }
+
+    #[test]
+    fn clusters_nearby_markers() {
+        let camera = Camera {
+            longitude: 0.0,
+            latitude: 0.0,
+            zoom: 10.0,
+            width: 800,
+            height: 600,
+            pixel_ratio: 1.0,
+        };
+        let marker = |longitude: f64| Marker {
+            longitude,
+            latitude: 0.0,
+            radius: 5.0,
+            fill: [238, 121, 4, 255],
+            stroke: [255, 255, 255, 255],
+            stroke_width: 1.5,
+            label: None,
+            label_color: [255, 255, 255, 255],
+        };
+        let clustered = cluster(&camera, &[marker(0.0), marker(0.0001), marker(0.5)], 30.0);
+        assert_eq!(clustered.len(), 2);
+        assert_eq!(clustered[0].label.as_deref(), Some("2"));
+        assert!(clustered[1].label.is_none());
     }
 
     #[test]

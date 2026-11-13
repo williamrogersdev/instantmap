@@ -4,7 +4,7 @@ pub mod pbf;
 pub mod render;
 pub mod style;
 
-pub use render::{Camera, Fonts, Marker, Placement, Scene, TileId, render};
+pub use render::{Camera, Fonts, Marker, Placement, Scene, TileId, cluster, render};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {

@@ -55,9 +55,12 @@ await page.screenshot({ path: `${outDir}/3-panned.png` });
 const markerCount = await map.evaluate((element) => (element as unknown as { markers: unknown[] }).markers.length);
 const target = await map.evaluate((element) => {
   const map = element as unknown as { markers: { id: string | number; lng: number; lat: number; label?: string }[]; project(lng: number, lat: number): [number, number]; clientWidth: number; clientHeight: number };
+  const rect = element.getBoundingClientRect();
   for (const marker of map.markers) {
     const [x, y] = map.project(marker.lng, marker.lat);
-    if (x > 40 && y > 40 && x < map.clientWidth - 40 && y < map.clientHeight - 40) return { x, y, id: marker.id };
+    if (x < 40 || y < 40 || x > map.clientWidth - 40 || y > map.clientHeight - 40) continue;
+    if (document.elementFromPoint(rect.left + x, rect.top + y)?.closest("instant-map") !== element) continue;
+    return { x, y, id: marker.id };
   }
   return null;
 });

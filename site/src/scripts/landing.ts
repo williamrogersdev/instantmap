@@ -56,23 +56,10 @@ function setupHero(listings: Listing[]): void {
   };
   showPaint();
   document.addEventListener("heropaint", showPaint);
-  if (!window.__heroPaint) {
-    const poster = map.querySelector("img");
-    const fallback = (): void => {
-      if (!window.__heroPaint) paint.textContent = `${Math.round(performance.now())} ms`;
-    };
-    if (poster?.complete) setTimeout(fallback, 0);
-    else poster?.addEventListener("load", () => setTimeout(fallback, 0), { once: true });
-  }
   const script = performance.getEntriesByType("resource").find((entry) => entry.name.endsWith("/instant-map.js")) as PerformanceResourceTiming | undefined;
-  if (script?.encodedBodySize) byId("meter-script").textContent = `${(script.encodedBodySize / 1024).toFixed(1)} KB, loaded after the map showed`;
-  let touched = 0;
-  for (const type of ["pointerdown", "touchstart", "wheel", "focusin"]) {
-    map.addEventListener(type, () => (touched ||= performance.now()), { capture: true, once: true, passive: true });
-  }
+  if (script?.encodedBodySize) byId("meter-script").textContent = `${(script.encodedBodySize / 1024).toFixed(1)} KB, loads after the map shows`;
   map.addEventListener("interactive", () => {
-    const after = touched ? Math.max(0, Math.round(performance.now() - touched)) : 0;
-    byId("meter-state").textContent = touched ? `${after} ms after your touch` : "ready";
+    byId("meter-state").textContent = "live now, try dragging it";
   });
 }
 

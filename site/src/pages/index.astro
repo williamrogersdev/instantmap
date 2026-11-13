@@ -6,6 +6,7 @@ const HERO_CENTER: [number, number] = [-122.4295, 37.7668];
 const HERO_ZOOM = 13.25;
 const listings = sanFranciscoListings(280);
 const heroPoster = staticUrl({ src: "", center: HERO_CENTER, zoom: HERO_ZOOM, width: 1280, height: 800, ratio: 2, markers: listings });
+const phonePoster = staticUrl({ src: "", center: [-122.4135, 37.7625], zoom: 13.4, width: 400, height: 320, ratio: 2, markers: listings });
 const studioPoster = staticUrl({ src: "", center: [-122.4215, 37.7745], zoom: 13.2, width: 960, height: 720, ratio: 2, markers: listings });
 
 const frameworks = [
@@ -18,8 +19,7 @@ const frameworks = [
   ["SvelteKit", "sveltekit", "Load function and the element"],
   ["Angular", "angular", "Standalone component"],
   ["Solid", "solid", "SolidStart or Vite"],
-  ["Plain HTML", "html", "One script tag"],
-  ["Rails, Django, PHP", "html", "Any server that writes HTML"],
+  ["HTML, Rails, Django, PHP", "html", "One script tag in any page"],
 ];
 
 const agentPrompt = `Add an Instant Map to this project.
@@ -72,22 +72,13 @@ export function ListingsMap({ listings }) {
     <meta name="description" content="An open-source map for the web that paints as one image before any JavaScript runs, then becomes a fast interactive map when touched. One web component for every framework." />
     <meta name="theme-color" content="#0f2233" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" as="image" href={heroPoster} fetchpriority="high" />
+    <link rel="preload" as="image" href={heroPoster} fetchpriority="high" media="(min-width: 901px)" />
+    <link rel="preload" as="image" href={phonePoster} fetchpriority="high" media="(max-width: 900px)" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
     <script type="module" src="/instant-map.js"></script>
-    <script is:inline>
-      try {
-        new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            if (entry.element && entry.element.closest && entry.element.closest("#hero-map")) window.__heroPaint = entry.renderTime || entry.startTime;
-          }
-          document.dispatchEvent(new Event("heropaint"));
-        }).observe({ type: "largest-contentful-paint", buffered: true });
-      } catch {}
-    </script>
   </head>
   <body>
     <header class="bar">
@@ -105,9 +96,13 @@ export function ListingsMap({ listings }) {
 
     <main>
       <section class="hero" aria-labelledby="hero-title">
-        <instant-map id="hero-map" center={HERO_CENTER.join(",")} zoom={HERO_ZOOM} aria-label="Map of 280 sample San Francisco rentals">
-          <img src={heroPoster} alt="Map of 280 sample San Francisco rentals" fetchpriority="high" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+        <instant-map id="hero-map" aria-label="Map of 280 sample San Francisco rentals">
+          <picture>
+            <source media="(max-width: 900px)" srcset={phonePoster} />
+            <img src={heroPoster} alt="Map of 280 sample San Francisco rentals" fetchpriority="high" onload="requestAnimationFrame(function () { window.__heroPaint = window.__heroPaint || performance.now(); document.dispatchEvent(new Event('heropaint')); })" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+          </picture>
         </instant-map>
+        <p class="handoff" aria-live="polite"><span class="step image">Image<span class="long">, no JavaScript yet</span></span><span class="step live">Live map</span></p>
         <div class="hero-card">
           <h1 id="hero-title">The map is on the page before your JavaScript is.</h1>
           <p class="lede">
@@ -116,7 +111,7 @@ export function ListingsMap({ listings }) {
           </p>
           <dl class="proof" aria-live="polite">
             <div class="lead-stat">
-              <dt>This map was visible in</dt>
+              <dt>On this visit, the map appeared in</dt>
               <dd><span id="meter-paint">…</span></dd>
             </div>
             <div>
@@ -166,7 +161,7 @@ export function ListingsMap({ listings }) {
           <fieldset class="presets">
             <legend>Try a brand</legend>
             <div>
-              <button type="button" class="chip" data-preset="">Theme</button>
+              <button type="button" class="chip" data-preset="">Default</button>
               <button type="button" class="chip" data-preset="cluster:9f1239,marker:e11d48,accent:e11d48,selected:fde047,selectedText:3f2a00">Rose</button>
               <button type="button" class="chip" data-preset="cluster:134e4a,marker:0f766e,accent:0f766e,water:b9dde0">Harbour</button>
               <button type="button" class="chip" data-preset="cluster:14532d,marker:15803d,accent:15803d,selected:fde047,selectedText:3f2a00">Forest</button>
@@ -343,6 +338,12 @@ export function ListingsMap({ listings }) {
   #hero-map { position: absolute; inset: 0; height: 100%; }
   instant-map { --im-font: var(--sans); }
   #hero-map::part(controls) { top: 96px; }
+  .handoff { position: absolute; z-index: 4; right: clamp(16px, 4vw, 40px); bottom: 40px; margin: 0; display: flex; padding: 4px; gap: 2px; background: var(--paper); border-radius: 999px; font-size: 14px; font-weight: 650; box-shadow: 0 8px 24px #0f22332e; pointer-events: none; }
+  .handoff .step { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; color: var(--ink-soft); transition: background 0.3s, color 0.3s; }
+  .handoff .step::before { content: ""; margin-right: 8px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .handoff .image { background: var(--ink); color: #ffffff; }
+  #hero-map[interactive] ~ .handoff .image { background: none; color: var(--ink-soft); }
+  #hero-map[interactive] ~ .handoff .live { background: var(--brand); color: var(--brand-ink); }
   .hero-card { position: absolute; z-index: 3; left: clamp(16px, 4vw, 40px); top: 50%; transform: translateY(-44%); width: min(540px, calc(100% - 32px)); background: var(--paper); border-radius: var(--radius-large); padding: clamp(22px, 3vw, 34px); box-shadow: 0 2px 4px #0f223312, 0 30px 70px #0f22333d; }
   .hero-card h1 { font-size: clamp(36px, 4.6vw, 56px); font-weight: 900; letter-spacing: -0.04em; }
   .lede { margin-top: 16px; color: var(--ink-soft); font-size: 18px; max-width: 44ch; }
@@ -353,7 +354,7 @@ export function ListingsMap({ listings }) {
   .lead-stat { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .lead-stat dt { font-size: 16px; color: var(--ink); font-weight: 600; }
   .lead-stat dd { margin: 0; font: 700 44px/1 var(--mono); letter-spacing: -0.04em; color: var(--ink); }
-  .lead-stat dd span { background: linear-gradient(transparent 62%, #19d3a266 62%); padding: 0 2px; }
+  .lead-stat dd span { box-shadow: inset 0 -0.28em 0 #19d3a266; }
 
   .install { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--code); color: var(--code-ink); border-radius: var(--radius-small); padding: 6px 6px 6px 16px; min-height: 52px; }
   .install code { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -456,9 +457,15 @@ export function ListingsMap({ listings }) {
 
   @media (max-width: 900px) {
     .bar nav a:not(:first-child):not(:last-child) { display: none; }
+    .bar { position: relative; padding: 12px; }
+    .bar nav, .brand { box-shadow: none; }
+    #hero-map::part(controls) { top: 12px; }
     .hero { height: auto; min-height: 0; display: flex; flex-direction: column; }
     #hero-map { position: relative; inset: auto; height: 38svh; min-height: 260px; }
     .hero-card { position: relative; left: auto; top: auto; transform: none; width: auto; margin: 12px 12px 0; box-shadow: 0 1px 2px #0f223312; }
+    .handoff { position: static; align-self: flex-start; margin: 12px 12px 0; font-size: 13px; box-shadow: 0 1px 2px #0f223314; }
+    .handoff .step { padding: 6px 12px; }
+    .handoff .long { display: none; }
     .hero-card { display: flex; flex-direction: column; }
     .hero-card h1 { font-size: 34px; }
     .hero-card .install { order: 2; }

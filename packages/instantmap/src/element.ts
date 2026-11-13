@@ -36,6 +36,7 @@ const SHADOW_CSS = `
 :host(:focus-visible){box-shadow:inset 0 0 0 2px var(--im-accent)}
 .viewport{position:absolute;inset:0;container-type:size}
 ::slotted(img){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;transform-origin:50% 50%;transition:opacity .32s ease}
+::slotted(picture){position:absolute;inset:0;z-index:3}
 .tiles{position:absolute;inset:0;z-index:1;pointer-events:none}
 .tiles img{position:absolute;left:0;top:0;width:${TILE_SIZE}px;height:${TILE_SIZE}px;transform-origin:0 0;pointer-events:none;opacity:0;transition:opacity .18s linear}
 .tiles img.on{opacity:1}
@@ -69,7 +70,7 @@ const CARD_CSS = `
 .instant-map-card a.cta:focus-visible{outline:2px solid var(--im-accent);outline-offset:2px}
 .instant-map-card button.close{all:unset;position:absolute;right:8px;top:8px;width:32px;height:32px;display:grid;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--im-card) 88%,transparent);color:var(--im-ink);cursor:pointer;box-shadow:0 1px 3px var(--im-shadow)}
 .instant-map-card button.close::before{content:"";position:absolute;inset:-6px}
-@keyframes instant-map-in{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes instant-map-in{from{transform:translateY(6px) scale(.97)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.instant-map-card{animation:none}}
 `;
 
@@ -438,11 +439,18 @@ export class InstantMapElement<Data = unknown> extends Base {
       const rect = this.#poster.getBoundingClientRect();
       const natural = readPosterCamera(this.#poster);
       if (natural && rect.width > 0) {
+        const camera = this.#posterCamera;
+        if (camera.x === this.#x && camera.y === this.#y && camera.zoom === this.#zoom) {
+          camera.x = this.#x = mercatorX(natural.center[0]);
+          camera.y = this.#y = mercatorY(natural.center[1]);
+          camera.zoom = natural.zoom;
+        }
         const cover = Math.max(rect.width / natural.width, rect.height / natural.height);
         this.#zoom = this.#posterCamera.zoom + Math.log2(cover);
         this.#posterCamera.zoom = this.#zoom;
         this.#posterGrouping = { level: Math.floor(natural.zoom), zoom: this.#zoom };
         this.#groupCache = null;
+        this.#drawMarkers(this.clientWidth, this.clientHeight, false);
       }
     }
     for (const type of ["pointerdown", "pointermove", "pointerup", "pointercancel", "pointerleave", "dblclick", "keydown"]) {
@@ -573,7 +581,7 @@ export class InstantMapElement<Data = unknown> extends Base {
     const distance = this.getAttribute("cluster");
     if (distance !== null) this.#clusterDistance = distance === "off" || distance === "false" ? 0 : Number(distance) || DEFAULT_CLUSTER_DISTANCE;
     if (this.hasAttribute("markers") && !this.#markers.length) this.markers = parseMarkerList(this.getAttribute("markers")) as Marker<Data>[];
-    const poster = this.querySelector<HTMLImageElement>(":scope > img");
+    const poster = this.querySelector<HTMLImageElement>(":scope > img, :scope > picture > img");
     const fromPoster = poster ? readPosterCamera(poster) : null;
     const center = this.getAttribute("center")?.split(",").map(Number);
     if (center && center.length === 2 && center.every(Number.isFinite)) {
@@ -673,6 +681,7 @@ export class InstantMapElement<Data = unknown> extends Base {
   #adoptPoster(img: HTMLImageElement): void {
     this.#poster = img;
     img.draggable = false;
+    if (img.parentElement !== this) Object.assign(img.style, { position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", transformOrigin: "50% 50%", transition: "opacity .32s ease" });
     this.#posterCamera = { x: this.#x, y: this.#y, zoom: this.#zoom };
   }
 

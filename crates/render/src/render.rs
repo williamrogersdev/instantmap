@@ -147,12 +147,9 @@ impl Fonts {
 pub struct Marker {
     pub longitude: f64,
     pub latitude: f64,
-    pub radius: f32,
-    pub fill: Rgba,
-    pub stroke: Rgba,
-    pub stroke_width: f32,
+    pub count: u32,
+    pub selected: bool,
     pub label: Option<String>,
-    pub label_color: Rgba,
 }
 
 pub struct Scene<'a> {
@@ -345,7 +342,7 @@ fn draw_layer(
                 return None;
             }
             match layer.paint {
-                Paint::Fill { color } => color(properties, zoom),
+                Paint::Fill { color } => color.color(properties, zoom),
                 Paint::Line { color, .. } => Some(color),
                 Paint::ShoreShade { .. } => None,
             }
@@ -528,27 +525,6 @@ struct Candidate<'a> {
     priority: f32,
 }
 
-const SMALL_MARKER_RADIUS: f32 = 8.0;
-const LANDMARK_PRIORITY: f32 = -50.0;
-
-fn marker_bounds(scene: &Scene, small: bool) -> Vec<Bounds> {
-    scene
-        .markers
-        .iter()
-        .filter(|marker| (marker.radius < SMALL_MARKER_RADIUS) == small)
-        .map(|marker| {
-            let (x, y) = scene.camera.project(marker.longitude, marker.latitude);
-            let reach = marker.radius + marker.stroke_width + 2.0;
-            Bounds {
-                left: x as f32 - reach,
-                top: y as f32 - reach,
-                right: x as f32 + reach,
-                bottom: y as f32 + reach,
-            }
-        })
-        .collect()
-}
-
 fn shield_points(
     path: &[[f32; 2]],
     scale: f32,
@@ -583,8 +559,6 @@ fn draw_labels(scene: &Scene, fonts: &Fonts, pixmap: &mut Pixmap) {
         width,
         height,
     };
-    let large_markers = marker_bounds(scene, false);
-    let small_markers = marker_bounds(scene, true);
     for placement in camera.tiles(0.0) {
         let Some(tile) = find(scene, placement.id) else {
             continue;
@@ -629,7 +603,7 @@ fn draw_labels(scene: &Scene, fonts: &Fonts, pixmap: &mut Pixmap) {
                 };
                 let size = (rule.size)(&properties, zoom);
                 let font = fonts.get((rule.font)(&properties));
-                let color = (rule.color)(&properties);
+                let color = rule.color;
                 let priority = (rule.priority)(&properties);
                 let mut push = |x: f32, y: f32| {
                     candidates.push(Candidate {
@@ -663,23 +637,9 @@ fn draw_labels(scene: &Scene, fonts: &Fonts, pixmap: &mut Pixmap) {
                 .total_cmp(&b.priority)
                 .then_with(|| a.text.cmp(&b.text))
         });
-        let mut placed: Vec<Bounds> = large_markers
-            .iter()
-            .copied()
-            .filter(|bounds| bounds.overlaps(&cell))
-            .collect();
-        let small: Vec<Bounds> = small_markers
-            .iter()
-            .copied()
-            .filter(|bounds| bounds.overlaps(&cell))
-            .collect();
+        let mut placed: Vec<Bounds> = Vec::new();
         let mut shields: Vec<(String, f32, f32)> = Vec::new();
-        let mut landmarks = true;
         for candidate in candidates {
-            if landmarks && candidate.priority >= LANDMARK_PRIORITY {
-                landmarks = false;
-                placed.extend_from_slice(&small);
-            }
             place_label(
                 scene,
                 &mut canvas,
@@ -953,215 +913,449 @@ fn blend_into(canvas: &mut Canvas, x: i32, y: i32, color: Rgba, coverage: f32) {
     pixel[3] = (alpha * 255.0 + f32::from(pixel[3]) * (1.0 - alpha)).round() as u8;
 }
 
+const PILL_HEIGHT: f32 = 26.0;
+const PILL_PADDING: f32 = 10.0;
+const PILL_TEXT_SIZE: f32 = 13.0;
+const CLUSTER_TEXT_SIZE: f32 = 12.0;
+const DOT_RADIUS: f32 = 7.0;
+const DOT_RING: f32 = 2.5;
+const CLUSTER_RING: f32 = 2.5;
+const SHADOW_BLUR: f32 = 6.0;
+const SHADOW_OFFSET: f32 = 2.0;
+pub const MAX_LABEL_LENGTH: usize = 10;
+
+enum Shape {
+    Pill { text: String, width: f32 },
+    Dot,
+    Cluster { text: String, radius: f32 },
+}
+
+fn truncate_label(label: &str) -> String {
+    label.chars().take(MAX_LABEL_LENGTH).collect()
+}
+
+fn count_text(count: u32) -> String {
+    if count >= 10_000 {
+        format!("{}k", count / 1000)
+    } else if count >= 1000 {
+        let tenths = count / 100;
+        if tenths.is_multiple_of(10) {
+            format!("{}k", tenths / 10)
+        } else {
+            format!("{}.{}k", tenths / 10, tenths % 10)
+        }
+    } else {
+        count.to_string()
+    }
+}
+
+impl Shape {
+    fn of(marker: &Marker, fonts: Option<&Fonts>) -> Shape {
+        if marker.count > 1 {
+            return Shape::Cluster {
+                text: count_text(marker.count),
+                radius: footprint(marker.count as usize, None) as f32,
+            };
+        }
+        let Some(label) = &marker.label else {
+            return Shape::Dot;
+        };
+        let text = truncate_label(label);
+        let advance = match fonts {
+            Some(fonts) => fonts.get(Font::Medium).measure(&text, PILL_TEXT_SIZE, 0.0),
+            None => text.chars().count() as f32 * PILL_TEXT_SIZE * 0.55,
+        };
+        let width = (advance + PILL_PADDING * 2.0).max(PILL_HEIGHT);
+        Shape::Pill { text, width }
+    }
+}
+
 fn draw_markers(scene: &Scene, pixmap: &mut Pixmap) {
     let ratio = scene.camera.pixel_ratio;
     let style = &scene.theme.markers;
-    for marker in scene.markers {
-        let (x, y) = scene.camera.project(marker.longitude, marker.latitude);
-        let (x, y) = (x as f32 * ratio, y as f32 * ratio);
-        let outer = (marker.radius + marker.stroke_width / 2.0) * ratio;
-        draw_shadow(
-            pixmap,
-            x,
-            y + style.shadow_offset * ratio,
-            outer,
-            style.shadow,
-            style.shadow_blur * ratio,
-        );
-        let Some(circle) = PathBuilder::from_circle(x, y, marker.radius * ratio) else {
-            continue;
-        };
-        pixmap.fill_path(
-            &circle,
-            &paint(marker.fill),
-            FillRule::Winding,
-            Transform::identity(),
-            None,
-        );
-        if marker.stroke_width > 0.0 {
-            let stroke = Stroke {
-                width: marker.stroke_width * ratio,
-                ..Stroke::default()
-            };
-            pixmap.stroke_path(
-                &circle,
-                &paint(marker.stroke),
-                &stroke,
-                Transform::identity(),
-                None,
-            );
-        }
-    }
-    let Some(fonts) = scene.fonts else { return };
     let (width, height) = (pixmap.width() as i32, pixmap.height() as i32);
     let mut canvas = Canvas {
         data: pixmap.data_mut(),
         width,
         height,
     };
-    for marker in scene.markers {
-        let Some(label) = &marker.label else { continue };
+    let mut order: Vec<&Marker> = scene.markers.iter().collect();
+    order.sort_by_key(|marker| marker.selected && marker.count <= 1);
+    for marker in order {
+        let shape = Shape::of(marker, scene.fonts);
         let (x, y) = scene.camera.project(marker.longitude, marker.latitude);
-        let size = 12.0;
-        let font = fonts.get(Font::Medium);
-        let text_width = font.measure(label, size, 0.0);
-        draw_text(
-            &mut canvas,
-            font,
-            label,
-            (x as f32 - text_width / 2.0) * ratio,
-            (y as f32 + size * 0.36) * ratio,
-            size * ratio,
-            0.0,
-            TextPaint {
-                color: marker.label_color,
-                halo: [0, 0, 0, 0],
-                halo_width: 0.0,
-            },
-        );
-    }
-}
-
-fn draw_shadow(pixmap: &mut Pixmap, x: f32, y: f32, radius: f32, color: Rgba, blur: f32) {
-    let reach = radius + blur * 2.0;
-    let (width, height) = (pixmap.width() as i32, pixmap.height() as i32);
-    let data = pixmap.data_mut();
-    let base = f32::from(color[3]) / 255.0;
-    for row in (y - reach).floor() as i32..=(y + reach).ceil() as i32 {
-        for column in (x - reach).floor() as i32..=(x + reach).ceil() as i32 {
-            if column < 0 || row < 0 || column >= width || row >= height {
-                continue;
+        let (x, y) = (x as f32, y as f32);
+        match shape {
+            Shape::Pill { text, width } => {
+                let (fill, ink) = if marker.selected {
+                    (style.selected_fill, style.selected_text)
+                } else {
+                    (style.pill_fill, style.pill_text)
+                };
+                let radius = PILL_HEIGHT / 2.0;
+                draw_shadow(
+                    &mut canvas,
+                    (x * ratio, (y + SHADOW_OFFSET) * ratio),
+                    (width / 2.0 * ratio, radius * ratio),
+                    radius * ratio,
+                    style.shadow,
+                    SHADOW_BLUR * ratio,
+                );
+                draw_round_rect(
+                    &mut canvas,
+                    Bounds {
+                        left: x - width / 2.0,
+                        top: y - radius,
+                        right: x + width / 2.0,
+                        bottom: y + radius,
+                    },
+                    radius,
+                    fill,
+                    fill,
+                    0.0,
+                    ratio,
+                );
+                if let Some(fonts) = scene.fonts {
+                    draw_centered_text(&mut canvas, fonts, &text, PILL_TEXT_SIZE, x, y, ink, ratio);
+                }
             }
-            let distance =
-                ((column as f32 + 0.5 - x).powi(2) + (row as f32 + 0.5 - y).powi(2)).sqrt();
-            let falloff = 1.0 - ((distance - (radius - blur)) / (blur * 2.0)).clamp(0.0, 1.0);
-            let alpha = base * falloff * falloff;
-            if alpha <= 0.0 {
-                continue;
+            Shape::Dot => {
+                let reach = (DOT_RADIUS + DOT_RING) * ratio;
+                draw_shadow(
+                    &mut canvas,
+                    (x * ratio, (y + SHADOW_OFFSET) * ratio),
+                    (reach, reach),
+                    reach,
+                    style.shadow,
+                    SHADOW_BLUR * ratio,
+                );
+                draw_dot(
+                    &mut canvas,
+                    x * ratio,
+                    y * ratio,
+                    Dot {
+                        radius: DOT_RADIUS,
+                        fill: style.dot_fill,
+                        stroke: style.dot_ring,
+                        stroke_width: DOT_RING,
+                    },
+                    ratio,
+                );
             }
-            let index = ((row * width + column) * 4) as usize;
-            for channel in 0..3 {
-                let value = f32::from(color[channel]) * alpha
-                    + f32::from(data[index + channel]) * (1.0 - alpha);
-                data[index + channel] = value.round() as u8;
+            Shape::Cluster { text, radius } => {
+                let reach = radius * ratio;
+                draw_shadow(
+                    &mut canvas,
+                    (x * ratio, (y + SHADOW_OFFSET) * ratio),
+                    (reach, reach),
+                    reach,
+                    style.shadow,
+                    SHADOW_BLUR * ratio,
+                );
+                draw_dot(
+                    &mut canvas,
+                    x * ratio,
+                    y * ratio,
+                    Dot {
+                        radius,
+                        fill: style.cluster_fill,
+                        stroke: style.cluster_ring,
+                        stroke_width: CLUSTER_RING,
+                    },
+                    ratio,
+                );
+                if let Some(fonts) = scene.fonts {
+                    draw_centered_text(
+                        &mut canvas,
+                        fonts,
+                        &text,
+                        CLUSTER_TEXT_SIZE,
+                        x,
+                        y,
+                        style.cluster_text,
+                        ratio,
+                    );
+                }
             }
         }
     }
 }
 
-/// Merges markers closer than `distance` CSS pixels into one count bubble.
-pub fn cluster(camera: &Camera, markers: &[Marker], distance: f32) -> Vec<Marker> {
-    struct Group {
-        x: f64,
-        y: f64,
-        longitude: f64,
-        latitude: f64,
-        members: Vec<usize>,
+
+#[allow(clippy::too_many_arguments)]
+fn draw_centered_text(
+    canvas: &mut Canvas,
+    fonts: &Fonts,
+    text: &str,
+    size: f32,
+    x: f32,
+    y: f32,
+    color: Rgba,
+    ratio: f32,
+) {
+    let font = fonts.get(Font::Medium);
+    let advance = font.measure(text, size, 0.0);
+    draw_text(
+        canvas,
+        font,
+        text,
+        (x - advance / 2.0) * ratio,
+        (y + size * 0.36) * ratio,
+        size * ratio,
+        0.0,
+        TextPaint {
+            color,
+            halo: [0, 0, 0, 0],
+            halo_width: 0.0,
+        },
+    );
+}
+
+fn draw_shadow(
+    canvas: &mut Canvas,
+    center: (f32, f32),
+    half: (f32, f32),
+    corner: f32,
+    color: Rgba,
+    blur: f32,
+) {
+    let (x, y) = center;
+    let reach_x = half.0 + blur * 2.0;
+    let reach_y = half.1 + blur * 2.0;
+    let base = f32::from(color[3]) / 255.0;
+    let inner = (half.0 - corner, half.1 - corner);
+    for row in (y - reach_y).floor() as i32..=(y + reach_y).ceil() as i32 {
+        for column in (x - reach_x).floor() as i32..=(x + reach_x).ceil() as i32 {
+            let dx = ((column as f32 + 0.5 - x).abs() - inner.0).max(0.0);
+            let dy = ((row as f32 + 0.5 - y).abs() - inner.1).max(0.0);
+            let distance = dx.hypot(dy) - corner;
+            let falloff = 1.0 - ((distance + blur) / (blur * 2.0)).clamp(0.0, 1.0);
+            let coverage = falloff * falloff;
+            blend_into(
+                canvas,
+                column,
+                row,
+                [color[0], color[1], color[2], 255],
+                coverage * base,
+            );
+        }
     }
-    let mut cells: std::collections::HashMap<(i64, i64), Vec<usize>> =
-        std::collections::HashMap::new();
+}
+
+const CLUSTER_ZOOM_LIMIT: u32 = 24;
+
+pub struct Group {
+    pub x: f64,
+    pub y: f64,
+    pub radius: f64,
+    pub members: Vec<usize>,
+    seed_x: f64,
+    seed_y: f64,
+    sum_x: f64,
+    sum_y: f64,
+}
+
+pub fn footprint(count: usize, label: Option<&str>) -> f64 {
+    if count > 1 {
+        return 10.0 + 3.5 * (count as f64).log2().min(7.0);
+    }
+    match label {
+        Some(label) => 8.0 + 3.5 * (label.chars().count().min(MAX_LABEL_LENGTH)) as f64,
+        None => 6.0,
+    }
+}
+
+fn cluster_x(longitude: f64) -> f64 {
+    (longitude + 180.0) / 360.0
+}
+
+fn cluster_y(latitude: f64) -> f64 {
+    let sine = (latitude.clamp(-85.0511, 85.0511).to_radians()).sin();
+    0.5 - ((1.0 + sine) / (1.0 - sine)).ln() / (4.0 * std::f64::consts::PI)
+}
+
+fn label_of(markers: &[Marker], group: &Group) -> Option<String> {
+    markers[group.members[0]].label.clone()
+}
+
+pub fn cluster_at(markers: &[Marker], zoom: u32, distance: f64) -> Vec<Group> {
+    let world = TILE_SIZE * 2f64.powi(zoom.min(CLUSTER_ZOOM_LIMIT) as i32);
     let mut groups: Vec<Group> = Vec::new();
-    let reach = f64::from(distance);
+    if distance <= 0.0 {
+        for (index, marker) in markers.iter().enumerate() {
+            let x = cluster_x(marker.longitude) * world;
+            let y = cluster_y(marker.latitude) * world;
+            groups.push(Group {
+                x,
+                y,
+                radius: footprint(1, marker.label.as_deref()),
+                members: vec![index],
+                seed_x: x,
+                seed_y: y,
+                sum_x: x,
+                sum_y: y,
+            });
+        }
+        return groups;
+    }
+    let mut seeds: std::collections::HashMap<(i64, i64), Vec<usize>> =
+        std::collections::HashMap::new();
     for (index, marker) in markers.iter().enumerate() {
-        let (x, y) = camera.project(marker.longitude, marker.latitude);
-        let cell = ((x / reach).floor() as i64, (y / reach).floor() as i64);
+        let x = cluster_x(marker.longitude) * world;
+        let y = cluster_y(marker.latitude) * world;
+        let column = (x / distance).floor() as i64;
+        let row = (y / distance).floor() as i64;
         let mut joined = None;
-        'search: for row in cell.1 - 1..=cell.1 + 1 {
-            for column in cell.0 - 1..=cell.0 + 1 {
-                for &group_index in cells.get(&(column, row)).into_iter().flatten() {
-                    let group = &groups[group_index];
-                    if (group.x - x).hypot(group.y - y) < reach {
-                        joined = Some(group_index);
+        'search: for dy in -1..=1 {
+            for dx in -1..=1 {
+                let Some(candidates) = seeds.get(&(column + dx, row + dy)) else {
+                    continue;
+                };
+                for &candidate in candidates {
+                    let group = &groups[candidate];
+                    if (group.seed_x - x).hypot(group.seed_y - y) < distance {
+                        joined = Some(candidate);
                         break 'search;
                     }
                 }
             }
         }
         match joined {
-            Some(group_index) => {
-                let group = &mut groups[group_index];
-                let count = group.members.len() as f64;
-                group.longitude = (group.longitude * count + marker.longitude) / (count + 1.0);
-                group.latitude = (group.latitude * count + marker.latitude) / (count + 1.0);
+            Some(candidate) => {
+                let group = &mut groups[candidate];
                 group.members.push(index);
+                group.sum_x += x;
+                group.sum_y += y;
             }
             None => {
-                cells.entry(cell).or_default().push(groups.len());
+                seeds.entry((column, row)).or_default().push(groups.len());
                 groups.push(Group {
                     x,
                     y,
-                    longitude: marker.longitude,
-                    latitude: marker.latitude,
+                    radius: 0.0,
                     members: vec![index],
+                    seed_x: x,
+                    seed_y: y,
+                    sum_x: x,
+                    sum_y: y,
                 });
             }
         }
     }
-    let bubble = |count: usize| {
-        if count == 1 {
-            6.0
-        } else {
-            10.0 + 3.5 * (count as f64).log2().min(7.0)
-        }
-    };
+    for group in &mut groups {
+        let count = group.members.len() as f64;
+        group.x = group.sum_x / count;
+        group.y = group.sum_y / count;
+        group.radius = footprint(
+            group.members.len(),
+            markers[group.members[0]].label.as_deref(),
+        );
+    }
+    separate(markers, groups)
+}
+
+fn separate(markers: &[Marker], groups: Vec<Group>) -> Vec<Group> {
+    let mut alive = groups;
+    let cell = 2.0 * footprint(128, None) + 2.0;
     loop {
+        let mut grid: std::collections::HashMap<(i64, i64), Vec<usize>> =
+            std::collections::HashMap::new();
+        for (index, group) in alive.iter().enumerate() {
+            grid.entry((
+                (group.x / cell).floor() as i64,
+                (group.y / cell).floor() as i64,
+            ))
+            .or_default()
+            .push(index);
+        }
+        let mut removed: std::collections::HashSet<usize> = std::collections::HashSet::new();
         let mut merged = false;
-        'outer: for first in 0..groups.len() {
-            for second in first + 1..groups.len() {
-                let (a, b) = (&groups[first], &groups[second]);
-                if (a.x - b.x).hypot(a.y - b.y)
-                    < bubble(a.members.len()) + bubble(b.members.len()) + 2.0
-                    && a.members.len() + b.members.len() > 2
-                {
-                    let removed = groups.swap_remove(second);
-                    let target = &mut groups[first];
-                    let (left, right) = (target.members.len() as f64, removed.members.len() as f64);
-                    let total = left + right;
-                    target.x = (target.x * left + removed.x * right) / total;
-                    target.y = (target.y * left + removed.y * right) / total;
-                    target.longitude =
-                        (target.longitude * left + removed.longitude * right) / total;
-                    target.latitude = (target.latitude * left + removed.latitude * right) / total;
-                    target.members.extend(removed.members);
-                    merged = true;
-                    break 'outer;
+        for index in 0..alive.len() {
+            if removed.contains(&index) {
+                continue;
+            }
+            let column = (alive[index].x / cell).floor() as i64;
+            let row = (alive[index].y / cell).floor() as i64;
+            let mut neighbours: Vec<usize> = Vec::new();
+            for dy in -1..=1 {
+                for dx in -1..=1 {
+                    for &other in grid.get(&(column + dx, row + dy)).into_iter().flatten() {
+                        if other > index && !removed.contains(&other) {
+                            neighbours.push(other);
+                        }
+                    }
                 }
+            }
+            neighbours.sort_unstable();
+            for other in neighbours {
+                let (first, second) = (&alive[index], &alive[other]);
+                let gap = (first.x - second.x).hypot(first.y - second.y);
+                if gap >= first.radius + second.radius + 2.0 {
+                    continue;
+                }
+                let moved = std::mem::take(&mut alive[other].members);
+                let (sum_x, sum_y) = (alive[other].sum_x, alive[other].sum_y);
+                let target = &mut alive[index];
+                target.members.extend(moved);
+                target.sum_x += sum_x;
+                target.sum_y += sum_y;
+                let count = target.members.len() as f64;
+                target.x = target.sum_x / count;
+                target.y = target.sum_y / count;
+                target.radius = footprint(
+                    target.members.len(),
+                    markers[target.members[0]].label.as_deref(),
+                );
+                removed.insert(other);
+                merged = true;
             }
         }
         if !merged {
-            break;
+            return alive;
+        }
+        let mut gone: Vec<usize> = removed.into_iter().collect();
+        gone.sort_unstable_by(|a, b| b.cmp(a));
+        for index in gone {
+            alive.remove(index);
         }
     }
-    groups
+}
+
+fn unproject_world(x: f64, y: f64, world: f64) -> (f64, f64) {
+    let longitude = x / world * 360.0 - 180.0;
+    let latitude = (std::f64::consts::PI * (1.0 - 2.0 * y / world))
+        .sinh()
+        .atan()
+        .to_degrees();
+    (longitude, latitude)
+}
+
+/// Merges markers closer than `distance` CSS pixels into count bubbles; markers that already carry a count pass through.
+pub fn cluster(camera: &Camera, markers: &[Marker], distance: f32) -> Vec<Marker> {
+    let zoom = camera.zoom.floor().max(0.0) as u32;
+    let world = TILE_SIZE * 2f64.powi(zoom.min(CLUSTER_ZOOM_LIMIT) as i32);
+    let (singles, mut result): (Vec<Marker>, Vec<Marker>) = markers
+        .iter()
+        .cloned()
+        .partition(|marker| marker.count <= 1);
+    let mut output: Vec<Marker> = cluster_at(&singles, zoom, f64::from(distance))
         .into_iter()
         .map(|group| {
-            let first = &markers[group.members[0]];
             if group.members.len() == 1 {
-                return first.clone();
+                return singles[group.members[0]].clone();
             }
-            let count = group.members.len();
-            let fill = group
-                .members
-                .iter()
-                .map(|index| markers[*index].fill)
-                .find(|fill| *fill != [255, 255, 255, 255])
-                .unwrap_or(first.stroke);
+            let (longitude, latitude) = unproject_world(group.x, group.y, world);
             Marker {
-                longitude: group.longitude,
-                latitude: group.latitude,
-                radius: 10.0 + 3.5 * (count as f32).log2().min(7.0),
-                fill: if count > 100 { [196, 90, 0, 255] } else { fill },
-                stroke: [255, 255, 255, 255],
-                stroke_width: 2.0,
-                label: Some(if count >= 1000 {
-                    format!("{}k", count / 1000)
-                } else {
-                    count.to_string()
-                }),
-                label_color: [255, 255, 255, 255],
+                longitude,
+                latitude,
+                count: group.members.len() as u32,
+                selected: false,
+                label: label_of(&singles, &group),
             }
         })
-        .collect()
+        .collect();
+    output.append(&mut result);
+    output
 }
 
 #[cfg(test)]
@@ -1202,30 +1396,128 @@ mod tests {
         );
     }
 
+    fn spot(longitude: f64, latitude: f64, label: Option<&str>) -> Marker {
+        Marker {
+            longitude,
+            latitude,
+            count: 1,
+            selected: false,
+            label: label.map(str::to_string),
+        }
+    }
+
+    fn fixture() -> Vec<Marker> {
+        let mut markers = Vec::new();
+        for index in 0..6 {
+            markers.push(spot(-96.80 + f64::from(index) * 0.01, 32.78, None));
+        }
+        for index in 0..4 {
+            markers.push(spot(
+                -96.80 + f64::from(index) * 0.02,
+                33.20,
+                Some("Pallets"),
+            ));
+        }
+        for index in 0..5 {
+            markers.push(spot(-97.30, 32.40 + f64::from(index) * 0.2, None));
+        }
+        for index in 0..5 {
+            markers.push(spot(-95.90 + f64::from(index) * 0.5, 31.60, None));
+        }
+        markers.push(spot(-100.0, 35.0, None));
+        markers.push(spot(-100.0, 35.0, Some("Lubbock")));
+        markers.push(spot(-90.0, 29.9, Some("A very long label")));
+        markers.push(spot(-89.99, 29.9, None));
+        markers.push(spot(-120.0, 40.0, None));
+        markers.push(spot(-80.0, 25.8, None));
+        markers.push(spot(-80.0, 25.82, None));
+        markers.push(spot(-104.0, 33.0, None));
+        markers.push(spot(-104.001, 33.0, Some("Roswell")));
+        markers.push(spot(-110.0, 45.0, None));
+        markers
+    }
+
+    fn shape_of(groups: &[Group]) -> Vec<Vec<usize>> {
+        groups.iter().map(|group| group.members.clone()).collect()
+    }
+
     #[test]
-    fn clusters_nearby_markers() {
+    fn clusters_hand_placed_markers_at_three_zooms() {
+        let markers = fixture();
+        assert_eq!(markers.len(), 30);
+        let sizes = |zoom: u32, distance: f64| -> Vec<usize> {
+            cluster_at(&markers, zoom, distance)
+                .iter()
+                .map(|group| group.members.len())
+                .collect()
+        };
+        let zoom_four = shape_of(&cluster_at(&markers, 4, 44.0));
+        assert_eq!(zoom_four.len(), 8);
+        assert_eq!(zoom_four[0], (0..16).collect::<Vec<usize>>());
+        assert_eq!(
+            zoom_four[1..],
+            [
+                vec![16, 17, 18, 19],
+                vec![20, 21],
+                vec![22, 23],
+                vec![24],
+                vec![25, 26],
+                vec![27, 28],
+                vec![29]
+            ]
+        );
+        let zoom_eight = shape_of(&cluster_at(&markers, 8, 44.0));
+        assert_eq!(zoom_eight.len(), 18);
+        assert_eq!(zoom_eight[0], (0..6).collect::<Vec<usize>>());
+        assert_eq!(zoom_eight[1], (6..10).collect::<Vec<usize>>());
+        assert_eq!(
+            sizes(8, 44.0),
+            [6, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 2, 1]
+        );
+        let zoom_twelve = shape_of(&cluster_at(&markers, 12, 44.0));
+        assert_eq!(zoom_twelve.len(), 28);
+        assert!(zoom_twelve.contains(&vec![20, 21]));
+        assert!(zoom_twelve.contains(&vec![27, 28]));
+        assert!(
+            zoom_twelve
+                .iter()
+                .filter(|members| members.len() > 1)
+                .count()
+                == 2
+        );
+        assert_eq!(cluster_at(&markers, 4, 0.0).len(), 30);
+    }
+
+    #[test]
+    fn footprints_follow_the_shared_formula() {
+        assert_eq!(footprint(1, None), 6.0);
+        assert_eq!(footprint(1, Some("abc")), 18.5);
+        assert_eq!(footprint(1, Some("a very long label")), 43.0);
+        assert_eq!(footprint(2, None), 13.5);
+        assert_eq!(footprint(128, None), 34.5);
+    }
+
+    #[test]
+    fn pre_clustered_markers_pass_through() {
         let camera = Camera {
-            longitude: 0.0,
-            latitude: 0.0,
-            zoom: 10.0,
+            longitude: -96.8,
+            latitude: 32.8,
+            zoom: 8.0,
             width: 800,
             height: 600,
             pixel_ratio: 1.0,
         };
-        let marker = |longitude: f64| Marker {
-            longitude,
-            latitude: 0.0,
-            radius: 5.0,
-            fill: [238, 121, 4, 255],
-            stroke: [255, 255, 255, 255],
-            stroke_width: 1.5,
+        let mut markers = fixture();
+        markers.push(Marker {
+            longitude: -96.8,
+            latitude: 32.8,
+            count: 40,
+            selected: false,
             label: None,
-            label_color: [255, 255, 255, 255],
-        };
-        let clustered = cluster(&camera, &[marker(0.0), marker(0.0001), marker(0.5)], 30.0);
-        assert_eq!(clustered.len(), 2);
-        assert_eq!(clustered[0].label.as_deref(), Some("2"));
-        assert!(clustered[1].label.is_none());
+        });
+        let clustered = cluster(&camera, &markers, 44.0);
+        assert_eq!(clustered.last().map(|marker| marker.count), Some(40));
+        assert_eq!(clustered.iter().map(|marker| marker.count).sum::<u32>(), 70);
     }
 
     #[test]

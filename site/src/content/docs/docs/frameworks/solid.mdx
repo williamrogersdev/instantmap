@@ -1,0 +1,138 @@
+---
+title: Solid
+description: Render an Instant Map in SolidJS with Vite and a typed custom element.
+sidebar:
+  order: 10
+---
+
+Use the `<instant-map>` element in a Solid component. Solid has special prefixes for custom elements: `attr:` for attributes, `prop:` for properties and `on:` for events.
+
+## Install
+
+```sh
+npm install instantmap
+```
+
+## Add the map
+
+Call `defineInstantMap()` once before rendering. A bare `import "instantmap"` is dropped by the bundler, so the element never gets defined.
+
+```tsx title="src/index.tsx"
+import { defineInstantMap } from "instantmap";
+import { render } from "solid-js/web";
+import { App } from "./app";
+
+defineInstantMap();
+render(() => <App />, document.getElementById("root")!);
+```
+
+Tell TypeScript about the element.
+
+```ts title="src/instantmap.d.ts"
+import type { InstantMapElement, InstantMapEventMap, Marker } from "instantmap";
+import "solid-js";
+
+declare module "solid-js" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "instant-map": JSX.HTMLAttributes<InstantMapElement> & {
+        ref?: InstantMapElement | ((element: InstantMapElement) => void);
+        "attr:center"?: string;
+        "attr:zoom"?: number | string;
+        "prop:markers"?: Marker[];
+        "on:markerclick"?: (event: InstantMapEventMap["markerclick"]) => void;
+      };
+    }
+  }
+}
+```
+
+```tsx title="src/app.tsx"
+import { staticUrl } from "instantmap/server";
+import { listings } from "./listings";
+
+const center: [number, number] = [-97.74, 30.27];
+const zoom = 12;
+const markers = listings();
+const poster = staticUrl({ center, zoom, width: 1200, height: 640, ratio: 2, markers });
+
+export function App() {
+  return (
+    <instant-map
+      attr:center={center.join(",")}
+      attr:zoom={zoom}
+      prop:markers={markers}
+      style={{ display: "block", position: "relative", height: "520px" }}
+    >
+      <img
+        src={poster}
+        alt="Map of Austin"
+        width="1200"
+        height="640"
+        fetchpriority="high"
+        style={{ position: "absolute", inset: "0", width: "100%", height: "100%", "object-fit": "cover" }}
+      />
+    </instant-map>
+  );
+}
+```
+
+## Render the first image on the server
+
+A Vite and Solid app renders in the browser, so the server HTML has an empty root. The `/static` poster is the first map request once Solid renders, and the element swaps it for the live map. For a first image in the server HTML, render the same component with SolidStart.
+
+Check what loads first:
+
+```sh
+npm run build
+npm run preview
+```
+
+Open the page with the network panel on. The `/static?` image is the first map request.
+
+## Markers, popups, events
+
+Use `on:markerclick` and a `ref` for camera calls.
+
+```tsx title="src/app.tsx"
+import { createSignal } from "solid-js";
+import type { InstantMapElement } from "instantmap";
+
+export function App() {
+  let map: InstantMapElement | undefined;
+  const [opened, setOpened] = createSignal("Click a price to open its card.");
+
+  return (
+    <>
+      <instant-map
+        ref={map}
+        on:markerclick={(event) => setOpened(`${event.detail.marker.title}, ${event.detail.marker.label}`)}
+        attr:center={center.join(",")}
+        attr:zoom={zoom}
+        prop:markers={markers}
+      />
+      <p>{opened()}</p>
+      <button type="button" onClick={() => void map?.flyTo({ center: [-97.743, 30.267], zoom: 15 })}>
+        Show downtown
+      </button>
+    </>
+  );
+}
+```
+
+## Common mistakes
+
+- Writing `center="..."` or `markers={...}` without a prefix. Solid sets them as properties and the element ignores them. Use `attr:` for strings and `prop:` for the markers array.
+- Writing `onMarkerClick`. Solid lowercases event names for custom elements. Use `on:markerclick`.
+- Importing `instantmap` for its side effect only. Call `defineInstantMap()`.
+- Giving the map no height. It collapses to nothing.
+
+## Prompt for your agent
+
+```text
+Add an Instant Map to my SolidJS app. Follow https://instantmap.org/docs/frameworks/solid.md exactly. Call defineInstantMap() from instantmap before render, declare instant-map in the solid-js JSX IntrinsicElements, and use attr:center, attr:zoom, prop:markers and on:markerclick on the element. Render a staticUrl poster img from instantmap/server inside it and give the map a fixed height. Build and confirm the page loads a /static? image first.
+```
+
+## Full example
+
+[examples/solid on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/solid)

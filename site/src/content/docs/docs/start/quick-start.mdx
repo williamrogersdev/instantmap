@@ -1,0 +1,72 @@
+---
+title: Quick start
+description: A working map in under a minute, with a script tag or npm.
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 1. Add the element
+
+<Tabs syncKey="install">
+<TabItem label="Script tag">
+
+No build step. Paste this into any HTML page:
+
+```html
+<script type="module" src="https://instantmap.org/instant-map.js"></script>
+
+<instant-map center="-122.4194,37.7749" zoom="12" style="height: 420px"></instant-map>
+```
+
+</TabItem>
+<TabItem label="npm / bun / pnpm">
+
+```bash
+npm install instantmap
+```
+
+```js
+import "instantmap";
+```
+
+```html
+<instant-map center="-122.4194,37.7749" zoom="12" style="height: 420px"></instant-map>
+```
+
+</TabItem>
+</Tabs>
+
+That's a working map. The first frame is one image. Hover or touch it and the interactive map takes over.
+
+<instant-map center="-122.4194,37.7749" zoom="12"></instant-map>
+
+## 2. Add markers
+
+Give each marker an `id`, a position, and whatever you want in its card:
+
+```js
+const map = document.querySelector("instant-map");
+
+map.markers = [
+  { id: 1, lng: -122.4183, lat: 37.7758, label: "$420", title: "Sunny loft", subtitle: "SoMa · 2 beds", href: "/listings/1", image: "/img/1.jpg" },
+  { id: 2, lng: -122.4313, lat: 37.7694, label: "$385", title: "Garden flat", subtitle: "Mission · 1 bed", href: "/listings/2" },
+];
+```
+
+A label draws a price pill. Click a pill to open its card. Markers that crowd together merge into a numbered cluster, and clicking a cluster zooms into it.
+
+## 3. Make it yours
+
+```html
+<instant-map theme="midnight" colors="accent:ff5a5f" center="-122.4194,37.7749" zoom="12" style="height: 420px"></instant-map>
+```
+
+There are four built-in themes and 36 colour tokens. See [Themes](/docs/reference/themes/).
+
+## Next
+
+- **Use your framework's guide:** [Next.js](/docs/frameworks/nextjs/), [React](/docs/frameworks/react/), [Astro](/docs/frameworks/astro/), [Vue](/docs/frameworks/vue/), [Svelte](/docs/frameworks/sveltekit/), [Angular](/docs/frameworks/angular/), [and more](/docs/frameworks/html/). Server frameworks render the first image in the HTML, so the map paints with the page.
+- **Hand it to your agent:** [Build it with an AI agent](/docs/start/ai-agents/).
+- **Run your own server before launch:** [Self-hosting](/docs/guides/self-hosting/).

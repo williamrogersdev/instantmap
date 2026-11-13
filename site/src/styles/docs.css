@@ -1,0 +1,54 @@
+:root {
+  --sl-font: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sl-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --sl-color-accent-low: #0b3a31;
+  --sl-color-accent: #19d3a2;
+  --sl-color-accent-high: #c9f5e8;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e6ecef;
+  --sl-color-gray-2: #bcc8d0;
+  --sl-color-gray-3: #8798a5;
+  --sl-color-gray-4: #536574;
+  --sl-color-gray-5: #263a4b;
+  --sl-color-gray-6: #142838;
+  --sl-color-black: #0a1824;
+  --sl-content-width: 48rem;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #d4f5ea;
+  --sl-color-accent: #0a7a60;
+  --sl-color-accent-high: #063f32;
+  --sl-color-white: #0f2233;
+  --sl-color-gray-1: #172b3c;
+  --sl-color-gray-2: #2d4153;
+  --sl-color-gray-3: #4a5866;
+  --sl-color-gray-4: #8796a2;
+  --sl-color-gray-5: #d9ddd5;
+  --sl-color-gray-6: #eef0ea;
+  --sl-color-gray-7: #f6f7f3;
+  --sl-color-black: #ffffff;
+}
+
+.sl-markdown-content instant-map {
+  display: block;
+  position: relative;
+  height: 360px;
+  border-radius: 14px;
+  margin-block: 1.5rem;
+  box-shadow: 0 0 0 1px var(--sl-color-gray-5), 0 16px 40px -20px #0006;
+}
+
+.sl-markdown-content table {
+  font-size: var(--sl-text-sm);
+}
+
+.sl-markdown-content td code {
+  white-space: nowrap;
+}
+
+code,
+pre,
+.expressive-code * {
+  font-variant-ligatures: none;
+}

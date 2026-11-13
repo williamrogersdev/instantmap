@@ -1,0 +1,17 @@
+{
+  "name": "instantmap-repo",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/instantmap", "site"],
+  "scripts": {
+    "build:wasm": "./scripts/build-wasm.sh",
+    "build:package": "cd packages/instantmap && bun run build",
+    "build:site": "cd site && bun run build",
+    "build": "bun run build:wasm && bun run build:package && bun run build:site",
+    "dev": "bun run build:package && cd worker && bunx wrangler dev",
+    "verify": "bun run scripts/verify-page.ts"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}

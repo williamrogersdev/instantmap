@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MapLibre race lane</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+<style>html,body,#map{margin:0;height:100%;background:#e9eef2}</style>
+</head>
+<body>
+<div id="map"></div>
+<script type="module">
+  import { Map } from "https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs";
+  const query = new URLSearchParams(location.search);
+  const [lng, lat] = (query.get("center") || "-122.4194,37.7749").split(",").map(Number);
+  const zoom = Number(query.get("zoom") || "12");
+  const map = new Map({ container: "map", style: "https://tiles.openfreemap.org/styles/liberty", center: [lng, lat], zoom, attributionControl: { compact: true } });
+  map.once("idle", () => requestAnimationFrame(() => parent.postMessage({ lane: "maplibre", ms: performance.now() }, location.origin)));
+  map.on("error", (event) => parent.postMessage({ lane: "maplibre", error: String(event.error?.message ?? event.error) }, location.origin));
+</script>
+</body>
+</html>

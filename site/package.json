@@ -1,0 +1,22 @@
+{
+  "name": "instantmap-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "prebuild": "bun run scripts/generate-theme-docs.ts && cp ../packages/instantmap/dist/instant-map.js ../packages/instantmap/dist/instant-map.js.map public/",
+    "predev": "bun run scripts/generate-theme-docs.ts && cp ../packages/instantmap/dist/instant-map.js ../packages/instantmap/dist/instant-map.js.map public/"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.43.0",
+    "astro": "7.3.6",
+    "sharp": "0.35.3",
+    "starlight-llms-txt": "0.12.0",
+    "instantmap": "workspace:*"
+  },
+  "private": true
+}

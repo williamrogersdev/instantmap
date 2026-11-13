@@ -1,0 +1,172 @@
+---
+title: HTML and any website
+description: Add an Instant Map to a plain HTML page, a bundled app, or a server-rendered site in any language.
+sidebar:
+  order: 1
+---
+
+Use the `<instant-map>` element on any page. Load it from a script tag, or install the package and import it. A server can put the first image in the HTML in any language.
+
+## Install
+
+For a plain page there is nothing to install. With a bundler:
+
+```sh
+npm install instantmap
+```
+
+## Add the map
+
+Load the element with a script tag, place it on the page, and set the markers from JavaScript.
+
+```html title="index.html"
+<instant-map id="map" center="-97.74,30.27" zoom="13" style="display:block;height:520px"></instant-map>
+
+<script type="module" src="https://instantmap.org/instant-map.js"></script>
+<script type="module">
+  const map = document.getElementById("map");
+  await customElements.whenDefined("instant-map");
+  map.markers = [
+    { id: 1, lng: -97.75, lat: 30.27, label: "$420", title: "Apartment 1", subtitle: "Downtown · 2 beds", href: "/listings/1" },
+    { id: 2, lng: -97.73, lat: 30.28, label: "$385", title: "Apartment 2", subtitle: "East Austin · 1 bed", href: "/listings/2" },
+  ];
+</script>
+```
+
+With a bundler, import the package and call `defineInstantMap()` once. A bare `import "instantmap"` is dropped by the bundler.
+
+```ts title="main.ts"
+import { defineInstantMap } from "instantmap";
+
+defineInstantMap();
+```
+
+## Render the first image on the server
+
+Without a poster the element builds its own first image in the browser. To have the image in the server HTML, put an `<img>` inside the element that points at `/static`. `posterHtml()` from `instantmap/server` returns the whole element with the image inside.
+
+```ts title="server.ts"
+import express from "express";
+import { posterHtml } from "instantmap/server";
+
+const center: [number, number] = [-97.74, 30.27];
+const markers = [
+  { id: 1, lng: -97.75, lat: 30.27, label: "$420", title: "Apartment 1" },
+  { id: 2, lng: -97.73, lat: 30.28, label: "$385", title: "Apartment 2" },
+];
+
+const app = express();
+
+app.get("/", (_request, response) => {
+  const map = posterHtml({ center, zoom: 12, width: 1200, height: 640, markers, alt: "Map of Austin", className: "map" });
+  response.type("html").send(`<!doctype html>
+<style>.map { height: 520px; }</style>
+${map}
+<script type="module" src="https://instantmap.org/instant-map.js"></script>
+<script type="module">
+  await customElements.whenDefined("instant-map");
+  document.querySelector("instant-map").markers = ${JSON.stringify(markers).replace(/</g, "\\u003c")};
+</script>`);
+});
+
+app.listen(3000);
+```
+
+Hono, Fastify and any other Node or Bun server work the same way. Check the response:
+
+```sh
+curl -s https://your-site.example/ | grep -o '<img[^>]*static?[^>]*'
+```
+
+You should see an `<img>` whose `src` points at `/static?`.
+
+### Python, PHP, Rails, Django
+
+Any language can build the same URL. The image is `https://instantmap.org/static` with `center`, `zoom`, `size`, `r` and `markers` in the query string. Each marker is `lng,lat,label`, and markers are joined with `;`. See the [HTTP API](/docs/reference/http-api/) for every parameter. Keep `,` and `;` unescaped and encode everything else.
+
+```py title="static_url.py"
+from urllib.parse import urlencode
+
+def static_url(center, zoom, markers, size=(1200, 640), ratio=2):
+    pins = ";".join(f"{m['lng']},{m['lat']},{m['label']}" for m in markers)
+    query = urlencode(
+        {
+            "center": f"{center[0]},{center[1]}",
+            "zoom": zoom,
+            "size": f"{size[0]}x{size[1]}",
+            "r": ratio,
+            "markers": pins,
+        },
+        safe=",;",
+    )
+    return f"https://instantmap.org/static?{query}"
+```
+
+Put the URL in an `<img>` inside the element, then set the markers from JavaScript as above.
+
+```html title="template.html"
+<instant-map center="-97.74,30.27" zoom="12" style="display:block;position:relative;height:520px">
+  <img src="{{ poster_url }}" alt="Map of Austin" width="1200" height="640" fetchpriority="high"
+       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+</instant-map>
+```
+
+The PHP version below was not run, because PHP is not installed on the machine that wrote this guide. Test it before you rely on it.
+
+```php title="static_url.php"
+<?php
+function static_url(array $center, int $zoom, array $markers, int $width = 1200, int $height = 640, int $ratio = 2): string {
+    $pins = implode(';', array_map(fn($m) => "{$m['lng']},{$m['lat']},{$m['label']}", $markers));
+    $query = http_build_query([
+        'center' => "{$center[0]},{$center[1]}",
+        'zoom' => $zoom,
+        'size' => "{$width}x{$height}",
+        'r' => $ratio,
+        'markers' => $pins,
+    ], '', '&', PHP_QUERY_RFC3986);
+    return 'https://instantmap.org/static?' . str_replace(['%2C', '%3B'], [',', ';'], $query);
+}
+```
+
+## Markers, popups, events
+
+Markers are a property. Events bubble from the element, and methods are called on it.
+
+```js title="events.js"
+const map = document.getElementById("map");
+
+map.addEventListener("markerclick", (event) => {
+  document.getElementById("opened").textContent = event.detail.marker.title;
+});
+
+map.addEventListener("select", (event) => {
+  console.log(event.detail);
+});
+
+document.getElementById("downtown").addEventListener("click", () => {
+  map.flyTo({ center: [-97.743, 30.267], zoom: 15 });
+});
+
+listItem.addEventListener("mouseenter", () => map.highlight(1));
+listItem.addEventListener("mouseleave", () => map.highlight(null));
+listItem.addEventListener("click", () => map.select(1));
+```
+
+## Common mistakes
+
+- Giving the map no height. It collapses to nothing.
+- Setting `markers` as an attribute. It is a property, so assign `map.markers = ...`.
+- Writing marker JSON into a script tag without escaping `<`. A label containing `</script>` ends the script.
+- Setting `markers` before the element is defined. Wait for `customElements.whenDefined("instant-map")`.
+- Building the poster URL with a different `center` or `zoom` than the element. The image then jumps when the map loads.
+- Expecting tiles outside the covered area. The tiles cover Austin only for now.
+
+## Prompt for your agent
+
+```text
+Add an Instant Map to my website. Follow https://instantmap.org/docs/frameworks/html.md exactly. Load the element from the script tag or import defineInstantMap from instantmap, give the element a fixed height, set markers as a property after customElements.whenDefined, and render the first image on the server as an img inside the element pointing at /static, using posterHtml from instantmap/server when the server is Node or Bun. Start the site and confirm the HTML from curl contains an img with /static? in its src.
+```
+
+## Full example
+
+[examples/html on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/html) and [examples/express on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/express)

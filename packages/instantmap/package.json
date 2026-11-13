@@ -1,0 +1,32 @@
+{
+  "name": "instantmap",
+  "version": "0.1.0",
+  "description": "A map that arrives as one image and becomes interactive when you touch it. 13 KB gzipped, no dependencies, any framework.",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://instantmap.org",
+  "repository": { "type": "git", "url": "git+https://github.com/williamrogersdev/instantmap.git", "directory": "packages/instantmap" },
+  "keywords": ["map", "maps", "static map", "web component", "custom element", "react", "nextjs", "astro", "protomaps", "openstreetmap"],
+  "sideEffects": ["./dist/index.js", "./dist/instant-map.js", "./dist/chunk-*.js"],
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./server": { "types": "./dist/server.d.ts", "default": "./dist/server.js" },
+    "./react": { "types": "./dist/react.d.ts", "default": "./dist/react.js" },
+    "./instant-map.js": "./dist/instant-map.js"
+  },
+  "files": ["dist", "README.md"],
+  "peerDependencies": { "react": ">=18", "react-dom": ">=18" },
+  "peerDependenciesMeta": { "react": { "optional": true }, "react-dom": { "optional": true } },
+  "scripts": {
+    "build": "NODE_ENV=production bun run build.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

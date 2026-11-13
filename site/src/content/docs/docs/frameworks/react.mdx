@@ -1,0 +1,101 @@
+---
+title: React
+description: Use Instant Map in a React app with Vite, with custom popups and list hover sync.
+sidebar:
+  order: 3
+---
+
+Use `instantmap/react` in any React 18 or 19 client app. This page uses Vite.
+
+## Install
+
+```sh
+npm install instantmap
+```
+
+## Add the map
+
+```tsx title="src/app.tsx"
+import { InstantMap } from "instantmap/react";
+import { listings } from "./listings";
+
+export function App() {
+  return (
+    <InstantMap
+      center={[-97.7431, 30.2672]}
+      zoom={11.5}
+      markers={listings}
+      style={{ height: 480 }}
+    />
+  );
+}
+```
+
+## Markers, popups, events
+
+`renderPopup` returns any React element. The map renders it inside the popup. `onSelect` fires when a marker is selected.
+
+The handle on `ref` controls the map. `highlight(id)` marks one marker, and `highlight(null)` clears it. Use it to sync a list with the map.
+
+```tsx title="src/app.tsx"
+import { useRef, useState } from "react";
+import { InstantMap, type InstantMapHandle } from "instantmap/react";
+import type { Marker } from "instantmap";
+import { listings, type Listing } from "./listings";
+
+export function App() {
+  const map = useRef<InstantMapHandle<Listing>>(null);
+  const [selected, setSelected] = useState<Marker<Listing> | null>(null);
+
+  return (
+    <div className="results">
+      <ol className="list">
+        {listings.slice(0, 40).map((listing) => (
+          <li
+            key={listing.id}
+            aria-current={selected?.id === listing.id}
+            onPointerEnter={() => map.current?.highlight(listing.id)}
+            onPointerLeave={() => map.current?.highlight(null)}
+          >
+            <strong>{listing.title}</strong>
+            {listing.subtitle}
+          </li>
+        ))}
+      </ol>
+      <InstantMap
+        ref={map}
+        className="map"
+        center={[-97.7431, 30.2672]}
+        zoom={11.5}
+        markers={listings}
+        onSelect={setSelected}
+        renderPopup={(marker) => (
+          <div className="card">
+            <h3>{marker.title}</h3>
+            <p>{marker.subtitle}</p>
+            <a href={marker.href}>View stay</a>
+          </div>
+        )}
+      />
+    </div>
+  );
+}
+```
+
+A client-only Vite app has no server HTML, so there is no first image to render on the server. For that, use [Next.js](/docs/frameworks/nextjs/) or [React Router](/docs/frameworks/react-router/).
+
+## Common mistakes
+
+- Creating the markers array inside the component body on every render. Memoize it, or define it outside the component.
+- Giving the map no height. It collapses to nothing.
+- Two copies of React in the bundle, which fails with `Cannot read properties of null (reading 'useRef')`. This happens when `instantmap` is installed from a local folder. Add `resolve: { dedupe: ["react", "react-dom"] }` to `vite.config.ts`.
+
+## Prompt for your agent
+
+```text
+Add an Instant Map to my React and Vite app. Follow https://instantmap.org/docs/frameworks/react.md exactly. Use InstantMap from instantmap/react with a fixed height, renderPopup for the popup card, and a ref with highlight(id) to sync a list with the map. Memoize the markers array. Run the build and open the page to confirm the map loads with no console errors.
+```
+
+## Full example
+
+[examples/react-vite on GitHub](https://github.com/williamrogersdev/instantmap/tree/master/examples/react-vite)

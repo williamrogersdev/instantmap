@@ -1,24 +1,13 @@
 use instantmap_render::glyphs::FontStack;
 use instantmap_render::mvt::Tile;
 use instantmap_render::render::TILE_SIZE;
-use instantmap_render::style::{Rgba, Theme, paper};
+use instantmap_render::style::{Palette, theme};
 use instantmap_render::{Camera, Fonts, Format, Marker, Scene, TileId, cluster, render_image};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct Renderer {
     fonts: Fonts,
-    theme: Theme,
-}
-
-fn rgba(value: f64) -> Rgba {
-    let packed = value as u32;
-    [
-        (packed >> 24) as u8,
-        (packed >> 16) as u8,
-        (packed >> 8) as u8,
-        packed as u8,
-    ]
 }
 
 fn camera_from(values: &[f64]) -> Result<Camera, JsError> {
@@ -56,14 +45,14 @@ impl Renderer {
                 medium: load(medium)?,
                 italic: load(italic)?,
             },
-            theme: paper(),
         })
     }
 
     /// camera: [longitude, latitude, zoom, width, height, pixelRatio]
     /// tileIds: [z, x, y, ...] matching tileLengths; tileData: the tiles' bytes concatenated
-    /// markers: [longitude, latitude, radius, fillRGBA, strokeRGBA, strokeWidth, labelRGBA, ...] (7 per marker)
-    /// labels: one line per marker, empty for none
+    /// palette: 36 colours as 0xRRGGBBAA words, in the order of the theme palette keys
+    /// markers: [longitude, latitude, count, selected, ...] (4 per marker)
+    /// labels: "\n"-joined, one line per marker, empty for none
     /// clusterDistance: CSS pixels within which markers merge into a count bubble, 0 to keep every marker
     /// quality: 0 for PNG, 1..=100 for JPEG
     #[allow(clippy::too_many_arguments)]
@@ -73,12 +62,16 @@ impl Renderer {
         tile_ids: &[u32],
         tile_lengths: &[u32],
         tile_data: &[u8],
+        palette: &[u32],
         markers: &[f64],
         labels: &str,
         cluster_distance: f32,
         quality: u8,
     ) -> Result<Vec<u8>, JsError> {
         let camera = camera_from(camera)?;
+        let palette =
+            Palette::from_words(palette).ok_or_else(|| JsError::new("palette needs 36 colours"))?;
+        let theme = theme(&palette);
         if tile_ids.len() != tile_lengths.len() * 3 {
             return Err(JsError::new("tileIds must hold 3 numbers per tile"));
         }
@@ -102,19 +95,16 @@ impl Renderer {
         }
         let mut label_lines = labels.split('\n');
         let markers: Vec<Marker> = markers
-            .chunks_exact(7)
+            .chunks_exact(4)
             .map(|values| Marker {
                 longitude: values[0],
                 latitude: values[1],
-                radius: values[2] as f32,
-                fill: rgba(values[3]),
-                stroke: rgba(values[4]),
-                stroke_width: values[5] as f32,
+                count: values[2].clamp(1.0, f64::from(u32::MAX)) as u32,
+                selected: values[3] != 0.0,
                 label: label_lines
                     .next()
                     .filter(|text| !text.is_empty())
                     .map(str::to_owned),
-                label_color: rgba(values[6]),
             })
             .collect();
         let markers = if cluster_distance > 0.0 {
@@ -124,7 +114,7 @@ impl Renderer {
         };
         let scene = Scene {
             camera,
-            theme: &self.theme,
+            theme: &theme,
             tiles: &tiles,
             fonts: Some(&self.fonts),
             markers: &markers,

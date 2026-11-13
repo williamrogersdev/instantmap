@@ -1,0 +1,102 @@
+---
+title: Vue
+description: Add Instant Map to a Vue 3 app with Vite.
+sidebar:
+  order: 6
+---
+
+You will end up with a Vue 3 component that shows an interactive map with markers, reacts to marker clicks and can fit the view to your data.
+
+## Install
+
+```bash
+npm install instantmap
+```
+
+Tell Vue that `instant-map` is a custom element, not a component.
+
+```ts
+// vite.config.ts
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    vue({
+      template: { compilerOptions: { isCustomElement: (tag) => tag === "instant-map" } },
+    }),
+  ],
+});
+```
+
+## Add the map
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { defineInstantMap, type InstantMapElement, type Marker } from "instantmap";
+
+defineInstantMap();
+
+const center: [number, number] = [-97.7431, 30.2672];
+const zoom = 12;
+const listings: Marker[] = [
+  { id: 1, lng: -97.75, lat: 30.26, label: "$120", title: "Apartment 1", subtitle: "$120 per night" },
+  { id: 2, lng: -97.73, lat: 30.28, label: "$85", title: "Apartment 2", subtitle: "$85 per night" },
+];
+
+const map = ref<InstantMapElement | null>(null);
+const clicked = ref<Marker | null>(null);
+
+function onMarkerClick(event: Event) {
+  clicked.value = (event as CustomEvent<{ marker: Marker }>).detail.marker;
+}
+
+function showAll() {
+  map.value?.fitBounds(listings, { padding: 40 });
+}
+</script>
+
+<template>
+  <button type="button" @click="showAll">Show all</button>
+  <span v-if="clicked">Selected: {{ clicked.title }}, {{ clicked.subtitle }}</span>
+  <instant-map
+    ref="map"
+    :center="center.join(',')"
+    :zoom="zoom"
+    :markers.prop="listings"
+    style="display: block; height: 520px"
+    @markerclick="onMarkerClick"
+  ></instant-map>
+</template>
+```
+
+## Markers, popups and events
+
+- `center` and `zoom` are attributes. Bind them with `:center` and `:zoom`.
+- Markers are an array of objects, so bind them as a property with the `.prop` modifier: `:markers.prop="listings"`. Without `.prop`, Vue turns the array into the string `[object Object]`.
+- Listen with `@markerclick`, `@moveend` or any other event. The payload is in `event.detail`.
+- Call methods through a template ref: `map.value?.fitBounds(...)`, `flyTo`, `select`.
+- To change markers later, replace the array. A `watch` on your data can assign a new one.
+
+This app renders in the browser only, so there is no server image. The element draws its own first image. For a server-rendered first image, see the [Nuxt guide](/docs/frameworks/nuxt/).
+
+## Common mistakes
+
+- Forgetting `isCustomElement`. Vue warns "Failed to resolve component: instant-map" and the map does not render.
+- Binding markers without `.prop`.
+- Skipping `defineInstantMap()`. Call it once, before the component renders.
+- No height. The element is 0 pixels tall until you set one.
+- Typing the template ref as `HTMLElement`. Use `InstantMapElement` so `fitBounds` type checks.
+
+## Prompt for your agent
+
+```text
+Add Instant Map to my Vue 3 app. Follow https://instantmap.org/docs/frameworks/vue.md
+Set isCustomElement for instant-map in vite.config.ts, call defineInstantMap(),
+bind markers with :markers.prop, and handle @markerclick.
+```
+
+## Example
+
+A full working project is at [examples/vue](https://github.com/williamrogersdev/instantmap/tree/master/examples/vue).

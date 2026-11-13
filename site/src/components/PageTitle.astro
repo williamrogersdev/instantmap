@@ -1,0 +1,62 @@
+---
+import Default from "@astrojs/starlight/components/PageTitle.astro";
+
+const route = Astro.locals.starlightRoute;
+const slug = route.entry.id.replace(/\/index$/, "");
+const markdownUrl = `/${slug}.md`;
+const absolute = new URL(markdownUrl, Astro.site ?? "https://instantmap.org").href;
+const prompt = `Read ${absolute} and follow it to add Instant Map to this project. Use the exact APIs it documents; do not invent options. When done, run the app and confirm the map renders.`;
+---
+
+<Default />
+<div class="page-actions" data-markdown={markdownUrl} data-prompt={prompt}>
+  <button type="button" data-action="copy-page">Copy page as Markdown</button>
+  <button type="button" data-action="copy-prompt">Copy prompt for your AI agent</button>
+  <a href={markdownUrl}>View .md</a>
+</div>
+
+<script>
+  for (const bar of document.querySelectorAll<HTMLElement>(".page-actions")) {
+    bar.addEventListener("click", async (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action]");
+      if (!button) return;
+      const original = button.textContent;
+      const text = button.dataset.action === "copy-page" ? await (await fetch(bar.dataset.markdown!)).text() : bar.dataset.prompt!;
+      await navigator.clipboard.writeText(text);
+      button.textContent = "Copied";
+      setTimeout(() => (button.textContent = original), 1400);
+    });
+  }
+</script>
+
+<style>
+  .page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .page-actions button,
+  .page-actions a {
+    all: unset;
+    box-sizing: border-box;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--sl-color-gray-5);
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    cursor: pointer;
+  }
+  .page-actions button:hover,
+  .page-actions a:hover {
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-3);
+  }
+  .page-actions :focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+</style>

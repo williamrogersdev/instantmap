@@ -1,0 +1,129 @@
+---
+title: Nuxt
+description: Add Instant Map to a Nuxt 4 app, with the first image rendered on the server.
+sidebar:
+  order: 7
+---
+
+You will end up with a Nuxt page that ships the first map image in the server HTML and becomes an interactive map in the browser.
+
+## Install
+
+```bash
+npm install instantmap
+```
+
+Tell Vue that `instant-map` is a custom element.
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  compatibilityDate: "2026-11-01",
+  vue: { compilerOptions: { isCustomElement: (tag) => tag === "instant-map" } },
+});
+```
+
+Register the element in the browser with a client plugin.
+
+```ts
+// app/plugins/instantmap.client.ts
+import { defineInstantMap } from "instantmap";
+
+export default defineNuxtPlugin(() => {
+  defineInstantMap();
+});
+```
+
+## Add the map
+
+```vue
+<script setup lang="ts">
+import type { InstantMapElement, Marker } from "instantmap";
+import { staticUrl } from "instantmap/server";
+
+const center: [number, number] = [-97.7431, 30.2672];
+const zoom = 12;
+const listings: Marker[] = [
+  { id: 1, lng: -97.75, lat: 30.26, label: "$120", title: "Apartment 1", subtitle: "$120 per night" },
+  { id: 2, lng: -97.73, lat: 30.28, label: "$85", title: "Apartment 2", subtitle: "$85 per night" },
+];
+
+const poster = staticUrl({ center, zoom, width: 1280, height: 720, ratio: 2, markers: listings });
+const map = ref<InstantMapElement | null>(null);
+const clicked = ref<Marker | null>(null);
+
+function onMarkerClick(event: Event) {
+  clicked.value = (event as CustomEvent<{ marker: Marker }>).detail.marker;
+}
+
+function showAll() {
+  map.value?.fitBounds(listings, { padding: 40 });
+}
+</script>
+
+<template>
+  <button type="button" @click="showAll">Show all</button>
+  <span v-if="clicked">Selected: {{ clicked.title }}, {{ clicked.subtitle }}</span>
+  <instant-map
+    ref="map"
+    :center="center.join(',')"
+    :zoom="zoom"
+    :markers.prop="listings"
+    style="display: block; position: relative; height: 520px"
+    @markerclick="onMarkerClick"
+  >
+    <img
+      :src="poster"
+      alt="Map of Austin"
+      width="1280"
+      height="720"
+      fetchpriority="high"
+      style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover"
+    />
+  </instant-map>
+</template>
+```
+
+## Render the first image on the server
+
+`staticUrl` runs during server rendering and returns the URL of the first image. The `<img>` is part of the HTML Nuxt sends, so the map shows before JavaScript loads. The element takes over in the browser.
+
+To check it, build and preview, then look at the HTML the server sends:
+
+```bash
+npm run build
+npm run preview
+curl -s http://localhost:3000/ | grep "<img"
+```
+
+You should see an `<img src="https://.../static?...">` inside `<instant-map>`. View source in the browser shows the same.
+
+## Markers, popups and events
+
+- `center` and `zoom` are attributes. Bind them with `:center` and `:zoom`.
+- Markers are objects, so bind them as a property: `:markers.prop="listings"`.
+- Listen with `@markerclick`, `@moveend` or any other event. The payload is in `event.detail`.
+- Call methods through a template ref: `map.value?.fitBounds(...)`.
+- Markers set as a property do not change the server image. Pass the same markers to `staticUrl`, as above.
+
+## Common mistakes
+
+- Registering the element in a plain plugin. Use the `.client.ts` suffix, because the element needs the browser.
+- Missing `isCustomElement`. Vue warns it cannot resolve `instant-map`.
+- Wrapping the map in `<ClientOnly>`. You lose the server-rendered image, which is the point.
+- Mismatched poster and element. Use the same `center`, `zoom` and size, or the image jumps on hydration.
+- No height. Set one on the element.
+- Calling `defineInstantMap()` from server code. Keep it in the client plugin. `instantmap/server` is the only entry that is safe there.
+
+## Prompt for your agent
+
+```text
+Add Instant Map to my Nuxt 4 app. Follow https://instantmap.org/docs/frameworks/nuxt.md
+Set isCustomElement in nuxt.config.ts, register the element in app/plugins/instantmap.client.ts,
+render the first image on the server with staticUrl from instantmap/server,
+and bind markers with :markers.prop.
+```
+
+## Example
+
+A full working project is at [examples/nuxt](https://github.com/williamrogersdev/instantmap/tree/master/examples/nuxt).

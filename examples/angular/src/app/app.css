@@ -1,0 +1,12 @@
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: system-ui, sans-serif;
+}
+
+instant-map {
+  display: block;
+  position: relative;
+  height: 520px;
+}

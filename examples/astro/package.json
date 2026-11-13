@@ -1,0 +1,19 @@
+{
+  "name": "instantmap-example-astro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 3201",
+    "build": "astro build",
+    "preview": "astro preview --port 3201",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "astro": "^7.4.12",
+    "instantmap": "file:../../packages/instantmap"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "5.9.3"
+  }
+}

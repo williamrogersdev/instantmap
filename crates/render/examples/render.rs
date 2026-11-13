@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use instantmap_render::glyphs::FontStack;
 use instantmap_render::mvt::Tile;
-use instantmap_render::style::{hex, paper};
+use instantmap_render::style::{Palette, theme};
 use instantmap_render::{Camera, Fonts, Marker, Scene, TileId, render};
 
 fn font(fixtures: &str, name: &str) -> FontStack {
@@ -63,28 +63,36 @@ fn main() {
         medium: font(fixtures, "noto-sans-medium"),
         italic: font(fixtures, "noto-sans-italic"),
     };
-    let theme = paper();
-    let orange = hex(0xee7904);
+    let palette = match arguments.get(7).map(String::as_str) {
+        Some("paper") => Palette::paper(),
+        Some("midnight") => Palette::midnight(),
+        _ => Palette::daylight(),
+    };
+    let theme = theme(&palette);
+    let spot = |longitude: f64, latitude: f64, label: Option<&str>, selected: bool| Marker {
+        longitude,
+        latitude,
+        count: 1,
+        selected,
+        label: label.map(str::to_string),
+    };
     let mut markers = vec![
+        spot(-96.8, 32.78, Some("$42"), false),
+        spot(-96.9, 32.9, Some("Pallet Co"), true),
+        spot(-97.33, 32.75, None, false),
         Marker {
-            longitude: -96.8,
-            latitude: 32.78,
-            radius: 16.0,
-            fill: orange,
-            stroke: hex(0xffffff),
-            stroke_width: 2.5,
-            label: Some("$42".into()),
-            label_color: hex(0xffffff),
+            longitude: -96.5,
+            latitude: 33.0,
+            count: 1280,
+            selected: false,
+            label: None,
         },
         Marker {
-            longitude: -97.33,
-            latitude: 32.75,
-            radius: 8.0,
-            fill: hex(0xffffff),
-            stroke: orange,
-            stroke_width: 2.5,
+            longitude: -97.0,
+            latitude: 32.55,
+            count: 14,
+            selected: false,
             label: None,
-            label_color: hex(0x14263d),
         },
     ];
     let mut seed: u64 = 0x9e37_79b9_7f4a_7c15;
@@ -98,16 +106,12 @@ fn main() {
     for _ in 0..synthetic {
         let distance = random().powf(1.6) * spread * 0.6;
         let angle = random() * std::f64::consts::TAU;
-        markers.push(Marker {
-            longitude: longitude + distance * angle.cos(),
-            latitude: latitude + distance * angle.sin() * 0.8,
-            radius: 5.0,
-            fill: orange,
-            stroke: hex(0xffffff),
-            stroke_width: 1.5,
-            label: None,
-            label_color: hex(0xffffff),
-        });
+        markers.push(spot(
+            longitude + distance * angle.cos(),
+            latitude + distance * angle.sin() * 0.8,
+            None,
+            false,
+        ));
     }
     let markers = instantmap_render::cluster(&camera, &markers, 44.0);
     let scene = Scene {

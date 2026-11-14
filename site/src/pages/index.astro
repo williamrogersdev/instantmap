@@ -1,501 +1,147 @@
 ---
 import { staticUrl } from "instantmap/server";
+import Site from "../layouts/Site.astro";
 import { sanFranciscoListings } from "../data/listings.ts";
+import { AGENT_PROMPT, FAQ, kb, REPO, SHARE_IMAGE, SITE, sizes, VERSION } from "../data/site.ts";
 
 const HERO_CENTER: [number, number] = [-122.4295, 37.7668];
-const HERO_ZOOM = 13;
 const listings = sanFranciscoListings(280);
-const heroPoster = staticUrl({ src: "", center: HERO_CENTER, zoom: HERO_ZOOM, width: 1280, height: 800, ratio: 2, markers: listings });
+const heroPoster = staticUrl({ src: "", center: HERO_CENTER, zoom: 13, width: 1280, height: 800, ratio: 2, markers: listings });
 const phonePoster = staticUrl({ src: "", center: [-122.4135, 37.7625], zoom: 13, width: 400, height: 320, ratio: 2, markers: listings });
-const studioPoster = staticUrl({ src: "", center: [-122.4215, 37.7745], zoom: 13, width: 960, height: 720, ratio: 2, markers: listings });
 
-const frameworks = [
-  ["Next.js", "nextjs", "App Router, server-rendered first image"],
-  ["React", "react", "Vite, the React component"],
-  ["React Router", "react-router", "Framework mode with a loader"],
-  ["Astro", "astro", "Image in the HTML, no island needed"],
-  ["Vue", "vue", "Vite, custom element"],
-  ["Nuxt", "nuxt", "Server-rendered image, client map"],
-  ["SvelteKit", "sveltekit", "Load function and the element"],
-  ["Angular", "angular", "Standalone component"],
-  ["Solid", "solid", "SolidStart or Vite"],
-  ["HTML, Rails, Django, PHP", "html", "One script tag in any page"],
+const description = "Instant Map is an open-source map for the web. It shows as one finished image before any JavaScript runs, then becomes an interactive map on first touch. One web component for every framework.";
+const schema = [
+  { "@context": "https://schema.org", "@type": "WebSite", name: "Instant Map", url: `${SITE}/`, description },
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Instant Map",
+    description,
+    url: `${SITE}/`,
+    image: SHARE_IMAGE,
+    applicationCategory: "DeveloperApplication",
+    applicationSubCategory: "Map component",
+    operatingSystem: "Any (web browser)",
+    softwareVersion: VERSION,
+    license: "https://opensource.org/licenses/MIT",
+    codeRepository: REPO,
+    downloadUrl: "https://www.npmjs.com/package/instantmap",
+    softwareHelp: `${SITE}/docs/start/quick-start/`,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    featureList: ["First view is a server-rendered image", "Interactive map loads on first touch", "Markers, clusters and customisable cards", "Brand colours from a style guide", "Works in any framework", "Self-hostable on Cloudflare Workers"],
+  },
+  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ.map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })) },
 ];
-
-const agentPrompt = `Add an Instant Map to this project.
-
-1. Read https://instantmap.org/llms.txt, then the framework guide for this project's stack from https://instantmap.org/docs/frameworks/ (append .md to any docs URL for Markdown).
-2. Install the package: npm install instantmap
-3. Render the map where I ask, with an explicit height, centred on my data, and pass my records as markers: { id, lng, lat, label, title, subtitle, href }.
-4. If the framework renders on the server, render the first image on the server as the guide shows, so the map appears before any JavaScript runs.
-5. Run the app and check: the image appears, the map moves when dragged, and clicking a marker opens its card. Fix any console errors.`;
-
-const htmlSample = `<script type="module"
-  src="https://instantmap.org/instant-map.js"></script>
-
-<instant-map
-  center="-122.42,37.77"
-  zoom="12"
-  style="height:480px">
-</instant-map>
-
-<script type="module">
-  const map = document.querySelector("instant-map");
-  map.markers = await fetch("/api/listings")
-    .then((response) => response.json());
-  map.addEventListener("markerclick", (event) => {
-    location.href = event.detail.marker.href;
-  });
-</script>`;
-
-const reactSample = `import { InstantMap } from "instantmap/react";
-
-export function ListingsMap({ listings }) {
-  return (
-    <InstantMap
-      center={[-122.42, 37.77]}
-      zoom={12}
-      markers={listings}
-      style={{ height: 480 }}
-      onMarkerClick={(marker) => router.push(marker.href)}
-    />
-  );
-}`;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Instant Map</title>
-    <meta name="description" content="An open-source map for the web that paints as one image before any JavaScript runs, then becomes a fast interactive map when touched. One web component for every framework." />
-    <meta name="theme-color" content="#0f2233" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" as="image" href={heroPoster} fetchpriority="high" media="(min-width: 901px)" />
-    <link rel="preload" as="image" href={phonePoster} fetchpriority="high" media="(max-width: 900px)" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
-    <script type="module" src="/instant-map.js"></script>
-  </head>
-  <body>
-    <header class="bar">
-      <a class="brand" href="/">
-        <img src="/favicon.svg" alt="" width="28" height="28" />
-        Instant Map
-      </a>
-      <nav aria-label="Main">
-        <a href="/docs/start/quick-start/">Docs</a>
-        <a href="/docs/frameworks/nextjs/">Frameworks</a>
-        <a href="/docs/reference/element/">API</a>
-        <a href="https://github.com/williamrogersdev/instantmap">GitHub</a>
-      </nav>
-    </header>
-
-    <main>
-      <section class="hero" aria-labelledby="hero-title">
-        <instant-map id="hero-map" aria-label="Map of 280 sample San Francisco rentals">
-          <picture>
-            <source media="(max-width: 900px)" srcset={phonePoster} />
-            <img src={heroPoster} alt="Map of 280 sample San Francisco rentals" fetchpriority="high" onload="requestAnimationFrame(function () { window.__heroPaint = window.__heroPaint || performance.now(); document.dispatchEvent(new Event('heropaint')); })" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
-          </picture>
-        </instant-map>
-        <p class="handoff" aria-live="polite"><span class="step image">Image<span class="long">, no JavaScript yet</span><span class="short" id="badge-paint"></span></span><span class="step live">Live map, drag it</span></p>
-        <div class="hero-card">
-          <h1 id="hero-title">The map is on the page before your JavaScript is.</h1>
-          <p class="lede">
-            Instant Map sends a finished image of your map first, then turns it into a smooth, clickable map the moment
-            someone reaches for it.
-          </p>
-          <dl class="proof" aria-live="polite">
-            <div class="lead-stat">
-              <dt>First image on screen, this visit</dt>
-              <dd><span id="meter-paint">…</span></dd>
-              <dd class="cache-note">Counted from the start of this page load. The race below is a cold load, nothing cached.</dd>
-              <dd class="cache-note" id="meter-cache" hidden>Your browser had the image cached on this visit.</dd>
-            </div>
-            <div>
-              <dt>Script</dt>
-              <dd id="meter-script">13.4 KB, loads after the map shows</dd>
-            </div>
-            <div>
-              <dt>Interactive</dt>
-              <dd id="meter-state">on your first touch</dd>
-            </div>
-          </dl>
-          <div class="install">
-            <code>npm install instantmap</code>
-            <button type="button" class="copy" data-copy="npm install instantmap">Copy</button>
-          </div>
-          <div class="actions">
-            <a class="button primary" href="/docs/start/quick-start/">Read the quick start</a>
-            <button type="button" class="button" data-copy={agentPrompt}>Copy prompt for your agent</button>
-          </div>
-          <p class="trust">MIT licence · v0.1 · Every framework · <a href="https://github.com/williamrogersdev/instantmap">Source on GitHub</a></p>
+<Site title="Instant Map: the map that is on the page before your JavaScript" description={description} path="/" overlay preload={[{ href: heroPoster, media: "(min-width: 901px)" }, { href: phonePoster, media: "(max-width: 900px)" }]} schema={schema}>
+  <section class="hero" aria-labelledby="hero-title">
+    <instant-map id="hero-map" aria-label="Map of 280 sample San Francisco rentals">
+      <picture>
+        <source media="(max-width: 900px)" srcset={phonePoster} />
+        <img src={heroPoster} alt="Map of 280 sample San Francisco rentals" fetchpriority="high" onload="requestAnimationFrame(function () { window.__heroPaint = window.__heroPaint || performance.now(); document.dispatchEvent(new Event('heropaint')); })" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+      </picture>
+    </instant-map>
+    <p class="handoff" aria-live="polite"><span class="step image">Image<span class="long">, no JavaScript yet</span></span><span class="step live">Live map, drag it</span></p>
+    <div class="hero-card">
+      <h1 id="hero-title">The map is on the page before your JavaScript is.</h1>
+      <p class="lede">Instant Map sends a finished image of your map first, then turns it into a smooth, clickable map the moment someone reaches for it.</p>
+      <dl class="proof">
+        <div class="lead-stat">
+          <dt>First image on screen, this visit</dt>
+          <dd><span id="meter-paint">…</span></dd>
+          <dd class="cache-note" id="meter-cache" hidden>Your browser had the image cached on this visit.</dd>
         </div>
-      </section>
-
-      <section class="race" id="race" aria-labelledby="race-title">
-        <div class="race-head">
-          <h2 id="race-title">Race it against MapLibre on your connection</h2>
-          <p>Both lanes load the same San Francisco centre and zoom from nothing, one after the other, each in its own map style. Each clock starts when its lane starts loading and stops when its map is fully drawn on screen.</p>
-          <div class="race-controls">
-            <button type="button" class="button primary" id="race-start">Start the race</button>
-            <label class="toggle"><input type="checkbox" id="race-fresh" checked /> Fresh view, nothing cached</label>
-          </div>
-        </div>
-        <p class="race-result" id="race-result" aria-live="polite"></p>
-        <div class="lanes">
-          <figure class="lane" data-lane="instant">
-            <figcaption>
-              <span><strong>Instant Map</strong><span class="weight">0 KB of JavaScript before the map shows</span></span>
-              <span class="time" data-time>–</span>
-            </figcaption>
-            <div class="track" aria-hidden="true"><span data-track></span></div>
-            <div class="screen"><p class="idle">Press start</p></div>
-          </figure>
-          <figure class="lane" data-lane="maplibre">
-            <figcaption>
-              <span><strong>MapLibre GL 6.16</strong><span class="weight">288 KB of JavaScript (gzipped) before the map shows</span></span>
-              <span class="time" data-time>–</span>
-            </figcaption>
-            <div class="track" aria-hidden="true"><span data-track></span></div>
-            <div class="screen"><p class="idle">Press start</p></div>
-          </figure>
-        </div>
-        <p class="fine">
-          MapLibre uses the free OpenFreeMap Liberty style. A second run with "nothing cached" off uses your browser cache for both.
-          MapLibre draws vectors and can rotate and tilt; if you need those, use it.
-        </p>
-      </section>
-
-      <section class="studio" id="studio" aria-labelledby="studio-title">
-        <div class="studio-copy">
-          <h2 id="studio-title">Make it yours</h2>
-          <p>
-            Pick a theme, then recolour any part of it. The server paints the first image in the same colours, so nothing
-            changes when the map wakes up.
-          </p>
-          <fieldset class="themes">
-            <legend>Theme</legend>
-            <label><input type="radio" name="theme" value="daylight" checked /><span class="swatch" style="--a:#f3f2ec;--b:#8ec6ee;--c:#0f2233"></span>Daylight</label>
-            <label><input type="radio" name="theme" value="midnight" /><span class="swatch" style="--a:#161a21;--b:#0c2a47;--c:#19d3a2"></span>Midnight</label>
-            <label><input type="radio" name="theme" value="paper" /><span class="swatch" style="--a:#f3f1ec;--b:#d0dee8;--c:#1d2b3a"></span>Paper</label>
-            <label><input type="radio" name="theme" value="mono" /><span class="swatch" style="--a:#f4f4f3;--b:#dde2e7;--c:#0f2233"></span>Mono</label>
-          </fieldset>
-          <fieldset class="tokens">
-            <legend>Colours</legend>
-            <label><input type="color" data-token="cluster" />Clusters</label>
-            <label><input type="color" data-token="marker" />Price pills</label>
-            <label><input type="color" data-token="markerText" />Pill text</label>
-            <label><input type="color" data-token="selected" />Selected</label>
-            <label><input type="color" data-token="water" />Water</label>
-            <label><input type="color" data-token="land" />Land</label>
-          </fieldset>
-          <fieldset class="presets">
-            <legend>Try a brand</legend>
-            <div>
-              <button type="button" class="chip" data-preset="">Default</button>
-              <button type="button" class="chip" data-preset="cluster:9f1239,marker:e11d48,accent:e11d48,selected:fde047,selectedText:3f2a00">Rose</button>
-              <button type="button" class="chip" data-preset="cluster:134e4a,marker:0f766e,accent:0f766e,water:b9dde0">Harbour</button>
-              <button type="button" class="chip" data-preset="cluster:14532d,marker:15803d,accent:15803d,selected:fde047,selectedText:3f2a00">Forest</button>
-            </div>
-          </fieldset>
-        </div>
-        <div class="studio-map">
-          <instant-map id="studio-map" center="-122.4215,37.7745" zoom="13" aria-label="Map you can restyle with the controls">
-            <img src={studioPoster} alt="Map you can restyle with the controls" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
-          </instant-map>
-          <div class="code">
-            <div class="tabs" role="tablist" aria-label="Code for this map">
-              <button type="button" role="tab" aria-selected="true" data-tab="html">HTML</button>
-              <button type="button" role="tab" aria-selected="false" data-tab="react">React</button>
-              <button type="button" role="tab" aria-selected="false" data-tab="agent">Agent prompt</button>
-              <button type="button" class="copy" data-copy-target="studio-code">Copy</button>
-            </div>
-            <pre><code id="studio-code"></code></pre>
-          </div>
-        </div>
-      </section>
-
-
-      <section class="runs" aria-labelledby="runs-title">
-        <h2 id="runs-title">What runs where</h2>
-        <div class="steps">
-          <div>
-            <h3>On the server</h3>
-            <p>The first image is a JPEG drawn by the Instant Map server from OpenStreetMap tiles and your markers. Point it at instantmap.org, or deploy the Worker in the repository to your own Cloudflare account.</p>
-          </div>
-          <div>
-            <h3>In the HTML</h3>
-            <p>Your page carries that image as a plain <code>&lt;img&gt;</code>, so it paints with the first HTML, even before fonts or scripts.</p>
-          </div>
-          <div>
-            <h3>In the browser</h3>
-            <p>A 13.4 KB script upgrades the image to a map on first touch: drag, zoom, clusters, keyboard and a listing card.</p>
-          </div>
-        </div>
-        <a class="more" href="/docs/guides/self-hosting/">Run your own server</a>
-      </section>
-
-      <section class="frameworks" aria-labelledby="frameworks-title">
-        <h2 id="frameworks-title">Works where you already work</h2>
-        <p>A standard web component, with a React component and a server helper for the first image. Every guide comes from an example app in the repository.</p>
-        <ul>
-          {frameworks.map(([name, slug, note]) => <li><a href={`/docs/frameworks/${slug}/`}><strong>{name}</strong><span>{note}</span></a></li>)}
-        </ul>
-        <div class="samples">
-          <div class="sample">
-            <div class="sample-head"><h3>Any page</h3><button type="button" class="copy" data-copy={htmlSample}>Copy</button></div>
-            <pre><code>{htmlSample}</code></pre>
-          </div>
-          <div class="sample">
-            <div class="sample-head"><h3>React and Next.js</h3><button type="button" class="copy" data-copy={reactSample}>Copy</button></div>
-            <pre><code>{reactSample}</code></pre>
-          </div>
-        </div>
-      </section>
-
-      <section class="agents" aria-labelledby="agents-title">
         <div>
-          <h2 id="agents-title">Written for the agent doing the work</h2>
-          <p>
-            Paste this into Claude Code, Cursor or Codex. Every docs page is also plain Markdown at the same address plus
-            <code>.md</code>, and the whole manual is one file at <a href="/llms-full.txt">/llms-full.txt</a>.
-          </p>
-          <ul class="links">
-            <li><a href="/llms.txt">llms.txt</a></li>
-            <li><a href="/llms-full.txt">llms-full.txt</a></li>
-            <li><a href="/docs/start/ai-agents/">Agent guide</a></li>
-          </ul>
+          <dt>JavaScript before the map shows</dt>
+          <dd>0 KB</dd>
         </div>
-        <div class="prompt">
-          <pre><code>{agentPrompt}</code></pre>
-          <button type="button" class="button primary" data-copy={agentPrompt}>Copy prompt</button>
+        <div>
+          <dt>Interactive</dt>
+          <dd id="meter-state">on your first touch</dd>
         </div>
-      </section>
-
-      <section class="closing" aria-labelledby="closing-title">
-        <h2 id="closing-title">Put a map on your page in a minute</h2>
-        <div class="install">
-          <code>npm install instantmap</code>
-          <button type="button" class="copy" data-copy="npm install instantmap">Copy</button>
-        </div>
+      </dl>
+      <div class="install">
+        <code>npm install instantmap</code>
+        <button type="button" class="copy" data-copy="npm install instantmap">Copy</button>
+      </div>
+      <div class="actions">
         <a class="button primary" href="/docs/start/quick-start/">Read the quick start</a>
-      </section>
-    </main>
+        <button type="button" class="button" data-copy={AGENT_PROMPT}>Copy prompt for your agent</button>
+      </div>
+      <p class="trust">MIT licence · v{VERSION} · Every framework · <a href={REPO}>Source on GitHub</a></p>
+    </div>
+  </section>
 
-    <footer>
-      <span>MIT licensed. Map data © OpenStreetMap contributors. Listings on this page are made up.</span>
-      <a href="https://github.com/williamrogersdev/instantmap">Source on GitHub</a>
-    </footer>
+  <section aria-labelledby="runs-title">
+    <h2 id="runs-title">What runs where</h2>
+    <div class="steps panel">
+      <div>
+        <h3>On the server</h3>
+        <p>The first image is a JPEG drawn from OpenStreetMap data and your markers, then cached. Use the hosted service or deploy the Worker to your own Cloudflare account.</p>
+      </div>
+      <div>
+        <h3>In the HTML</h3>
+        <p>Your page carries that image as a plain <code>&lt;img&gt;</code>, so it shows with the first HTML, before fonts or scripts.</p>
+      </div>
+      <div>
+        <h3>In the browser</h3>
+        <p>A {kb(sizes.upfront)} KB loader waits for the first touch, then brings in the {kb(sizes.engine)} KB engine: drag, zoom, clusters, keyboard and cards.</p>
+      </div>
+    </div>
+    <a class="more" href="/docs/start/how-it-works/">How it works, step by step</a>
+  </section>
 
-    <script>
-      import { sanFranciscoListings } from "../data/listings.ts";
-      import { setupLanding } from "../scripts/landing.ts";
-      setupLanding(sanFranciscoListings(280));
-    </script>
-  </body>
-</html>
+  <section aria-labelledby="explore-title">
+    <h2 id="explore-title">See what it does</h2>
+    <ul class="tiles big">
+      <li><a href="/speed/"><strong>Speed</strong><span>Time a map on your own connection and see what is loaded, and when.</span></a></li>
+      <li><a href="/styling/"><strong>Styling and brand colours</strong><span>Build a map from your style guide's colours, or set every colour yourself.</span></a></li>
+      <li><a href="/cards/"><strong>Cards</strong><span>The card that opens on a marker: layouts, your colours, or your own markup.</span></a></li>
+      <li><a href="/frameworks/"><strong>Frameworks</strong><span>Guides and example apps for ten stacks, from plain HTML to Next.js.</span></a></li>
+      <li><a href="/ai/"><strong>AI agents</strong><span>A prompt and Markdown docs so a coding agent can add the map for you.</span></a></li>
+      <li><a href="/docs/guides/self-hosting/"><strong>Self-hosting</strong><span>Run the renderer on your own Cloudflare account with your own tiles.</span></a></li>
+    </ul>
+  </section>
 
-<style is:global>
-  :root {
-    --wash: #f3f4ef;
-    --paper: #ffffff;
-    --ink: #0f2233;
-    --ink-soft: #4a5866;
-    --line: #d9ddd5;
-    --brand: #19d3a2;
-    --brand-hover: #12bd90;
-    --brand-ink: #0f2233;
-    --link: #0a7a60;
-    --code: #0f2233;
-    --code-ink: #dfe8e4;
-    --code-soft: #8fa3b0;
-    --radius-small: 8px;
-    --radius-large: 16px;
-    --sans: "Schibsted Grotesk", ui-sans-serif, system-ui, sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, monospace;
-  }
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--wash); color: var(--ink); font: 400 17px/1.55 var(--sans); }
-  a { color: var(--link); text-underline-offset: 3px; }
-  :focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
-  h1, h2, h3 { margin: 0; line-height: 1.06; letter-spacing: -0.025em; }
-  h2 { font-size: clamp(32px, 4.2vw, 48px); font-weight: 800; text-wrap: balance; }
-  h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
-  p, dd { margin: 0; text-wrap: pretty; }
-  code, pre { font-family: var(--mono); font-variant-ligatures: none; }
+  <section aria-labelledby="faq-title">
+    <h2 id="faq-title">Questions and answers</h2>
+    <div class="faq panel">
+      {FAQ.map(([question, answer], index) => (
+        <details open={index === 0}>
+          <summary>{question}</summary>
+          <p>{answer}</p>
+        </details>
+      ))}
+    </div>
+    <a class="more" href="/docs/start/faq/">More answers in the docs</a>
+  </section>
 
-  .bar { position: absolute; z-index: 5; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px, 4vw, 40px); pointer-events: none; }
-  .bar > * { pointer-events: auto; }
-  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; color: var(--paper); text-decoration: none; background: var(--ink); padding: 7px 16px 7px 8px; border-radius: 999px; box-shadow: 0 8px 24px #0f22333d; }
-  .bar nav { display: flex; gap: 2px; background: var(--paper); padding: 4px; border-radius: 999px; box-shadow: 0 1px 2px #0f223314, 0 8px 24px #0f22331f; }
-  .bar nav a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; padding: 8px 14px; border-radius: 999px; min-height: 40px; display: inline-flex; align-items: center; }
-  .bar nav a:hover { background: var(--wash); }
+  <section class="closing" aria-labelledby="closing-title">
+    <h2 id="closing-title">Put a map on your page in a minute</h2>
+    <div class="install">
+      <code>npm install instantmap</code>
+      <button type="button" class="copy" data-copy="npm install instantmap">Copy</button>
+    </div>
+    <a class="button primary" href="/docs/start/quick-start/">Read the quick start</a>
+  </section>
 
-  .hero { position: relative; height: min(100svh, 980px); min-height: 700px; }
-  #hero-map { position: absolute; inset: 0; height: 100%; }
-  instant-map { --im-font: var(--sans); }
-  #hero-map::part(controls) { top: 96px; }
-  .handoff { position: absolute; z-index: 4; right: clamp(16px, 4vw, 40px); bottom: 40px; margin: 0; display: flex; padding: 4px; gap: 2px; background: var(--paper); border-radius: 999px; font-size: 14px; font-weight: 650; box-shadow: 0 8px 24px #0f22332e; pointer-events: none; }
-  .handoff .step { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; color: var(--ink-soft); transition: background 0.3s, color 0.3s; }
-  .handoff .step::before { content: ""; margin-right: 8px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-  .handoff .image { background: var(--ink); color: #ffffff; }
-  .handoff .live { display: none; }
-  #hero-map[interactive] ~ .handoff .image { display: none; }
-  #hero-map[interactive] ~ .handoff .live { display: inline-flex; }
-  .handoff .short { display: none; }
-  #hero-map[interactive] ~ .handoff .image { background: none; color: var(--ink-soft); }
-  #hero-map[interactive] ~ .handoff .live { background: var(--brand); color: var(--brand-ink); }
-  .hero-card { position: absolute; z-index: 3; left: clamp(16px, 4vw, 40px); top: 50%; transform: translateY(-44%); width: min(540px, calc(100% - 32px)); background: var(--paper); border-radius: var(--radius-large); padding: clamp(22px, 3vw, 34px); box-shadow: 0 2px 4px #0f223312, 0 30px 70px #0f22333d; }
-  .hero-card h1 { font-size: clamp(36px, 4.6vw, 56px); font-weight: 900; letter-spacing: -0.04em; }
-  .lede { margin-top: 16px; color: var(--ink-soft); font-size: 18px; max-width: 44ch; }
+  <script>
+    import type { InstantMapElement } from "instantmap";
+    import { sanFranciscoListings } from "../data/listings.ts";
+    import { byId } from "../scripts/shared.ts";
 
-  .proof { margin: 22px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; padding: 16px 0; border-block: 1px solid var(--line); }
-  .proof dt { font-size: 14px; color: var(--ink-soft); }
-  .proof dd { margin: 2px 0 0; font-size: 15px; font-weight: 600; }
-  .lead-stat { grid-column: 1 / -1; padding-bottom: 14px; margin-bottom: 2px; border-bottom: 1px dashed var(--line); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-  .lead-stat dt { font-size: 16px; color: var(--ink); font-weight: 600; }
-  .lead-stat dd { margin: 0; font: 700 44px/1 var(--mono); letter-spacing: -0.04em; color: var(--ink); }
-  .lead-stat dd span { box-shadow: inset 0 -0.1em 0 var(--brand); }
-  .lead-stat dd .unit { box-shadow: none; margin-left: 0.3em; font: 650 0.45em var(--sans, inherit); letter-spacing: 0; }
-  .lead-stat .cache-note { flex-basis: 100%; font: 400 14px/1.45 var(--sans); letter-spacing: 0; color: var(--ink-soft); }
-
-  .install { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--code); color: var(--code-ink); border-radius: var(--radius-small); padding: 6px 6px 6px 16px; min-height: 52px; }
-  .install code { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .install code::before { content: "$ "; color: var(--brand); }
-  .actions { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px; }
-  .button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border-radius: var(--radius-small); border: 1px solid var(--line); background: var(--paper); color: var(--ink); font: 650 16px var(--sans); text-decoration: none; cursor: pointer; }
-  .button:hover { border-color: var(--ink); }
-  .button.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
-  .button.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
-  .button:disabled { opacity: 0.6; cursor: progress; }
-  .copy { min-height: 40px; min-width: 64px; padding: 0 12px; border: 0; border-radius: 6px; background: #ffffff1a; color: inherit; font: 600 14px var(--sans); cursor: pointer; }
-  .copy:hover { background: #ffffff2e; }
-  .trust { margin-top: 16px; font-size: 14px; color: var(--ink-soft); }
-
-  section:not(.hero) { padding: clamp(28px, 3.5vw, 44px) clamp(16px, 4vw, 40px); max-width: 1320px; margin: 0 auto; }
-  section:not(.hero) > h2 + p, .race-head p, .studio-copy > p { margin-top: 14px; color: var(--ink-soft); max-width: 62ch; }
-
-  .studio { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: clamp(24px, 4vw, 56px); align-items: start; }
-  fieldset { border: 0; padding: 0; margin: 26px 0 0; min-width: 0; }
-  legend { font-weight: 700; font-size: 15px; margin-bottom: 10px; padding: 0; }
-  .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .themes label { position: relative; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-small); background: var(--paper); cursor: pointer; font-weight: 600; }
-  .themes label:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-  .themes input { position: absolute; opacity: 0; }
-  .themes label:has(input:focus-visible) { outline: 3px solid var(--link); outline-offset: 2px; }
-  .swatch { width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(var(--a) 0 50%, var(--b) 50% 80%, var(--c) 80%); box-shadow: inset 0 0 0 1px #0f223326; flex: none; }
-  .tokens { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .tokens label { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; }
-  .tokens input::-webkit-color-swatch { border: 1px solid #0f223333; border-radius: 4px; }
-  .tokens input::-moz-color-swatch { border: 1px solid #0f223333; border-radius: 4px; }
-  .tokens input { width: 44px; height: 32px; padding: 2px; border: 1px solid #0f223340; border-radius: 6px; background: var(--paper); cursor: pointer; }
-  .presets div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .chip { min-height: 44px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font: 600 14px var(--sans); color: var(--ink); cursor: pointer; }
-  .chip:hover { border-color: var(--ink); }
-  .studio-map { min-width: 0; }
-  #studio-map { height: clamp(380px, 52vw, 560px); border-radius: var(--radius-large); overflow: hidden; box-shadow: 0 2px 4px #0f223312, 0 24px 60px #0f223326; }
-  .code { margin-top: 16px; background: var(--code); color: var(--code-ink); border-radius: var(--radius-large); overflow: hidden; }
-  .tabs { display: flex; align-items: center; gap: 2px; padding: 8px 8px 0; }
-  .tabs [role="tab"] { min-height: 44px; padding: 0 14px; border: 0; border-radius: 8px 8px 0 0; background: none; color: var(--code-soft); font: 600 14px var(--sans); cursor: pointer; }
-  .tabs [role="tab"][aria-selected="true"] { background: #ffffff12; color: #ffffff; box-shadow: inset 0 -2px 0 var(--brand); }
-  .tabs .copy { margin-left: auto; }
-  .code pre, .sample pre, .prompt pre { margin: 0; padding: 18px 20px; overflow: auto; font-size: 13.5px; line-height: 1.6; white-space: pre; }
-  .code pre { background: #ffffff0a; max-height: 300px; }
-
-  .race-head { max-width: 760px; }
-  .race-controls { margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
-  .toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; cursor: pointer; }
-  .toggle input { width: 20px; height: 20px; accent-color: var(--ink); }
-  .race-result { margin-top: 28px; font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; min-height: 1.15em; }
-  .race-result:empty { margin-top: 0; min-height: 0; }
-  .race-result small { display: block; margin-top: 6px; font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--ink-soft); }
-  .lanes { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .lane { margin: 0; background: var(--paper); border-radius: var(--radius-large); padding: 16px; border: 2px solid transparent; box-shadow: 0 1px 2px #0f223312; transition: border-color 0.2s; }
-  .lane.won { border-color: var(--brand); }
-  .lane figcaption { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 2px 4px 12px; }
-  .lane figcaption strong { display: block; font-weight: 750; font-size: 18px; }
-  .weight { display: block; font-size: 14px; color: var(--ink-soft); }
-  .time { font: 700 clamp(30px, 3.4vw, 44px)/1 var(--mono); letter-spacing: -0.04em; white-space: nowrap; }
-  .lane.done .time::after { content: "Done"; margin-left: 10px; vertical-align: middle; font: 700 13px var(--sans); letter-spacing: 0; background: var(--brand); color: var(--brand-ink); padding: 4px 8px; border-radius: 999px; }
-  .track { height: 6px; border-radius: 999px; background: var(--wash); overflow: hidden; margin: 0 4px 12px; }
-  .track span { display: block; height: 100%; width: 0; background: var(--ink); border-radius: inherit; }
-  .lane.won .track span { background: var(--brand); }
-  .lane.done:not(.won) .time::after { background: var(--wash); color: var(--ink); }
-  .screen { position: relative; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: var(--wash); }
-  .screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  .idle { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-soft); font-weight: 600; }
-  .fine { margin-top: 18px; font-size: 14px; color: var(--ink-soft); max-width: 70ch; }
-
-  .steps { margin-top: 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; background: var(--paper); border-radius: var(--radius-large); box-shadow: 0 1px 2px #0f223312; }
-  .steps > div { padding: 24px; }
-  .steps > div + div { border-left: 1px solid var(--line); }
-  .steps p { margin-top: 8px; color: var(--ink-soft); font-size: 16px; }
-  .steps code { font-size: 14px; }
-  .more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 12px; font-weight: 650; }
-
-  .frameworks ul { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-  .frameworks li a { box-sizing: border-box; height: 100%; display: flex; flex-direction: column; gap: 2px; min-height: 76px; padding: 14px 16px; border-radius: var(--radius-small); background: var(--paper); color: var(--ink); text-decoration: none; border: 1px solid var(--line); }
-  .frameworks li a strong { font-weight: 700; }
-  .frameworks li a span { font-size: 14px; color: var(--ink-soft); }
-  .frameworks li a { position: relative; padding-right: 40px; transition: border-color 0.15s, transform 0.15s; }
-  .frameworks li a::after { content: ""; position: absolute; top: 16px; right: 14px; width: 16px; height: 16px; background: var(--link); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M5 11 11 5M6 5h5v5'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M5 11 11 5M6 5h5v5'/%3E%3C/svg%3E") center / contain no-repeat; }
-  .frameworks li a:hover { border-color: var(--link); transform: translateY(-1px); }
-  @media (prefers-reduced-motion: reduce) { .frameworks li a:hover { transform: none; } }
-  .samples { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-  .sample { background: var(--code); color: var(--code-ink); border-radius: var(--radius-large); overflow: hidden; min-width: 0; }
-  .sample-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 0 20px; }
-  .sample h3 { color: #ffffff; }
-
-  .agents { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: clamp(24px, 4vw, 56px); align-items: start; }
-  .agents > div > p { margin-top: 14px; color: var(--ink-soft); }
-  .agents p code { font-size: 15px; background: #0f22330f; padding: 1px 6px; border-radius: 4px; }
-  .links { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-weight: 650; }
-  .links a { display: inline-flex; min-height: 44px; align-items: center; }
-  .prompt { background: var(--code); color: var(--code-ink); border-radius: var(--radius-large); overflow: hidden; min-width: 0; }
-  .prompt pre { white-space: pre-wrap; font-size: 14px; }
-  .prompt .button { margin: 0 20px 20px; }
-
-  section.closing { padding-top: clamp(32px, 4vw, 48px); padding-bottom: clamp(32px, 4vw, 48px); display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-bottom: 40px; background: var(--ink); color: #ffffff; border-radius: var(--radius-large); max-width: 1240px; }
-  .closing h2 { flex: 1 1 360px; font-size: clamp(28px, 3.2vw, 38px); }
-  .closing .install { margin: 0; background: #ffffff14; flex: 0 1 340px; }
-
-  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 32px clamp(16px, 4vw, 40px) 40px; max-width: 1320px; margin: 0 auto; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-soft); }
-
-  .toast { position: fixed; z-index: 20; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--ink); color: #ffffff; padding: 10px 18px; border-radius: 999px; font-weight: 600; transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
-  .toast.on { opacity: 1; transform: translate(-50%, 0); }
-
-  @media (max-width: 900px) {
-    .bar nav a:not(:first-child):not(:last-child) { display: none; }
-    .bar { position: relative; padding: 12px; }
-    .bar nav, .brand { box-shadow: none; }
-    #hero-map::part(controls) { top: 12px; }
-    .hero { height: auto; min-height: 0; display: flex; flex-direction: column; }
-    #hero-map { position: relative; inset: auto; height: 32svh; min-height: 220px; }
-    .hero-card { position: relative; left: auto; top: auto; transform: none; width: auto; margin: 12px 12px 0; box-shadow: 0 1px 2px #0f223312; }
-    .handoff { position: static; align-self: flex-start; margin: 10px 12px 0; padding: 0; background: none; font-size: 13px; box-shadow: none; }
-    .handoff .step { padding: 6px 12px; }
-    .handoff .long { display: none; }
-    .handoff .short:not(:empty) { display: inline; margin-left: 0.3em; font-variant-numeric: tabular-nums; }
-    .hero-card { display: flex; flex-direction: column; }
-    .hero-card h1 { font-size: 30px; }
-    .hero-card .install { order: 2; }
-    .hero-card .actions { order: 3; }
-    .hero-card .proof { order: 4; }
-    .hero-card .trust { order: 5; }
-    .lede { font-size: 16px; }
-    .install code { font-size: 14px; }
-    .lead-stat dd { font-size: 36px; }
-    .studio, .agents, .samples, .lanes, .steps { grid-template-columns: 1fr; }
-    .steps > div + div { border-left: 0; border-top: 1px solid var(--line); }
-    section.closing { margin-inline: 12px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .toast, .lane { transition: none; }
-  }
-</style>
+    const map = byId<InstantMapElement>("hero-map");
+    map.markers = sanFranciscoListings(280);
+    const showPaint = (): void => {
+      const painted = (window as { __heroPaint?: number }).__heroPaint;
+      if (!painted) return;
+      byId("meter-paint").replaceChildren(String(Math.round(painted)), Object.assign(document.createElement("span"), { className: "unit", textContent: "ms" }));
+      const poster = performance.getEntriesByType("resource").find((entry) => entry.name.includes("/static?")) as PerformanceResourceTiming | undefined;
+      if (poster && poster.transferSize === 0 && poster.decodedBodySize > 0) byId("meter-cache").hidden = false;
+    };
+    showPaint();
+    document.addEventListener("heropaint", showPaint);
+    map.addEventListener("interactive", () => (byId("meter-state").textContent = "live now, try dragging it"));
+  </script>
+</Site>

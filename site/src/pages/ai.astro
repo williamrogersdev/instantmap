@@ -1,0 +1,54 @@
+---
+import Site from "../layouts/Site.astro";
+import { AGENT_PROMPT } from "../data/site.ts";
+
+const description = "Add Instant Map with an AI coding agent. Copy one prompt into Claude Code, Cursor or Codex. Every docs page is also plain Markdown, with llms.txt, llms-full.txt and a skill file for agents.";
+
+const resources = [
+  ["/llms.txt", "llms.txt", "A short index of the docs, for a model to read first."],
+  ["/llms-full.txt", "llms-full.txt", "The whole manual in one Markdown file."],
+  ["/SKILL.md", "SKILL.md", "Instructions an agent can keep as a skill: the API, the rules and a checklist."],
+  ["/docs/start/quick-start.md", "Any page as Markdown", "Add .md to the address of any docs page."],
+  ["/docs/start/ai-agents/", "Agent guide", "How to brief an agent and what to check afterwards."],
+  ["/docs/start/faq/", "Questions and answers", "Direct answers to the common questions."],
+];
+---
+
+<Site title="AI agents" description={description} path="/ai/">
+  <div class="page-head">
+    <p class="crumbs"><a href="/">Instant Map</a> / AI agents</p>
+    <h1>Written for the agent doing the work.</h1>
+    <p class="lead">Paste one prompt into Claude Code, Cursor or Codex and it has what it needs: an index to read first, a guide for your framework, the exact API, and a way to check the result.</p>
+  </div>
+
+  <section aria-labelledby="prompt-title">
+    <div class="split">
+      <div>
+        <h2 id="prompt-title">The prompt</h2>
+        <p class="lead">It tells the agent where to read, what to install, how to render the first image on the server, and what to verify in the running app before it says it is done.</p>
+        <div class="actions" style="margin-top:20px">
+          <button type="button" class="button primary" data-copy={AGENT_PROMPT}>Copy prompt</button>
+        </div>
+      </div>
+      <div class="codeblock wrap">
+        <pre><code>{AGENT_PROMPT}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="files-title">
+    <h2 id="files-title">Docs a model can read</h2>
+    <ul class="tiles">
+      {resources.map(([href, name, note]) => <li><a href={href}><strong>{name}</strong><span>{note}</span></a></li>)}
+    </ul>
+  </section>
+
+  <section aria-labelledby="why-title">
+    <h2 id="why-title">Easy to get right</h2>
+    <ul class="checks">
+      <li class="panel"><h3>One element, a short API</h3><p>A custom element with a handful of attributes and one marker shape. There is little to guess and little to get wrong.</p></li>
+      <li class="panel"><h3>Exact reference pages</h3><p>Every attribute, property, method and event is listed in tables, with types, so the agent does not invent options.</p></li>
+      <li class="panel"><h3>A check it can run</h3><p>The prompt ends with what to verify: the image appears, the map drags, and a marker opens its card.</p></li>
+    </ul>
+  </section>
+</Site>

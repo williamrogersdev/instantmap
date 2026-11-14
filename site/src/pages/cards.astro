@@ -1,0 +1,155 @@
+---
+import { staticUrl } from "instantmap/server";
+import Site from "../layouts/Site.astro";
+import { sanFranciscoListings } from "../data/listings.ts";
+
+const listings = sanFranciscoListings(36);
+// The maps are centred a little north of one listing that has every field, so its card opens in the middle.
+const near = (listing: { lng: number; lat: number }): number => Math.hypot(listing.lng + 122.4255, listing.lat - 37.7763);
+const featured = listings.filter((listing) => listing.badge).sort((a, b) => near(a) - near(b))[0]!;
+const CENTER: [number, number] = [featured.lng, Math.round((featured.lat + 0.0045) * 1e5) / 1e5];
+const ZOOM = 13.6;
+const poster = (theme?: string): string => staticUrl({ src: "", center: CENTER, zoom: ZOOM, width: 640, height: 460, ratio: 2, markers: listings, ...(theme ? { theme } : {}) });
+const description = "The card that opens when a marker is clicked. Use the built-in card with a photo, badge, price and link, restyle it with CSS custom properties, or supply your own markup in a template. Card photos are fetched ahead so they open ready.";
+
+const markerSample = `map.markers = [{
+  id: 1, lng: -122.42, lat: 37.77,
+  label: "$3,450",            // the pill on the map, and the price
+  title: "Sunny corner flat",
+  subtitle: "Hayes Valley, 2 bed",
+  image: "/photos/1.webp",    // about 560 px wide
+  badge: "New",
+  href: "/listings/1",
+}];`;
+const rowSample = `<instant-map
+  card-layout="row"
+  card-action="See listing"
+  card-target="_blank">
+</instant-map>`;
+const cssSample = `instant-map {
+  --im-card-radius: 4px;
+  --im-card-width: 240px;
+  --im-card-accent: #c2410c;
+  --im-card-font: Georgia, serif;
+  --im-card-image-ratio: 16 / 9;
+}`;
+const templateSample = `<instant-map center="-122.42,37.77" zoom="13">
+  <template data-card>
+    <article class="my-card">
+      <button data-close aria-label="Close">✕</button>
+      <h3>{{title}}</h3>
+      <p>{{subtitle}}</p>
+      <a href="{{href}}" data-if="href">Open {{label}}</a>
+    </article>
+  </template>
+</instant-map>`;
+const functionSample = `// Any element, from any framework.
+map.popup = (marker) => {
+  const card = document.createElement("listing-card");
+  card.listing = marker.data;
+  return card;
+};
+
+// Or no card at all: go straight to the page.
+map.popup = null;
+map.addEventListener("markerclick", (event) => {
+  location.href = event.detail.marker.href;
+});`;
+---
+
+<Site title="Cards" description={description} path="/cards/" preload={[{ href: poster() }]}>
+  <div class="page-head">
+    <p class="crumbs"><a href="/">Instant Map</a> / Cards</p>
+    <h1>Cards that look like they belong to your site.</h1>
+    <p class="lead">Click a marker and a card opens. Start with the built-in one, restyle it with a few CSS properties, or hand over your own markup. Click any price on the maps below.</p>
+  </div>
+
+  <section aria-labelledby="gallery-title">
+    <h2 id="gallery-title">Four ways to a card</h2>
+    <div class="gallery" data-featured={featured.id}>
+      <figure>
+        <figcaption><h3>The built-in card</h3><p>Fill in the marker and you are done: photo, badge, title, price and a link.</p></figcaption>
+        <instant-map class="frame-map" data-demo center={CENTER.join(",")} zoom={ZOOM} load="visible" aria-label="Map with the built-in card">
+          <img src={poster()} alt="Map with the built-in card" fetchpriority="high" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+        </instant-map>
+        <div class="codeblock"><pre><code>{markerSample}</code></pre></div>
+      </figure>
+      <figure>
+        <figcaption><h3>Row layout, your link text</h3><p>Attributes pick the layout, the link text and where the link opens.</p></figcaption>
+        <instant-map class="frame-map" data-demo center={CENTER.join(",")} zoom={ZOOM} load="visible" card-layout="row" card-action="See listing" theme="paper" aria-label="Map with the row card layout">
+          <img src={poster("paper")} alt="Map with the row card layout" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+        </instant-map>
+        <div class="codeblock"><pre><code>{rowSample}</code></pre></div>
+      </figure>
+      <figure>
+        <figcaption><h3>Restyled with CSS</h3><p>Eleven custom properties cover size, corners, colours, type and the photo's shape.</p></figcaption>
+        <instant-map class="frame-map" id="card-brand" data-demo center={CENTER.join(",")} zoom={ZOOM} load="visible" theme="mono" aria-label="Map with a restyled card">
+          <img src={poster("mono")} alt="Map with a restyled card" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+        </instant-map>
+        <div class="codeblock"><pre><code>{cssSample}</code></pre></div>
+      </figure>
+      <figure>
+        <figcaption><h3>Your own markup</h3><p>A template inside the element. Fields are filled in as text, never as HTML.</p></figcaption>
+        <instant-map class="frame-map" data-demo center={CENTER.join(",")} zoom={ZOOM} load="visible" theme="midnight" aria-label="Map with a card from a template">
+          <img src={poster("midnight")} alt="Map with a card from a template" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+          <template data-card>
+            <article class="my-card">
+              <button type="button" data-close aria-label="Close">✕</button>
+              <h3>{"{{title}}"}</h3>
+              <p>{"{{subtitle}}"}</p>
+              <a href="{{href}}" data-if="href">Open {"{{label}}"}</a>
+            </article>
+          </template>
+        </instant-map>
+        <div class="codeblock"><pre><code>{templateSample}</code></pre></div>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="images-title">
+    <h2 id="images-title">Photos that are ready when the card opens</h2>
+    <ul class="checks two">
+      <li class="panel"><h3>Fetched ahead, in idle time</h3><p>Once the map settles, photos for the markers nearest the centre are fetched while the browser has nothing else to do.</p></li>
+      <li class="panel"><h3>Fetched on hover and on press</h3><p>Pointing at a marker starts its photo, so it is usually in place before the click finishes.</p></li>
+      <li class="panel"><h3>Polite on slow connections</h3><p>Ahead-of-time fetching is skipped when the visitor has asked to save data. Set <code>card-images="hover"</code> or <code>"off"</code> to choose yourself.</p></li>
+      <li class="panel"><h3>No layout jump</h3><p>The photo's space is reserved from the start and the picture fades in, so the card never changes size.</p></li>
+    </ul>
+    <p class="fine">For the quickest photos, serve them about 560 px wide (the card is 264 px), in WebP or AVIF, with long cache headers.</p>
+  </section>
+
+  <section aria-labelledby="own-title">
+    <div class="split">
+      <div>
+        <h2 id="own-title">Or build the card in code</h2>
+        <p class="lead">Return any element from a function, including a component from your framework. Or turn cards off and send people straight to the page.</p>
+        <a class="more" href="/docs/guides/popups/">Cards guide</a>
+      </div>
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>JavaScript</h3><button type="button" class="copy" data-copy={functionSample}>Copy</button></div>
+        <pre><code>{functionSample}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import type { InstantMapElement } from "instantmap";
+    import { sanFranciscoListings } from "../data/listings.ts";
+
+    const listings = sanFranciscoListings(36);
+    const featured = Number(document.querySelector<HTMLElement>(".gallery")!.dataset.featured);
+    for (const map of document.querySelectorAll<InstantMapElement>("instant-map[data-demo]")) {
+      map.markers = listings;
+      // Each map opens one card when it scrolls into view, so the page shows cards without a click.
+      map.addEventListener("interactive", () => map.select(featured), { once: true });
+    }
+  </script>
+</Site>
+
+<style is:global>
+  #card-brand { --im-card-radius: 4px; --im-card-width: 240px; --im-card-accent: #c2410c; --im-card-font: Georgia, serif; --im-card-image-ratio: 16 / 9; }
+  .my-card { width: 230px; padding: 14px; border-radius: 12px; background: #0f2233; color: #fff; font: 14px/1.4 var(--sans); box-shadow: 0 10px 24px #0006; }
+  .my-card h3 { margin: 0 24px 4px 0; font-size: 15px; color: #fff; }
+  .my-card p { margin: 0 0 8px; color: #b9c6cf; }
+  .my-card a { color: #19d3a2; font-weight: 600; }
+  .my-card button { all: unset; float: right; cursor: pointer; padding: 0 4px; }
+</style>

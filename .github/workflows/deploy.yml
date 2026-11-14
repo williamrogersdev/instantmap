@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 20
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install Rust toolchain from rust-toolchain.toml
         run: rustup toolchain install
       - uses: Swatinem/rust-cache@v2

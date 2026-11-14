@@ -21,10 +21,7 @@
   "ratelimits": [{ "name": "RENDER_LIMIT", "namespace_id": "1001", "simple": { "limit": 600, "period": 60 } }],
   "limits": { "cpu_ms": 1000 },
   "observability": { "enabled": true },
-  "upload_source_maps": true
+  "upload_source_maps": true,
 
-  // Optional. Keep every rendered tile in R2, so a tile is drawn once for the whole world rather than
-  // once per data centre. Create the bucket first: wrangler r2 bucket create instantmap-tiles
-  // Give the bucket a lifecycle rule (for example, delete after 90 days) so it cannot grow without bound.
-  // "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }],
+  "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }]
 }

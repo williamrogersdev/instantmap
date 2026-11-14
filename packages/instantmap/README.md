@@ -1,4 +1,4 @@
-# instantmap
+# instantmap-js
 
 A map for the web that is on the page before your JavaScript is. It arrives as one image with your markers drawn in, then turns into a fast, clickable map on first touch. About 7 KB gzipped before anyone touches the map and about 11 KB more on first touch, no dependencies, any framework.
 

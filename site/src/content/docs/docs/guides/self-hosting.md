@@ -75,25 +75,25 @@ The Worker caches upstream tiles for 7 days, so your tile source sees roughly on
 
 ## How pictures are cached
 
-The Worker is set up for Cloudflare's own cache, with three layers. You do not have to configure any of them.
+The Worker is set up for Cloudflare's own cache, with three layers. Workers Cache and the per-data-centre cache need no provisioning; create the R2 bucket as described below.
 
 | Layer | What it does |
 | --- | --- |
 | [Workers Cache](https://developers.cloudflare.com/workers/cache/) (`"cache": { "enabled": true }` in `worker/wrangler.jsonc`) | Sits in front of the Worker. A repeated address is answered without running the Worker, so it costs no CPU time. It is tiered, so a picture drawn for one visitor is shared with other Cloudflare locations, and simultaneous requests for the same picture are drawn once. Each deployment starts a new cache. |
 | The Worker's own cache | Keyed by what the address means, not how it is written. The same picture asked for with its parameters in another order, or after a new deployment, is not drawn again in that data centre. |
-| R2 (optional, below) | Keeps every tile for good, for the whole world. |
+| R2 (optional, below) | Shares rendered tiles across locations until the bucket lifecycle rule expires them. |
 
 With Workers Cache on, Cloudflare bills requests for the site's static files as Worker requests; without it they are free. If you serve only pictures from the Worker, this makes no difference. To turn it off, remove the `cache` line.
 
 ## Optional: keep tiles in R2
 
-Without R2, a tile is drawn again when the caches above no longer hold it. To draw every tile once for the whole world, add an R2 bucket named `TILE_CACHE`. Tiles then come from the bucket first and are drawn only when the bucket does not have them.
+The checked-in Worker configuration binds `TILE_CACHE` to an R2 bucket named `instantmap-tiles`. Create that bucket in your own account before deploying, or remove the `r2_buckets` block to use only the Cloudflare cache layers. With R2 enabled, an edge-cache miss checks the bucket before drawing a tile.
 
 ```bash
 cd worker && bunx wrangler r2 bucket create instantmap-tiles
 ```
 
-Then uncomment the `r2_buckets` block in `worker/wrangler.jsonc`:
+The binding in `worker/wrangler.jsonc` is:
 
 ```jsonc
 "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }]

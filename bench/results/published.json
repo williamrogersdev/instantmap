@@ -1,0 +1,1367 @@
+{
+  "schema": 1,
+  "date": "2026-11-14",
+  "commit": "5e90458",
+  "version": "0.1.0",
+  "target": "local",
+  "machine": {
+    "os": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Pro",
+    "cores": 18,
+    "memoryGb": 48
+  },
+  "profiles": [
+    {
+      "name": "desktop",
+      "description": "Desktop, 1280×800, CPU as it is, no network limit"
+    },
+    {
+      "name": "laptop-hidpi",
+      "description": "High-density laptop, 1440×900 at 2×, CPU as it is, no network limit"
+    },
+    {
+      "name": "phone-mid",
+      "description": "Mid-range phone, 390×844 at 3×, CPU 4× slower, 9 Mbps down with 60 ms latency"
+    },
+    {
+      "name": "phone-low",
+      "description": "Low-end phone, 360×780 at 2×, CPU 6× slower, 1.6 Mbps down with 150 ms latency"
+    }
+  ],
+  "sizes": {
+    "upfront": 7528,
+    "engine": 11635
+  },
+  "renderer": {
+    "iterations": 30,
+    "scenes": [
+      {
+        "name": "tile-city-1x",
+        "width": 512,
+        "height": 512,
+        "pixelRatio": 1,
+        "tiles": 9,
+        "markers": 0,
+        "decodeMs": {
+          "median": 0.221,
+          "p90": 0.226,
+          "min": 0.203
+        },
+        "renderMs": {
+          "median": 18.895,
+          "p90": 19.062,
+          "min": 17.88
+        },
+        "jpegMs": {
+          "median": 1.576,
+          "p90": 1.611,
+          "min": 1.468
+        },
+        "pngMs": {
+          "median": 15.125,
+          "p90": 15.333,
+          "min": 14.295
+        },
+        "totalJpegMs": {
+          "median": 20.685,
+          "p90": 20.903,
+          "min": 19.59
+        },
+        "jpegBytes": 64038,
+        "pngBytes": 239457
+      },
+      {
+        "name": "tile-city-2x",
+        "width": 512,
+        "height": 512,
+        "pixelRatio": 2,
+        "tiles": 9,
+        "markers": 0,
+        "decodeMs": {
+          "median": 0.21,
+          "p90": 0.222,
+          "min": 0.198
+        },
+        "renderMs": {
+          "median": 50.572,
+          "p90": 52.355,
+          "min": 50.237
+        },
+        "jpegMs": {
+          "median": 5.469,
+          "p90": 5.558,
+          "min": 5.34
+        },
+        "pngMs": {
+          "median": 31.981,
+          "p90": 32.358,
+          "min": 31.832
+        },
+        "totalJpegMs": {
+          "median": 56.228,
+          "p90": 58.09,
+          "min": 55.854
+        },
+        "jpegBytes": 156386,
+        "pngBytes": 542798
+      },
+      {
+        "name": "tile-metro-2x",
+        "width": 512,
+        "height": 512,
+        "pixelRatio": 2,
+        "tiles": 9,
+        "markers": 0,
+        "decodeMs": {
+          "median": 0.219,
+          "p90": 0.226,
+          "min": 0.215
+        },
+        "renderMs": {
+          "median": 51.887,
+          "p90": 52.367,
+          "min": 51.394
+        },
+        "jpegMs": {
+          "median": 5.472,
+          "p90": 5.57,
+          "min": 5.353
+        },
+        "pngMs": {
+          "median": 31.718,
+          "p90": 32.433,
+          "min": 31.579
+        },
+        "totalJpegMs": {
+          "median": 57.613,
+          "p90": 58.153,
+          "min": 57.037
+        },
+        "jpegBytes": 164013,
+        "pngBytes": 568130
+      },
+      {
+        "name": "tile-region-2x",
+        "width": 512,
+        "height": 512,
+        "pixelRatio": 2,
+        "tiles": 9,
+        "markers": 0,
+        "decodeMs": {
+          "median": 0.172,
+          "p90": 0.188,
+          "min": 0.154
+        },
+        "renderMs": {
+          "median": 26.713,
+          "p90": 27.926,
+          "min": 26.082
+        },
+        "jpegMs": {
+          "median": 5.021,
+          "p90": 5.135,
+          "min": 4.912
+        },
+        "pngMs": {
+          "median": 17.576,
+          "p90": 18.475,
+          "min": 17.27
+        },
+        "totalJpegMs": {
+          "median": 31.897,
+          "p90": 33.204,
+          "min": 31.205
+        },
+        "jpegBytes": 99570,
+        "pngBytes": 287592
+      },
+      {
+        "name": "tile-world-2x",
+        "width": 512,
+        "height": 512,
+        "pixelRatio": 2,
+        "tiles": 9,
+        "markers": 0,
+        "decodeMs": {
+          "median": 0.146,
+          "p90": 0.164,
+          "min": 0.133
+        },
+        "renderMs": {
+          "median": 21.482,
+          "p90": 22.28,
+          "min": 21.113
+        },
+        "jpegMs": {
+          "median": 4.71,
+          "p90": 4.819,
+          "min": 4.617
+        },
+        "pngMs": {
+          "median": 11.393,
+          "p90": 11.934,
+          "min": 11.199
+        },
+        "totalJpegMs": {
+          "median": 26.356,
+          "p90": 27.211,
+          "min": 25.863
+        },
+        "jpegBytes": 66697,
+        "pngBytes": 115025
+      },
+      {
+        "name": "static-city-2x",
+        "width": 960,
+        "height": 540,
+        "pixelRatio": 2,
+        "tiles": 12,
+        "markers": 0,
+        "decodeMs": {
+          "median": 0.292,
+          "p90": 0.322,
+          "min": 0.262
+        },
+        "renderMs": {
+          "median": 91.536,
+          "p90": 136.743,
+          "min": 84.485
+        },
+        "jpegMs": {
+          "median": 11.289,
+          "p90": 16.774,
+          "min": 10.636
+        },
+        "pngMs": {
+          "median": 65.771,
+          "p90": 96.123,
+          "min": 59.647
+        },
+        "totalJpegMs": {
+          "median": 103.845,
+          "p90": 156.751,
+          "min": 95.55
+        },
+        "jpegBytes": 281836,
+        "pngBytes": 1002877
+      },
+      {
+        "name": "static-city-2x-400-markers",
+        "width": 960,
+        "height": 540,
+        "pixelRatio": 2,
+        "tiles": 12,
+        "markers": 400,
+        "decodeMs": {
+          "median": 0.286,
+          "p90": 0.297,
+          "min": 0.28
+        },
+        "renderMs": {
+          "median": 95.368,
+          "p90": 98.414,
+          "min": 93.654
+        },
+        "jpegMs": {
+          "median": 11.392,
+          "p90": 11.589,
+          "min": 11.118
+        },
+        "pngMs": {
+          "median": 76.961,
+          "p90": 80.133,
+          "min": 76.04
+        },
+        "totalJpegMs": {
+          "median": 107.07,
+          "p90": 110.205,
+          "min": 105.153
+        },
+        "jpegBytes": 304791,
+        "pngBytes": 1127490
+      },
+      {
+        "name": "static-national-1x",
+        "width": 1280,
+        "height": 800,
+        "pixelRatio": 1,
+        "tiles": 16,
+        "markers": 0,
+        "decodeMs": {
+          "median": 0.161,
+          "p90": 0.164,
+          "min": 0.157
+        },
+        "renderMs": {
+          "median": 19.127,
+          "p90": 19.318,
+          "min": 18.957
+        },
+        "jpegMs": {
+          "median": 4.939,
+          "p90": 4.992,
+          "min": 4.874
+        },
+        "pngMs": {
+          "median": 17.98,
+          "p90": 18.113,
+          "min": 17.866
+        },
+        "totalJpegMs": {
+          "median": 24.23,
+          "p90": 24.421,
+          "min": 24.038
+        },
+        "jpegBytes": 93836,
+        "pngBytes": 202366
+      }
+    ]
+  },
+  "server": [
+    {
+      "name": "tile-1x-jpeg",
+      "description": "One 512-point tile, JPEG",
+      "firstMs": {
+        "median": 29.26,
+        "p90": 38.43,
+        "min": 24.87
+      },
+      "repeatMs": {
+        "median": 1.91,
+        "p90": 2.68,
+        "min": 1.61
+      },
+      "bytes": 65745,
+      "firstSources": [
+        "drawn"
+      ]
+    },
+    {
+      "name": "tile-2x-jpeg",
+      "description": "One 512-point tile at 2×, JPEG",
+      "firstMs": {
+        "median": 70.8,
+        "p90": 85.78,
+        "min": 61.73
+      },
+      "repeatMs": {
+        "median": 1.71,
+        "p90": 2.28,
+        "min": 1.59
+      },
+      "bytes": 146345,
+      "firstSources": [
+        "drawn"
+      ]
+    },
+    {
+      "name": "tile-2x-png",
+      "description": "One 512-point tile at 2×, PNG",
+      "firstMs": {
+        "median": 108.24,
+        "p90": 145.11,
+        "min": 83.14
+      },
+      "repeatMs": {
+        "median": 1.9,
+        "p90": 2.65,
+        "min": 1.75
+      },
+      "bytes": 455691,
+      "firstSources": [
+        "drawn"
+      ]
+    },
+    {
+      "name": "static-2x",
+      "description": "First image, 960×540 at 2×, no markers",
+      "firstMs": {
+        "median": 143.5,
+        "p90": 166.19,
+        "min": 141
+      },
+      "repeatMs": {
+        "median": 1.74,
+        "p90": 2.44,
+        "min": 1.65
+      },
+      "bytes": 312251,
+      "firstSources": [
+        "drawn"
+      ]
+    },
+    {
+      "name": "static-2x-50-markers",
+      "description": "First image, 960×540 at 2×, 50 markers",
+      "firstMs": {
+        "median": 155.16,
+        "p90": 163.33,
+        "min": 154.81
+      },
+      "repeatMs": {
+        "median": 1.79,
+        "p90": 2.18,
+        "min": 1.59
+      },
+      "bytes": 343268,
+      "firstSources": [
+        "drawn"
+      ]
+    },
+    {
+      "name": "static-2x-400-markers",
+      "description": "First image, 960×540 at 2×, 400 markers",
+      "firstMs": {
+        "median": 248.67,
+        "p90": 249.56,
+        "min": 247.83
+      },
+      "repeatMs": {
+        "median": 2.7,
+        "p90": 3.04,
+        "min": 2.6
+      },
+      "bytes": 404637,
+      "firstSources": [
+        "drawn"
+      ]
+    }
+  ],
+  "browser": [
+    {
+      "browser": "chromium",
+      "browserVersion": "156.0.8078.4",
+      "profile": "desktop",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 24.8,
+          "p90": 25.6,
+          "min": 24
+        },
+        "loadRequests": {
+          "median": 4,
+          "p90": 4,
+          "min": 4
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 276.42,
+          "p90": 276.42,
+          "min": 276.42
+        },
+        "loadScriptMs": {
+          "median": 3.72,
+          "p90": 4.03,
+          "min": 3.66
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 37.6,
+          "p90": 40.5,
+          "min": 35.7
+        },
+        "wakeToIdleMs": {
+          "median": 967.3,
+          "p90": 967.7,
+          "min": 950.3
+        },
+        "dragFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "dragFrameP95Ms": {
+          "median": 16.7,
+          "p90": 16.8,
+          "min": 16.7
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragMainThreadMsPerFrame": {
+          "median": 1.43,
+          "p90": 1.65,
+          "min": 1.16
+        },
+        "dragSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "zoomFrameP95Ms": {
+          "median": 16.8,
+          "p90": 16.8,
+          "min": 16.7
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomMainThreadMsPerFrame": {
+          "median": 0.6,
+          "p90": 0.74,
+          "min": 0.55
+        },
+        "zoomSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "markers2000Ms": {
+          "median": 26.7,
+          "p90": 28.8,
+          "min": 25
+        },
+        "markers10000Ms": {
+          "median": 37.2,
+          "p90": 41.1,
+          "min": 36.8
+        },
+        "totalScriptMs": {
+          "median": 67.61,
+          "p90": 72.03,
+          "min": 63.15
+        },
+        "totalBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "heapMb": {
+          "median": 3.74,
+          "p90": 3.74,
+          "min": 3.74
+        }
+      }
+    },
+    {
+      "browser": "chromium",
+      "browserVersion": "156.0.8078.4",
+      "profile": "laptop-hidpi",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 25,
+          "p90": 43.6,
+          "min": 23.9
+        },
+        "loadRequests": {
+          "median": 4,
+          "p90": 4,
+          "min": 4
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 688.53,
+          "p90": 688.53,
+          "min": 688.53
+        },
+        "loadScriptMs": {
+          "median": 3.85,
+          "p90": 4.38,
+          "min": 3.67
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 45.1,
+          "p90": 50.8,
+          "min": 40.3
+        },
+        "wakeToIdleMs": {
+          "median": 967,
+          "p90": 983.5,
+          "min": 965.9
+        },
+        "dragFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "dragFrameP95Ms": {
+          "median": 16.7,
+          "p90": 16.8,
+          "min": 16.7
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragMainThreadMsPerFrame": {
+          "median": 3.91,
+          "p90": 4.06,
+          "min": 3.68
+        },
+        "dragSettleMs": {
+          "median": 0,
+          "p90": 0.1,
+          "min": 0
+        },
+        "zoomFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "zoomFrameP95Ms": {
+          "median": 16.8,
+          "p90": 16.8,
+          "min": 16.8
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomMainThreadMsPerFrame": {
+          "median": 1.24,
+          "p90": 1.32,
+          "min": 1.06
+        },
+        "zoomSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "markers2000Ms": {
+          "median": 27.3,
+          "p90": 27.7,
+          "min": 25.9
+        },
+        "markers10000Ms": {
+          "median": 39.8,
+          "p90": 41,
+          "min": 35
+        },
+        "totalScriptMs": {
+          "median": 63.08,
+          "p90": 68.2,
+          "min": 58.06
+        },
+        "totalBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "heapMb": {
+          "median": 3.43,
+          "p90": 3.43,
+          "min": 3.43
+        }
+      }
+    },
+    {
+      "browser": "chromium",
+      "browserVersion": "156.0.8078.4",
+      "profile": "phone-mid",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 598.8,
+          "p90": 616.2,
+          "min": 595.8
+        },
+        "firstContentfulPaintMs": {
+          "median": 324,
+          "p90": 324,
+          "min": 316
+        },
+        "largestContentfulPaintMs": {
+          "median": 324,
+          "p90": 324,
+          "min": 316
+        },
+        "loadRequests": {
+          "median": 4,
+          "p90": 4,
+          "min": 4
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 228.98,
+          "p90": 228.98,
+          "min": 228.98
+        },
+        "loadScriptMs": {
+          "median": 16.8,
+          "p90": 17,
+          "min": 15.55
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 208.3,
+          "p90": 218.2,
+          "min": 204
+        },
+        "wakeToIdleMs": {
+          "median": 1916.7,
+          "p90": 1917.8,
+          "min": 1913.9
+        },
+        "dragFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "dragFrameP95Ms": {
+          "median": 16.8,
+          "p90": 16.8,
+          "min": 16.7
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragMainThreadMsPerFrame": {
+          "median": 4.77,
+          "p90": 5.14,
+          "min": 4.59
+        },
+        "dragSettleMs": {
+          "median": 1.4,
+          "p90": 2.9,
+          "min": 0
+        },
+        "zoomFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "zoomFrameP95Ms": {
+          "median": 16.8,
+          "p90": 16.8,
+          "min": 16.7
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomMainThreadMsPerFrame": {
+          "median": 1.3,
+          "p90": 1.36,
+          "min": 1.13
+        },
+        "zoomSettleMs": {
+          "median": 0,
+          "p90": 0.1,
+          "min": 0
+        },
+        "markers2000Ms": {
+          "median": 27.1,
+          "p90": 28.4,
+          "min": 26.6
+        },
+        "markers10000Ms": {
+          "median": 53.4,
+          "p90": 55.7,
+          "min": 49.8
+        },
+        "totalScriptMs": {
+          "median": 162.17,
+          "p90": 166.32,
+          "min": 151.1
+        },
+        "totalBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "heapMb": {
+          "median": 3.11,
+          "p90": 3.11,
+          "min": 3.11
+        }
+      }
+    },
+    {
+      "browser": "chromium",
+      "browserVersion": "156.0.8078.4",
+      "profile": "phone-low",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 1940.3,
+          "p90": 1950.6,
+          "min": 1922.9
+        },
+        "firstContentfulPaintMs": {
+          "median": 744,
+          "p90": 748,
+          "min": 736
+        },
+        "largestContentfulPaintMs": {
+          "median": 744,
+          "p90": 748,
+          "min": 736
+        },
+        "loadRequests": {
+          "median": 4,
+          "p90": 4,
+          "min": 4
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 199.98,
+          "p90": 199.98,
+          "min": 199.98
+        },
+        "loadScriptMs": {
+          "median": 23.63,
+          "p90": 26.26,
+          "min": 20.24
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 672.4,
+          "p90": 675.1,
+          "min": 638.8
+        },
+        "wakeToIdleMs": {
+          "median": 3718.7,
+          "p90": 3734.4,
+          "min": 3715.9
+        },
+        "dragFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "dragFrameP95Ms": {
+          "median": 16.8,
+          "p90": 16.8,
+          "min": 16.7
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragMainThreadMsPerFrame": {
+          "median": 5.12,
+          "p90": 5.4,
+          "min": 4.67
+        },
+        "dragSettleMs": {
+          "median": 173.8,
+          "p90": 201.3,
+          "min": 172
+        },
+        "zoomFrameMs": {
+          "median": 16.7,
+          "p90": 16.7,
+          "min": 16.7
+        },
+        "zoomFrameP95Ms": {
+          "median": 16.8,
+          "p90": 16.8,
+          "min": 16.7
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomMainThreadMsPerFrame": {
+          "median": 1.28,
+          "p90": 1.39,
+          "min": 1.15
+        },
+        "zoomSettleMs": {
+          "median": 296.8,
+          "p90": 316.4,
+          "min": 280.4
+        },
+        "markers2000Ms": {
+          "median": 44.5,
+          "p90": 46.6,
+          "min": 42.9
+        },
+        "markers10000Ms": {
+          "median": 107,
+          "p90": 109.4,
+          "min": 105.7
+        },
+        "totalScriptMs": {
+          "median": 216.61,
+          "p90": 251.33,
+          "min": 208.89
+        },
+        "totalBlockingMs": {
+          "median": 37,
+          "p90": 50,
+          "min": 33
+        },
+        "heapMb": {
+          "median": 3.36,
+          "p90": 3.36,
+          "min": 3.34
+        }
+      }
+    },
+    {
+      "browser": "firefox",
+      "browserVersion": "157.0",
+      "profile": "desktop",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 38,
+          "p90": 55,
+          "min": 31
+        },
+        "firstContentfulPaintMs": {
+          "median": 31,
+          "p90": 38,
+          "min": 22
+        },
+        "largestContentfulPaintMs": {
+          "median": 31,
+          "p90": 38,
+          "min": 22
+        },
+        "loadRequests": {
+          "median": 5,
+          "p90": 5,
+          "min": 5
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 276.42,
+          "p90": 276.42,
+          "min": 276.42
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 31,
+          "p90": 33,
+          "min": 24
+        },
+        "wakeToIdleMs": {
+          "median": 953,
+          "p90": 969,
+          "min": 939
+        },
+        "dragFrameMs": {
+          "median": 16.66,
+          "p90": 16.66,
+          "min": 16.66
+        },
+        "dragFrameP95Ms": {
+          "median": 16.68,
+          "p90": 17.02,
+          "min": 16.68
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomFrameMs": {
+          "median": 16.66,
+          "p90": 16.66,
+          "min": 16.66
+        },
+        "zoomFrameP95Ms": {
+          "median": 16.68,
+          "p90": 17.04,
+          "min": 16.68
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomSettleMs": {
+          "median": 0,
+          "p90": 1,
+          "min": 0
+        },
+        "markers2000Ms": {
+          "median": 25,
+          "p90": 28,
+          "min": 24
+        },
+        "markers10000Ms": {
+          "median": 44,
+          "p90": 49,
+          "min": 42
+        },
+        "totalBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        }
+      }
+    },
+    {
+      "browser": "firefox",
+      "browserVersion": "157.0",
+      "profile": "laptop-hidpi",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 37,
+          "p90": 50,
+          "min": 33
+        },
+        "firstContentfulPaintMs": {
+          "median": 25,
+          "p90": 32,
+          "min": 24
+        },
+        "largestContentfulPaintMs": {
+          "median": 25,
+          "p90": 32,
+          "min": 24
+        },
+        "loadRequests": {
+          "median": 5,
+          "p90": 5,
+          "min": 5
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 688.53,
+          "p90": 688.53,
+          "min": 688.53
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 34,
+          "p90": 38,
+          "min": 26
+        },
+        "wakeToIdleMs": {
+          "median": 957,
+          "p90": 962,
+          "min": 942
+        },
+        "dragFrameMs": {
+          "median": 16.66,
+          "p90": 16.66,
+          "min": 16.66
+        },
+        "dragFrameP95Ms": {
+          "median": 16.68,
+          "p90": 17.12,
+          "min": 16.68
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomFrameMs": {
+          "median": 16.66,
+          "p90": 16.66,
+          "min": 16.66
+        },
+        "zoomFrameP95Ms": {
+          "median": 16.68,
+          "p90": 16.96,
+          "min": 16.68
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "markers2000Ms": {
+          "median": 26,
+          "p90": 34,
+          "min": 23
+        },
+        "markers10000Ms": {
+          "median": 40,
+          "p90": 52,
+          "min": 37
+        },
+        "totalBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        }
+      }
+    },
+    {
+      "browser": "webkit",
+      "browserVersion": "27.2",
+      "profile": "desktop",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 39,
+          "p90": 42,
+          "min": 28
+        },
+        "firstContentfulPaintMs": {
+          "median": 23,
+          "p90": 25,
+          "min": 23
+        },
+        "loadRequests": {
+          "median": 4,
+          "p90": 4,
+          "min": 4
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 276.42,
+          "p90": 276.42,
+          "min": 276.42
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 21,
+          "p90": 22,
+          "min": 21
+        },
+        "wakeToIdleMs": {
+          "median": 960,
+          "p90": 961,
+          "min": 933
+        },
+        "dragFrameMs": {
+          "median": 17,
+          "p90": 17,
+          "min": 17
+        },
+        "dragFrameP95Ms": {
+          "median": 18,
+          "p90": 19,
+          "min": 18
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomFrameMs": {
+          "median": 17,
+          "p90": 17,
+          "min": 17
+        },
+        "zoomFrameP95Ms": {
+          "median": 19,
+          "p90": 19,
+          "min": 18
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "markers2000Ms": {
+          "median": 27,
+          "p90": 29,
+          "min": 27
+        },
+        "markers10000Ms": {
+          "median": 34,
+          "p90": 36,
+          "min": 32
+        },
+        "totalBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        }
+      }
+    },
+    {
+      "browser": "webkit",
+      "browserVersion": "27.2",
+      "profile": "laptop-hidpi",
+      "runs": 5,
+      "metrics": {
+        "firstImageMs": {
+          "median": 43,
+          "p90": 48,
+          "min": 42
+        },
+        "firstContentfulPaintMs": {
+          "median": 28,
+          "p90": 31,
+          "min": 26
+        },
+        "loadRequests": {
+          "median": 4,
+          "p90": 4,
+          "min": 4
+        },
+        "loadScriptKb": {
+          "median": 16.98,
+          "p90": 16.98,
+          "min": 16.98
+        },
+        "firstImageKb": {
+          "median": 688.53,
+          "p90": 688.53,
+          "min": 688.53
+        },
+        "loadBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "wakeMs": {
+          "median": 23,
+          "p90": 29,
+          "min": 22
+        },
+        "wakeToIdleMs": {
+          "median": 960,
+          "p90": 963,
+          "min": 947
+        },
+        "dragFrameMs": {
+          "median": 17,
+          "p90": 17,
+          "min": 16
+        },
+        "dragFrameP95Ms": {
+          "median": 19,
+          "p90": 19,
+          "min": 18
+        },
+        "dragSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "dragSettleMs": {
+          "median": 0,
+          "p90": 666,
+          "min": 0
+        },
+        "zoomFrameMs": {
+          "median": 17,
+          "p90": 17,
+          "min": 17
+        },
+        "zoomFrameP95Ms": {
+          "median": 19,
+          "p90": 19,
+          "min": 18
+        },
+        "zoomSlowFramesPercent": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "zoomSettleMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        },
+        "markers2000Ms": {
+          "median": 27,
+          "p90": 28,
+          "min": 16
+        },
+        "markers10000Ms": {
+          "median": 32,
+          "p90": 36,
+          "min": 32
+        },
+        "totalBlockingMs": {
+          "median": 0,
+          "p90": 0,
+          "min": 0
+        }
+      }
+    }
+  ]
+}

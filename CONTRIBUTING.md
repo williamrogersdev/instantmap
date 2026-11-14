@@ -28,6 +28,8 @@ bun run lint                                # oxlint, rustfmt, clippy
 bun run typecheck
 bun run size                                # size budget, after the package is built
 bun run e2e                                 # fixture tiles + local Worker + browser
+bun run bench                               # benchmarks: renderer, image service, browser (see bench/README.md)
+bun run profile browser                     # record a profile: browser, worker or renderer
 bun run check                               # lint, typecheck, test, build, size
 ```
 

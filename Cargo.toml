@@ -14,3 +14,9 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = true
+
+# For profilers: release speed with symbols kept. cargo run --profile profiling ...
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = false

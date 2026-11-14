@@ -5,3 +5,6 @@ dist/
 out/
 *.local
 worker/pkg/
+.wrangler-dev.log
+verify-out/
+*.log

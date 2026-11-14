@@ -71,7 +71,9 @@ Your server also serves `/instant-map.js` and the font, so you can load the clie
 | Your own PMTiles on R2 | The URL of a [PMTiles Worker](https://docs.protomaps.com/deploy/cloudflare) in front of your bucket | Download a planet or regional `.pmtiles` build, upload it to R2, and deploy Protomaps' serverless Worker. You own every part of the stack. |
 | Any z/x/y server | Your URL with `{z}`, `{x}`, `{y}` | Must use the Protomaps schema (layers `earth`, `water`, `landuse`, `roads`, `boundaries`, `places`, `buildings`). |
 
-The Worker caches upstream tiles for 7 days, so your tile source sees roughly one request per tile per data centre per week (once per tile in total with the `TILE_CACHE` bucket below). A request to the tile source times out after 8 seconds and is retried once.
+The Worker caches upstream tiles for 7 days, so your tile source sees roughly one request per tile per data centre per week. With the `TILE_CACHE` bucket below, each vector tile is also kept in R2 the first time it is fetched, and the tile source is asked for it once in total. A request to the tile source times out after 8 seconds and is retried once.
+
+Each picture is drawn from nine vector tiles, and neighbouring pictures share most of them. The Worker keeps the vector tiles it has fetched in memory, so a screen of nine pictures fetches 25 vector tiles, not 81.
 
 ## How pictures are cached
 
@@ -89,6 +91,8 @@ With Workers Cache on, Cloudflare bills requests for the site's static files as 
 
 The checked-in Worker configuration binds `TILE_CACHE` to an R2 bucket named `instantmap-tiles`. Create that bucket in your own account before deploying, or remove the `r2_buckets` block to use only the Cloudflare cache layers. With R2 enabled, an edge-cache miss checks the bucket before drawing a tile.
 
+The bucket also keeps the vector tiles the pictures are drawn from, under `mvt/`. A place nobody has looked at in a new style, or after a new renderer version, is then drawn from R2 with no request to the tile source. A stored vector tile is used for as long as it is in the bucket. After 30 days the Worker fetches a fresh copy in the background the next time the tile is used (after one day for a tile the source did not have). To pick up new map data at once, delete the `mvt/` objects.
+
 ```bash
 cd worker && bunx wrangler r2 bucket create instantmap-tiles
 ```
@@ -99,7 +103,7 @@ The binding in `worker/wrangler.jsonc` is:
 "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }]
 ```
 
-Give the bucket a lifecycle rule, for example delete objects after 90 days, so it cannot grow without bound. Only tiles are stored. Static images are not.
+Give the bucket a lifecycle rule, for example delete objects after 90 days, so it cannot grow without bound. Tiles and vector tiles are stored. Static images are not.
 
 ## Limit on uncached renders
 

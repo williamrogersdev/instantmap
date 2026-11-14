@@ -7,6 +7,7 @@
 //   bun run bench --browsers all               chromium, firefox and webkit (default: chromium)
 //   bun run bench --profiles desktop,phone-low pick device profiles (default: all)
 //   bun run bench --runs 9                     visits per browser and profile (default 5)
+//   bun run bench --source-delay 150           make the local tile source answer after 150 ms, like a distant one
 //   bun run bench --publish                    also write bench/results/published.json, which the site shows
 //   bun run bench --markdown summary.md        also write the tables as Markdown
 import { cpus, totalmem } from "node:os";
@@ -44,6 +45,8 @@ export interface Results {
   sizes?: { upfront: number; engine: number };
   profiles: { name: string; description: string }[];
   renderer?: { iterations: number; scenes: RendererScene[] };
+  /** Milliseconds the local tile source waited before each answer. Absent when it answered at once. */
+  sourceDelayMs?: number;
   server?: ServerResult[];
   browser?: BrowserResult[];
 }
@@ -86,12 +89,18 @@ if (parts.has("renderer")) {
   for (const scene of results.renderer!.scenes) log(`${scene.name}: ${scene.totalJpegMs.median} ms to a JPEG of ${(scene.jpegBytes / 1024).toFixed(1)} KB`);
 }
 
+const sourceDelay = Number(options.get("source-delay") ?? 0);
+if (sourceDelay && !options.get("url")) {
+  process.env.TILE_DELAY_MS = String(sourceDelay);
+  results.sourceDelayMs = sourceDelay;
+}
+
 if (parts.has("server") || parts.has("browser")) {
   const stack = await startStack(options.get("url"));
   try {
     if (parts.has("server")) {
       console.error(`server (${stack.local ? "local Worker, fixture tiles" : stack.base})`);
-      results.server = await runServer(stack.base, { runs: Math.max(runs, 5), log });
+      results.server = await runServer(stack.base, { runs: Math.max(runs, 5), log, sourceRequests: stack.sourceRequests });
     }
     if (parts.has("browser")) {
       console.error(`browser (${engines.join(", ")}; ${runs} visits each)`);
@@ -106,7 +115,7 @@ const out = options.get("out") ?? join(root, "bench/results/latest.json");
 await Bun.write(out, `${JSON.stringify(results, null, 2)}\n`);
 console.error(`\nwrote ${out}`);
 if (options.has("publish")) {
-  if (results.target !== "local" || parts.size < 3 || skipped.length) console.error("not published: only a full local run with every requested browser is published, so the published numbers are always comparable");
+  if (results.target !== "local" || parts.size < 3 || skipped.length || sourceDelay) console.error("not published: only a full local run with every requested browser is published, so the published numbers are always comparable");
   else {
     await Bun.write(join(root, "bench/results/published.json"), `${JSON.stringify(results, null, 2)}\n`);
     console.error("wrote bench/results/published.json (commit it to publish on the site)");

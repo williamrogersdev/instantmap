@@ -25,7 +25,7 @@ This runs three parts and writes `bench/results/latest.json`:
 | Part | What it measures |
 | --- | --- |
 | `renderer` | The Rust renderer, compiled natively: reading tiles, drawing, and encoding, for eight pictures. |
-| `server` | The image service over HTTP: a picture that has to be drawn, and the same picture from cache. |
+| `server` | The image service over HTTP: a picture that has to be drawn, and the same picture from cache. Also a whole screen of nine tiles asked for at once, with the number of requests it made to the tile source. |
 | `browser` | A real visit: load with nothing cached, wake the map, drag, zoom, then 2,000 and 10,000 markers. |
 
 Options:
@@ -34,6 +34,7 @@ Options:
 | --- | --- |
 | `--quick` | Two visits on the desktop and mid-range phone profiles. About half a minute. |
 | `--only renderer,server` | Run only some parts. |
+| `--source-delay 150` | Make the local tile source wait 150 ms before each answer, like a distant one. Not published. |
 | `--browsers all` | Chromium, Firefox and WebKit. The default is Chromium. |
 | `--profiles desktop,phone-low` | Choose device profiles. The default is all four. |
 | `--runs 9` | Visits per browser and profile. The default is 5. |

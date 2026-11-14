@@ -12,6 +12,8 @@ export interface Stack {
   local: boolean;
   /** The Worker's inspector port, for CPU profiles. Local only. */
   inspectorPort?: number;
+  /** How many tiles the Worker has asked the fixture tile source for so far. Local only. */
+  sourceRequests?(): Promise<number>;
   stop(): void;
 }
 
@@ -58,7 +60,10 @@ export async function startStack(url?: string): Promise<Stack> {
   while (Date.now() < deadline) {
     if (children.some((child) => child.exitCode !== null)) break;
     try {
-      if ((await fetch(`${base}/health`)).ok) return { base, local: true, inspectorPort, stop };
+      if ((await fetch(`${base}/health`)).ok) {
+        const sourceRequests = async () => (await (await fetch(`http://localhost:${tilePort}/__count`)).json()) as number;
+        return { base, local: true, inspectorPort, sourceRequests, stop };
+      }
     } catch {}
     await sleep(400);
   }

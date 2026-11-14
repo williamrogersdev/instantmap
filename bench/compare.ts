@@ -29,6 +29,7 @@ function flatten(data: Results): Map<string, number> {
   for (const item of data.server ?? []) {
     values.set(`server ${item.name} first ms`, item.firstMs.median);
     values.set(`server ${item.name} repeat ms`, item.repeatMs.median);
+    if (item.sourceRequests !== undefined) values.set(`server ${item.name} tile source requests`, item.sourceRequests);
   }
   for (const item of data.browser ?? []) for (const [name, value] of Object.entries(item.metrics)) values.set(`${item.browser} ${item.profile} ${name}`, value.median);
   return values;

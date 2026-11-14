@@ -44,7 +44,7 @@ function getRenderer(): Renderer {
   return renderer;
 }
 
-async function fetchTile(env: Env, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
+async function fetchFromSource(env: Env, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
   const url = env.TILE_URL.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y));
   // One more try for a timeout, a dropped connection or a 5xx: a single slow tile should not fail a picture made of nine.
   for (let attempt = 0; ; attempt++) {
@@ -59,11 +59,76 @@ async function fetchTile(env: Env, z: number, x: number, y: number): Promise<Uin
   }
 }
 
-async function fetchTiles(env: Env, ids: Uint32Array) {
+// Vector tiles this isolate has fetched or is fetching. Neighbouring pictures need the same vector tiles (each picture
+// tile reads nine), so a screen of twelve pictures asks for about thirty distinct ones, not a hundred and eight.
+const vectorTiles = new Map<string, { pending: Promise<Uint8Array | undefined>; bytes: number }>();
+let vectorBytes = 0;
+const VECTOR_MEMORY_LIMIT = 32 * 1024 * 1024;
+const VECTOR_ENTRY_LIMIT = 512;
+const VECTOR_REFRESH_MS = 30 * 24 * 60 * 60 * 1000;
+// A tile the source did not have is asked for again sooner, in case it was only missing for a moment.
+const VECTOR_EMPTY_REFRESH_MS = 24 * 60 * 60 * 1000;
+
+/** Gets one vector tile: from this isolate, then from R2 (kept for the whole world), then from the tile source. */
+function vectorTile(env: Env, context: ExecutionContext, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
+  const key = `${z}/${x}/${y}`;
+  const known = vectorTiles.get(key);
+  if (known) {
+    // Move to the back of the queue: the least recently used tile is dropped first.
+    vectorTiles.delete(key);
+    vectorTiles.set(key, known);
+    return known.pending;
+  }
+  const entry = { pending: loadVectorTile(env, context, key, z, x, y), bytes: 0 };
+  vectorTiles.set(key, entry);
+  entry.pending.then(
+    (bytes) => {
+      if (vectorTiles.get(key) !== entry) return;
+      entry.bytes = bytes?.length ?? 0;
+      vectorBytes += entry.bytes;
+      for (const [oldest, old] of vectorTiles) {
+        if (vectorBytes <= VECTOR_MEMORY_LIMIT && vectorTiles.size <= VECTOR_ENTRY_LIMIT) break;
+        if (old === entry) continue;
+        vectorTiles.delete(oldest);
+        vectorBytes -= old.bytes;
+      }
+    },
+    () => {
+      if (vectorTiles.get(key) === entry) vectorTiles.delete(key);
+    },
+  );
+  // Other requests may be waiting on this fetch, so it must finish even if the request that started it is abandoned.
+  context.waitUntil(entry.pending.catch(() => {}));
+  return entry.pending;
+}
+
+async function loadVectorTile(env: Env, context: ExecutionContext, key: string, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
+  const store = env.TILE_CACHE;
+  if (!store) return fetchFromSource(env, z, x, y);
+  const name = `mvt/${fingerprint(env.TILE_URL)}/${key}`;
+  const refresh = async () => {
+    const bytes = await fetchFromSource(env, z, x, y);
+    // A tile the source does not have is kept as an empty object, so it is not asked for again either.
+    await store.put(name, bytes ?? new Uint8Array(0));
+    return bytes;
+  };
+  const kept = await store.get(name).catch(() => null);
+  if (!kept) {
+    const bytes = await fetchFromSource(env, z, x, y);
+    context.waitUntil(store.put(name, bytes ?? new Uint8Array(0)).catch(() => {}));
+    return bytes;
+  }
+  // Map data changes slowly. An old copy is still used, and replaced in the background for next time.
+  if (Date.now() - kept.uploaded.getTime() > (kept.size ? VECTOR_REFRESH_MS : VECTOR_EMPTY_REFRESH_MS)) context.waitUntil(refresh().catch(() => {}));
+  const bytes = new Uint8Array(await kept.arrayBuffer());
+  return bytes.length ? bytes : undefined;
+}
+
+async function fetchTiles(env: Env, context: ExecutionContext, ids: Uint32Array) {
   const fetched = await Promise.all(
     Array.from({ length: ids.length / 3 }, async (_, index) => {
       const id = [ids[index * 3]!, ids[index * 3 + 1]!, ids[index * 3 + 2]!] as const;
-      return { id, bytes: await fetchTile(env, ...id) };
+      return { id, bytes: await vectorTile(env, context, ...id) };
     }),
   );
   const present = fetched.filter((tile): tile is { id: (typeof tile)["id"]; bytes: Uint8Array } => !!tile.bytes?.length);
@@ -82,11 +147,11 @@ interface Drawn {
   upstreamMs: number;
 }
 
-async function render(request: MapRequest, env: Env): Promise<Drawn> {
+async function render(request: MapRequest, env: Env, context: ExecutionContext): Promise<Drawn> {
   const instance = getRenderer();
   const camera = request.kind === "tile" ? tileCamera(request.z, request.x, request.y, request.ratio) : Float64Array.from([request.longitude, request.latitude, request.zoom, request.width, request.height, request.ratio]);
   const started = Date.now();
-  const tiles = await fetchTiles(env, tilesFor(camera));
+  const tiles = await fetchTiles(env, context, tilesFor(camera));
   // Only the fetch is timed: Cloudflare holds the clock still while a Worker computes, so drawing would always read 0.
   // Workers Logs record the CPU time of each request.
   const upstreamMs = Date.now() - started;
@@ -101,11 +166,13 @@ async function render(request: MapRequest, env: Env): Promise<Drawn> {
 // Requests for a picture that is already being drawn in this isolate wait for that drawing rather than starting another.
 const inFlight = new Map<string, Promise<Drawn>>();
 
-function renderOnce(key: string, request: MapRequest, env: Env): Promise<Drawn> {
+function renderOnce(key: string, request: MapRequest, env: Env, context: ExecutionContext): Promise<Drawn> {
   let pending = inFlight.get(key);
   if (!pending) {
-    pending = render(request, env).finally(() => inFlight.delete(key));
+    pending = render(request, env, context).finally(() => inFlight.delete(key));
     inFlight.set(key, pending);
+    // Keep it going if the request that started it is abandoned: others may be waiting on it.
+    context.waitUntil(pending.catch(() => {}));
   }
   return pending;
 }
@@ -171,7 +238,7 @@ export default {
         const { success } = await env.RENDER_LIMIT.limit({ key: request.headers.get("cf-connecting-ip") ?? "unknown" });
         if (!success) return text("too many uncached map requests, try again shortly", 429, { "retry-after": "10" });
       }
-      const { bytes, upstreamMs } = await renderOnce(key, parsed, env);
+      const { bytes, upstreamMs } = await renderOnce(key, parsed, env, context);
       // One line per drawing, for Workers Logs: which pictures are drawn, where, and how long the map data took.
       console.log(
         JSON.stringify({

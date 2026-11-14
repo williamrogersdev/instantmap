@@ -13,6 +13,8 @@ export interface ServerResult {
   bytes: number;
   /** What answered the first requests, from cf-cache-status or x-instantmap-cache. */
   firstSources: string[];
+  /** Requests to the tile source for each first request, when the benchmark runs its own tile source. */
+  sourceRequests?: number;
 }
 
 const CENTER: [number, number] = [-96.8, 32.79];
@@ -37,6 +39,19 @@ function staticAddresses(markers: number, count: number): string[] {
   return Array.from({ length: count }, (_, index) => `/static?center=${(CENTER[0] + index * 1e-6).toFixed(6)},${CENTER[1]}&zoom=12&size=960x540&r=2${list}`);
 }
 
+/** A screen of nine neighbouring 2× tiles, as a map asks for them when it wakes or moves: all at once. */
+function viewAddresses(theme: string): string[] {
+  const addresses: string[] = [];
+  for (const x of [116, 117, 118]) for (const y of [205, 206, 207]) addresses.push(`/tiles/9/${x}/${y}@2x.jpg?theme=${theme}`);
+  return addresses;
+}
+
+async function timedView(base: string, theme: string): Promise<{ ms: number; bytes: number; sources: string[] }> {
+  const started = performance.now();
+  const samples = await Promise.all(viewAddresses(theme).map((address) => timed(base + address)));
+  return { ms: performance.now() - started, bytes: samples.reduce((sum, sample) => sum + sample.bytes, 0), sources: [...new Set(samples.map((sample) => sample.source))] };
+}
+
 async function timed(url: string): Promise<{ ms: number; bytes: number; source: string }> {
   const started = performance.now();
   const response = await fetch(url);
@@ -49,7 +64,7 @@ async function timed(url: string): Promise<{ ms: number; bytes: number; source: 
   return { ms, bytes, source };
 }
 
-export async function runServer(base: string, options: { runs: number; log?: (line: string) => void }): Promise<ServerResult[]> {
+export async function runServer(base: string, options: { runs: number; log?: (line: string) => void; sourceRequests?: () => Promise<number> }): Promise<ServerResult[]> {
   const cases = [
     { name: "tile-1x-jpeg", description: "One 512-point tile, JPEG", addresses: tileAddresses(".jpg", options.runs) },
     { name: "tile-2x-jpeg", description: "One 512-point tile at 2×, JPEG", addresses: tileAddresses("@2x.jpg", options.runs) },
@@ -59,7 +74,7 @@ export async function runServer(base: string, options: { runs: number; log?: (li
     { name: "static-2x-400-markers", description: "First image, 960×540 at 2×, 400 markers", addresses: staticAddresses(400, options.runs) },
   ];
   // Start the renderer before timing anything, so the first case does not carry the one-off start-up cost.
-  await timed(`${base}/tiles/9/117/206.jpg`).catch(() => {});
+  await timed(`${base}/tiles/7/29/51.jpg`).catch(() => {});
   const results: ServerResult[] = [];
   for (const item of cases) {
     const first: number[] = [];
@@ -76,6 +91,32 @@ export async function runServer(base: string, options: { runs: number; log?: (li
     const result = { name: item.name, description: item.description, firstMs: spread(first), repeatMs: spread(repeat), bytes, firstSources: [...sources] };
     results.push(result);
     options.log?.(`${item.name}: first ${result.firstMs.median} ms (${result.firstSources.join(", ")}), repeat ${result.repeatMs.median} ms, ${(bytes / 1024).toFixed(1)} KB`);
+  }
+  // Whole screens. The first is a place nobody has looked at yet: the map data has to come from the tile source.
+  // The rest are new pictures of that same place (another theme), which only need drawing.
+  const views = [];
+  for (const theme of THEMES) {
+    const before = await options.sourceRequests?.();
+    const sample = await timedView(base, theme);
+    views.push({ theme, ...sample, asked: before === undefined ? undefined : (await options.sourceRequests!()) - before });
+  }
+  const again: number[] = [];
+  for (let run = 0; run < 5; run++) again.push((await timedView(base, THEMES[0]!)).ms);
+  const view = (name: string, description: string, samples: typeof views): ServerResult => ({
+    name,
+    description,
+    firstMs: spread(samples.map((sample) => sample.ms)),
+    repeatMs: spread(again),
+    bytes: samples[0]!.bytes,
+    firstSources: [...new Set(samples.flatMap((sample) => sample.sources))],
+    ...(samples[0]!.asked === undefined ? {} : { sourceRequests: Math.max(...samples.map((sample) => sample.asked!)) }),
+  });
+  for (const result of [
+    view("view-new-place", "A screen of nine 2× tiles, somewhere not seen before", views.slice(0, 1)),
+    view("view-new-pictures", "A screen of nine 2× tiles, new pictures of a place seen before", views.slice(1)),
+  ]) {
+    results.push(result);
+    options.log?.(`${result.name}: first ${result.firstMs.median} ms (${result.firstSources.join(", ")}), repeat ${result.repeatMs.median} ms, ${(result.bytes / 1024).toFixed(1)} KB${result.sourceRequests === undefined ? "" : `, ${result.sourceRequests} requests to the tile source`}`);
   }
   return results;
 }

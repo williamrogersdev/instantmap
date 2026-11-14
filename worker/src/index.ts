@@ -80,8 +80,6 @@ interface Drawn {
   bytes: Uint8Array;
   /** Milliseconds spent fetching vector tiles. */
   upstreamMs: number;
-  /** Milliseconds spent drawing and encoding. */
-  renderMs: number;
 }
 
 async function render(request: MapRequest, env: Env): Promise<Drawn> {
@@ -89,13 +87,15 @@ async function render(request: MapRequest, env: Env): Promise<Drawn> {
   const camera = request.kind === "tile" ? tileCamera(request.z, request.x, request.y, request.ratio) : Float64Array.from([request.longitude, request.latitude, request.zoom, request.width, request.height, request.ratio]);
   const started = Date.now();
   const tiles = await fetchTiles(env, tilesFor(camera));
-  const fetched = Date.now();
+  // Only the fetch is timed: Cloudflare holds the clock still while a Worker computes, so drawing would always read 0.
+  // Workers Logs record the CPU time of each request.
+  const upstreamMs = Date.now() - started;
   const quality = request.png ? 0 : jpegQuality(request.ratio);
   const bytes =
     request.kind === "tile"
       ? instance.render(camera, tiles.ids, tiles.lengths, tiles.data, request.look.palette, new Float64Array(), "", 0, quality)
       : instance.render(camera, tiles.ids, tiles.lengths, tiles.data, request.look.palette, request.markers.values, request.markers.labels, request.clusterDistance, quality);
-  return { bytes, upstreamMs: fetched - started, renderMs: Date.now() - fetched };
+  return { bytes, upstreamMs };
 }
 
 // Requests for a picture that is already being drawn in this isolate wait for that drawing rather than starting another.
@@ -171,8 +171,8 @@ export default {
         const { success } = await env.RENDER_LIMIT.limit({ key: request.headers.get("cf-connecting-ip") ?? "unknown" });
         if (!success) return text("too many uncached map requests, try again shortly", 429, { "retry-after": "10" });
       }
-      const { bytes, upstreamMs, renderMs } = await renderOnce(key, parsed, env);
-      // One line per drawing, for Workers Logs: which pictures are drawn, where, and where the time goes.
+      const { bytes, upstreamMs } = await renderOnce(key, parsed, env);
+      // One line per drawing, for Workers Logs: which pictures are drawn, where, and how long the map data took.
       console.log(
         JSON.stringify({
           message: "render",
@@ -181,12 +181,11 @@ export default {
           ratio: parsed.ratio,
           format: parsed.png ? "png" : "jpeg",
           upstreamMs,
-          renderMs,
           bytes: bytes.length,
           colo: request.cf?.colo,
         }),
       );
-      const response = image(bytes, parsed.png, "render", `upstream;dur=${upstreamMs}, render;dur=${renderMs}`);
+      const response = image(bytes, parsed.png, "render", `upstream;dur=${upstreamMs}`);
       context.waitUntil(cache.put(cacheRequest, response.clone()));
       if (store) context.waitUntil(store.put(key, bytes, { httpMetadata: { contentType: parsed.png ? "image/png" : "image/jpeg" } }));
       return response;

@@ -5,12 +5,12 @@ sidebar:
   order: 4
 ---
 
-Use `instantmap/react` in React Router v7 framework mode. The loader supplies the markers and the server renders the first image.
+Use `instantmap-js/react` in React Router v7 framework mode. The loader supplies the markers and the server renders the first image.
 
 ## Install
 
 ```sh
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
@@ -18,7 +18,7 @@ npm install instantmap
 Return the markers from the route loader and render `InstantMap` in the component.
 
 ```tsx title="app/routes/home.tsx"
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 import { listings } from "../listings";
 import type { Route } from "./+types/home";
 
@@ -57,8 +57,8 @@ Use a ref for camera calls and `onMarkerClick` for clicks. Both work in the rout
 
 ```tsx title="app/routes/home.tsx"
 import { useRef, useState } from "react";
-import { InstantMap, type InstantMapHandle } from "instantmap/react";
-import type { Marker } from "instantmap";
+import { InstantMap, type InstantMapHandle } from "instantmap-js/react";
+import type { Marker } from "instantmap-js";
 import type { Listing } from "../listings";
 import type { Route } from "./+types/home";
 
@@ -91,12 +91,12 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
 - Setting `ssr: false`. The page then has no first image in its HTML.
 - Giving the map no height. It collapses to nothing.
-- Two copies of React on the server, which fails with `Cannot read properties of null (reading 'useRef')`. This happens when `instantmap` is installed from a local folder. Add `resolve: { dedupe: ["react", "react-dom"] }` and `ssr: { noExternal: ["instantmap"] }` to `vite.config.ts`.
+- Two copies of React on the server, which fails with `Cannot read properties of null (reading 'useRef')`. This happens when `instantmap-js` is installed from a local folder. Add `resolve: { dedupe: ["react", "react-dom"] }` and `ssr: { noExternal: ["instantmap-js"] }` to `vite.config.ts`.
 
 ## Prompt for your agent
 
 ```text
-Add an Instant Map to my React Router v7 framework-mode app. Follow https://instantmap.org/docs/frameworks/react-router.md exactly. Return the markers from the route loader, render InstantMap from instantmap/react in the component with a fixed height, and keep ssr: true. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
+Add an Instant Map to my React Router v7 framework-mode app. Follow https://instantmap.org/docs/frameworks/react-router.md exactly. Return the markers from the route loader, render InstantMap from instantmap-js/react in the component with a fixed height, and keep ssr: true. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
 ```
 
 ## Full example

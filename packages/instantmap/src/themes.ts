@@ -1,3 +1,7 @@
+import { decodeColors, encodeColors, parseColor } from "./colors.ts";
+
+export { decodeColors, encodeColors, parseColor };
+
 export const PALETTE_KEYS = [
   "land",
   "water",
@@ -200,15 +204,6 @@ export const THEMES: Record<ThemeName, Palette> = {
 
 export const DEFAULT_THEME: ThemeName = "daylight";
 
-const HEX = /^#?([0-9a-f]{6}|[0-9a-f]{8})$/i;
-
-export function parseColor(value: string): number | undefined {
-  const match = HEX.exec(value.trim());
-  if (!match) return undefined;
-  const digits = match[1]!.length === 6 ? `${match[1]}ff` : match[1]!;
-  return Number.parseInt(digits, 16) >>> 0;
-}
-
 export function resolvePalette(theme: string | undefined, overrides: Partial<Record<string, string>> = {}): Palette {
   const base = THEMES[(theme ?? DEFAULT_THEME) as ThemeName] ?? THEMES[DEFAULT_THEME];
   const palette = { ...base };
@@ -223,19 +218,10 @@ export function paletteWords(palette: Palette): Uint32Array {
   return Uint32Array.from(PALETTE_KEYS.map((key) => parseColor(palette[key]) ?? 0));
 }
 
-export function encodeColors(overrides: Partial<Record<string, string>>): string {
-  return PALETTE_KEYS.filter((key) => overrides[key] !== undefined && parseColor(overrides[key]!) !== undefined)
-    .map((key) => `${key}:${overrides[key]!.replace("#", "").toLowerCase()}`)
-    .join(",");
-}
-
-export function decodeColors(value: string | null | undefined): Partial<Record<PaletteKey, string>> {
+/** decodeColors, keeping only keys the palette has. */
+export function decodePaletteColors(value: string | null | undefined): Partial<Record<PaletteKey, string>> {
+  const decoded = decodeColors(value);
   const result: Partial<Record<PaletteKey, string>> = {};
-  for (const entry of (value ?? "").split(",")) {
-    const [key, color] = entry.split(":");
-    if (key && color && (PALETTE_KEYS as readonly string[]).includes(key) && parseColor(color) !== undefined) {
-      result[key as PaletteKey] = `#${color.toLowerCase()}`;
-    }
-  }
+  for (const key of PALETTE_KEYS) if (decoded[key] !== undefined) result[key] = decoded[key];
   return result;
 }

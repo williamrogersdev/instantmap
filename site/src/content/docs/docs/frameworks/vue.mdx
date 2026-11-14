@@ -10,7 +10,7 @@ You will end up with a Vue 3 component that shows an interactive map with marker
 ## Install
 
 ```bash
-npm install instantmap
+npm install instantmap-js
 ```
 
 Tell Vue that `instant-map` is a custom element, not a component.
@@ -34,7 +34,7 @@ export default defineConfig({
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { defineInstantMap, type InstantMapElement, type Marker } from "instantmap";
+import { defineInstantMap, type InstantMapElement, type Marker } from "instantmap-js";
 
 defineInstantMap();
 

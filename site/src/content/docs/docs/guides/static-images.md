@@ -20,7 +20,7 @@ Always set `width` and `height` so the page doesn't shift while the image loads.
 ## Build the URL in code
 
 ```ts
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 
 const src = staticUrl({ center: [-73.9857, 40.7484], zoom: 14, width: 640, height: 360, ratio: 2, markers: [{ lng: -73.9857, lat: 40.7484 }] });
 ```

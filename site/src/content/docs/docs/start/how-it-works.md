@@ -11,7 +11,8 @@ sidebar:
 | --- | --- | --- |
 | Rust renderer | Cloudflare Worker, compiled to WebAssembly | About 500 KB, never sent to the browser |
 | `/static` and `/tiles` | Same Worker, behind Cloudflare's cache | One request per image |
-| `<instant-map>` | Browser | About 13 KB gzipped |
+| `<instant-map>` loader | Browser | About 7 KB gzipped before anyone touches the map |
+| Engine (tiles, gestures, markers, cards) | Browser | About 11 KB more, fetched on first touch |
 | Vector tiles | Any [Protomaps](https://protomaps.com)-schema source: PMTiles on R2, the Protomaps API, or your own | Fetched by the Worker, never by the browser |
 
 ## 1. The still
@@ -26,11 +27,11 @@ The Worker renders that view from vector tiles:
 
 The image is then cached at the edge. Most visitors get a cache hit served from a data centre near them.
 
-Until someone touches the map, that image is all there is. There's no script on the critical path, nothing that shifts layout, and no GPU work.
+Until someone touches the map, that image is all there is. The only script is the loader, about 7 KB gzipped. The image does not wait for it, nothing shifts layout, and there is no GPU work.
 
 ## 2. The hand-off
 
-On the first hover, touch, focus or wheel (the default `load="intent"`), the element:
+On the first hover, touch, focus or wheel (the default `load="intent"`), the element fetches its engine, about 11 KB gzipped. A press or tap that lands while the engine is loading is replayed, so the first gesture is not lost. Then the element:
 
 1. Reads the camera from the image URL, so the first live frame matches the image exactly, even when CSS scales the image.
 2. Starts fetching the 512 px tiles for the view. Until they arrive, any drag or zoom moves the image itself, so the map responds to input straight away.
@@ -40,8 +41,17 @@ On the first hover, touch, focus or wheel (the default `load="intent"`), the ele
 
 ## 3. Why markers don't jump
 
-Most maps cluster markers in screen space, so the groups change as you pan. Instant Map clusters in **world space at each whole zoom level**, like `supercluster`. The server and the browser run the same function, [`clusterAt`](/docs/reference/javascript/#clusteratmarkers-zoom-distance), on the same input. They get the same groups whatever the viewport. `staticUrl()` sends the server the finished groups, not your raw markers, so the URL stays short with 50,000 markers.
+Instant Map clusters in **world space at each whole zoom level**, so the groups do not change as you pan. The server and the browser run the same function, [`clusterAt`](/docs/reference/javascript/#clusteratmarkers-zoom-distance), on the same input. They get the same groups whatever the viewport. `staticUrl()` sends the server the finished groups, not your raw markers, so the URL stays short with 50,000 markers.
 
 ## 4. Caching
 
-Every image and tile URL is deterministic, so it gets `Cache-Control: immutable`. A map that a thousand visitors open in the same place costs one render. The Worker also caches the upstream vector tiles it reads.
+Every image and tile URL is deterministic, so it gets `Cache-Control: immutable`. A map that a thousand visitors open in the same place costs one render. The cache entry is keyed on the request as the server parsed it, so unknown query parameters and parameter order do not cause new renders. The Worker also caches the upstream vector tiles it reads, and can keep rendered tiles in an R2 bucket so each is drawn once worldwide.
+
+## 5. Keeping it light
+
+A few choices keep the live map quick on a phone:
+
+- Markers are drawn once into small sprites and stamped onto the canvas each frame.
+- Zoom animations do not request tiles for zoom levels they only pass through. The tiles already on screen stretch to cover the gap.
+- A tile that fails to load is retried once.
+- Card images for the markers nearest the centre are fetched in idle time, so a card opens with its photo ready. See [Cards and popups](/docs/guides/popups/#fast-card-images).

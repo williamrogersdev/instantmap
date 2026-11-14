@@ -1,4 +1,4 @@
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 import { makeListings } from "../lib/listings";
 import { ListingsMap } from "./listings-map";
 

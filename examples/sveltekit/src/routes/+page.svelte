@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { InstantMapElement, Marker } from 'instantmap';
+	import type { InstantMapElement, Marker } from 'instantmap-js';
 
 	let { data } = $props();
 
@@ -8,7 +8,7 @@
 	let opened = $state('Click a price to open its card.');
 
 	onMount(async () => {
-		await import('instantmap');
+		await import('instantmap-js');
 		if (map) map.markers = data.markers;
 	});
 

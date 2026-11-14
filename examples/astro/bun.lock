@@ -6,7 +6,7 @@
       "name": "instantmap-example-astro",
       "dependencies": {
         "astro": "^7.4.12",
-        "instantmap": "file:../../packages/instantmap",
+        "instantmap-js": "file:../../packages/instantmap",
       },
       "devDependencies": {
         "@astrojs/check": "^0.9.12",
@@ -401,7 +401,7 @@
 
     "http-cache-semantics": ["http-cache-semantics@4.3.0", "", {}, "sha512-M5t5LlJpS1UHMjvwRQVdFHvPISGeLAxNcrWuJkeGh0KxsqCHZ1O3NXZU/8x7cD0BDcGW8kapxMKTvwlqrNkHkA=="],
 
-    "instantmap": ["instantmap@file:../../packages/instantmap", { "devDependencies": { "@types/react": "19.2.7", "@types/react-dom": "19.2.3", "react": "19.2.3", "react-dom": "19.2.3", "typescript": "5.9.3" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["react", "react-dom"] }],
+    "instantmap-js": ["instantmap-js@file:../../packages/instantmap", { "devDependencies": { "@types/react": "19.2.7", "@types/react-dom": "19.2.3", "react": "19.2.3", "react-dom": "19.2.3", "typescript": "5.9.3" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["react", "react-dom"] }],
 
     "iron-webcrypto": ["iron-webcrypto@1.2.1", "", {}, "sha512-feOM6FaSr6rEABp/eDfVseKyTMDt+KGpeB35SkVn9Tyn0CqvVsY3EwI0v5i8nMHyJnzCIQf7nsy3p41TPkJZhg=="],
 

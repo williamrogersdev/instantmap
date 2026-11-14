@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { InstantMapElement, Marker } from "instantmap";
-import { staticUrl } from "instantmap/server";
+import type { InstantMapElement, Marker } from "instantmap-js";
+import { staticUrl } from "instantmap-js/server";
 import { center, listings, zoom } from "./listings";
 
 const src = useRuntimeConfig().public.instantmapSrc;

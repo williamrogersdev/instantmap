@@ -1,0 +1,260 @@
+---
+import { staticUrl } from "instantmap-js/server";
+import Site from "../layouts/Site.astro";
+import { sanFranciscoListings } from "../data/listings.ts";
+
+const listings = sanFranciscoListings(280);
+const poster = staticUrl({ src: "", center: [-122.4215, 37.7745], zoom: 13, width: 960, height: 720, ratio: 2, markers: listings });
+const description = "Style Instant Map from your style guide. Give brandTheme() your brand colours and get a full map palette with readable labels, or set any of the 36 map colours yourself. The first image and the live map always match.";
+
+const tokensSample = `/* Your style guide, as CSS custom properties */
+:root {
+  --primary: #e11d48;
+  --background: #fff7ed;
+  --foreground: #1c1917;
+}`;
+const cssSample = `import { brandThemeFromCss } from "instantmap-js/brand";
+
+// Reads the same tokens the rest of your page uses.
+const brand = brandThemeFromCss({
+  primary: "--primary",
+  background: "--background",
+  foreground: "--foreground",
+});
+
+const map = document.querySelector("instant-map");
+map.theme = brand.theme;
+map.colors = brand.colors;`;
+const serverSample = `import { brandTheme, staticUrl } from "instantmap-js/server";
+import tokens from "./design-tokens.json";
+
+// On the server, so the first image is already in your colours.
+export const brand = brandTheme({
+  primary: tokens.color.primary,
+  background: tokens.color.background,
+  foreground: tokens.color.foreground,
+});
+
+const poster = staticUrl({
+  center: [-122.42, 37.77], zoom: 12,
+  width: 960, height: 540,
+  ...brand,
+});`;
+
+const presets = [
+  ["Rose", "#e11d48", "#fff7ed", ""],
+  ["Harbour", "#0f766e", "", ""],
+  ["Indigo night", "#6366f1", "", "dark"],
+  ["Amber on navy", "#f59e0b", "#0b1220", ""],
+  ["Forest", "#15803d", "#f7f7f2", ""],
+] as const;
+---
+
+<Site title="Styling and brand colours" description={description} path="/styling/">
+  <div class="page-head">
+    <p class="crumbs"><a href="/">Instant Map</a> / Styling</p>
+    <h1>A map in your colours, from your style guide.</h1>
+    <p class="lead">Give it the colours you already have. Instant Map works out land, water, roads, labels and markers from them, checks that text stays readable, and paints the first image and the live map the same way.</p>
+  </div>
+
+  <section aria-labelledby="studio-title">
+    <div class="split">
+      <div>
+        <h2 id="studio-title">Try your brand</h2>
+        <fieldset>
+          <legend>Start from a brand</legend>
+          <div class="chips">
+            {presets.map(([name, primary, background, mode]) => <button type="button" class="chip" data-brand={`${primary}|${background}|${mode}`} aria-pressed="false" style={`--dot:${primary}`}><i></i>{name}</button>)}
+          </div>
+        </fieldset>
+        <fieldset class="tokens">
+          <legend>Style guide colours</legend>
+          <label><input type="color" id="brand-primary" value="#e11d48" />Primary</label>
+          <label><input type="color" id="brand-background" value="#fff7ed" />Background</label>
+          <label><input type="color" id="brand-foreground" value="#1c2530" />Text</label>
+          <label><input type="checkbox" id="brand-dark" style="width:20px;height:20px" />Dark map</label>
+        </fieldset>
+        <fieldset>
+          <legend>How much brand colour</legend>
+          <label class="slider">Neutral<input type="range" id="brand-tint" min="0" max="1" step="0.05" value="0.5" aria-label="How strongly the brand colour tints the map" />Strong</label>
+        </fieldset>
+        <fieldset class="themes">
+          <legend>Or a built-in theme</legend>
+          <label><input type="radio" name="theme" value="daylight" /><span class="swatch" style="--a:#f3f2ec;--b:#8ec6ee;--c:#0f2233"></span>Daylight</label>
+          <label><input type="radio" name="theme" value="midnight" /><span class="swatch" style="--a:#161a21;--b:#0c2a47;--c:#19d3a2"></span>Midnight</label>
+          <label><input type="radio" name="theme" value="paper" /><span class="swatch" style="--a:#f3f1ec;--b:#d0dee8;--c:#1d2b3a"></span>Paper</label>
+          <label><input type="radio" name="theme" value="mono" /><span class="swatch" style="--a:#f4f4f3;--b:#dde2e7;--c:#0f2233"></span>Mono</label>
+        </fieldset>
+        <fieldset class="tokens" id="fine">
+          <legend>Then adjust any colour</legend>
+          <label><input type="color" data-token="marker" />Markers</label>
+          <label><input type="color" data-token="cluster" />Clusters</label>
+          <label><input type="color" data-token="selected" />Selected</label>
+          <label><input type="color" data-token="water" />Water</label>
+          <label><input type="color" data-token="park" />Parks</label>
+          <label><input type="color" data-token="highway" />Highways</label>
+        </fieldset>
+      </div>
+      <div>
+        <instant-map id="studio-map" class="frame-map" center="-122.4215,37.7745" zoom="13" aria-label="Map you can restyle with the controls">
+          <img src={poster} alt="Map you can restyle with the controls" fetchpriority="high" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+        </instant-map>
+        <div class="codeblock studio-code">
+          <div class="tabs" role="tablist" aria-label="Code for this map">
+            <button type="button" role="tab" aria-selected="true" data-tab="js">JavaScript</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="react">React</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="html">HTML</button>
+            <button type="button" class="copy" data-copy-target="studio-code">Copy</button>
+          </div>
+          <pre><code id="studio-code"></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="guide-title">
+    <h2 id="guide-title">Connected to your style guide</h2>
+    <p>Keep one source of truth. Read the colours from the CSS custom properties your design system already defines, or from a design-token file on the server.</p>
+    <div class="pair">
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>In the browser, from CSS tokens</h3><button type="button" class="copy" data-copy={cssSample}>Copy</button></div>
+        <pre><code>{tokensSample + "\n\n" + cssSample}</code></pre>
+      </div>
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>On the server, from a token file</h3><button type="button" class="copy" data-copy={serverSample}>Copy</button></div>
+        <pre><code>{serverSample}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="levels-title">
+    <h2 id="levels-title">As much control as you want</h2>
+    <ul class="checks">
+      <li class="panel"><h3>One colour</h3><p><code>brandTheme(&#123; primary &#125;)</code> is enough. Background, text, accent, water and parks are optional.</p></li>
+      <li class="panel"><h3>Every colour</h3><p>All 36 map colours can be set by name through <code>colors</code>: roads, casings, labels, halos, shields, markers and more.</p></li>
+      <li class="panel"><h3>Readable by default</h3><p>Labels and marker text are adjusted until they have enough contrast against what is behind them.</p></li>
+      <li class="panel"><h3>No styling library to load</h3><p>The palette is plain arithmetic in a small module with no dependencies. It runs in microseconds, the same on the server and in the browser.</p></li>
+      <li class="panel"><h3>The image and the map agree</h3><p>The server paints the first image with the same colours, so nothing changes when the map wakes up.</p></li>
+      <li class="panel"><h3>Cards and controls follow</h3><p>Zoom buttons and cards pick up the palette. Each can also be restyled with CSS custom properties.</p></li>
+    </ul>
+    <a class="more" href="/docs/guides/theming/">Theming guide</a>
+  </section>
+
+  <script>
+    import type { InstantMapElement } from "instantmap-js";
+    import { brandTheme } from "instantmap-js/brand";
+    import { resolvePalette } from "instantmap-js/server";
+    import { sanFranciscoListings } from "../data/listings.ts";
+    import { byId, setupTabs } from "../scripts/shared.ts";
+
+    const map = byId<InstantMapElement>("studio-map");
+    map.markers = sanFranciscoListings(280);
+    const primary = byId<HTMLInputElement>("brand-primary");
+    const background = byId<HTMLInputElement>("brand-background");
+    const foreground = byId<HTMLInputElement>("brand-foreground");
+    const dark = byId<HTMLInputElement>("brand-dark");
+    const tint = byId<HTMLInputElement>("brand-tint");
+    const fine = [...document.querySelectorAll<HTMLInputElement>("#fine input[data-token]")];
+    const radios = [...document.querySelectorAll<HTMLInputElement>("input[name=theme]")];
+    const chips = [...document.querySelectorAll<HTMLButtonElement>("[data-brand]")];
+    const code = byId("studio-code");
+
+    let tab = "js";
+    // "brand": colours come from brandTheme(). "theme": a built-in theme. Either way `overrides` are laid on top.
+    let mode: "brand" | "theme" = "theme";
+    let theme = "daylight";
+    let touched = { background: true, foreground: false };
+    let overrides: Record<string, string> = {};
+
+    const brandInput = (): Parameters<typeof brandTheme>[0] => ({
+      primary: primary.value,
+      ...(touched.background ? { background: background.value } : {}),
+      ...(touched.foreground ? { foreground: foreground.value } : {}),
+      ...(dark.checked ? { mode: "dark" as const } : {}),
+      ...(Number(tint.value) === 0.5 ? {} : { tint: Number(tint.value) }),
+    });
+
+    const literal = (value: object, indent = "  "): string =>
+      `{\n${Object.entries(value)
+        .map(([key, item]) => `${indent}${key}: ${JSON.stringify(item)},`)
+        .join("\n")}\n${indent.slice(2)}}`;
+
+    function sample(): string {
+      const extra = Object.keys(overrides).length ? overrides : undefined;
+      if (mode === "theme") {
+        const colors = extra ? Object.entries(extra).map(([key, value]) => `${key}:${value.slice(1)}`).join(",") : "";
+        if (tab === "react") return `import { InstantMap } from "instantmap-js/react";\n\n<InstantMap\n  center={[-122.42, 37.77]}\n  zoom={13}\n  theme="${theme}"${extra ? `\n  colors={${literal(extra, "    ")}}` : ""}\n  markers={listings}\n  style={{ height: 480 }}\n/>`;
+        if (tab === "js") return `const map = document.querySelector("instant-map");\nmap.theme = "${theme}";${extra ? `\nmap.colors = ${literal(extra)};` : ""}`;
+        return `<instant-map\n  center="-122.42,37.77"\n  zoom="13"\n  theme="${theme}"${colors ? `\n  colors="${colors}"` : ""}\n  style="height:480px">\n</instant-map>`;
+      }
+      const call = `brandTheme(${literal(brandInput())})`;
+      const merged = extra ? `\nconst colors = { ...brand.colors, ...${literal(extra)} };` : "";
+      if (tab === "react") return `import { brandTheme } from "instantmap-js/brand";\nimport { InstantMap } from "instantmap-js/react";\n\nconst brand = ${call};${merged}\n\n<InstantMap\n  center={[-122.42, 37.77]}\n  zoom={13}\n  ${extra ? "theme={brand.theme}\n  colors={colors}" : "{...brand}"}\n  markers={listings}\n  style={{ height: 480 }}\n/>`;
+      if (tab === "html") {
+        const result = brandTheme(brandInput());
+        const colors = Object.entries({ ...result.colors, ...overrides })
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([key, value]) => `${key}:${value.slice(1)}`)
+          .join(",");
+        return `<!-- The output of brandTheme(), written out. -->\n<instant-map\n  center="-122.42,37.77"\n  zoom="13"\n  theme="${result.theme}"\n  colors="${colors}"\n  style="height:480px">\n</instant-map>`;
+      }
+      return `import { brandTheme } from "instantmap-js/brand";\n\nconst brand = ${call};${merged}\n\nconst map = document.querySelector("instant-map");\nmap.theme = brand.theme;\nmap.colors = ${extra ? "colors" : "brand.colors"};`;
+    }
+
+    function render(wake = true): void {
+      const base = mode === "brand" ? brandTheme(brandInput()) : { theme, colors: {} };
+      if (wake) map.activate();
+      map.theme = base.theme;
+      map.colors = { ...base.colors, ...overrides };
+      const palette = resolvePalette(map.theme, map.colors);
+      for (const input of fine) input.value = palette[input.dataset.token as keyof typeof palette].slice(0, 7);
+      for (const radio of radios) radio.checked = mode === "theme" && radio.value === theme;
+      code.textContent = sample();
+    }
+
+    const useBrand = (): void => {
+      mode = "brand";
+      overrides = {};
+      for (const chip of chips) chip.setAttribute("aria-pressed", "false");
+    };
+    primary.addEventListener("input", () => (useBrand(), render()));
+    background.addEventListener("input", () => (useBrand(), (touched.background = true), render()));
+    foreground.addEventListener("input", () => (useBrand(), (touched.foreground = true), render()));
+    dark.addEventListener("change", () => (useBrand(), (touched.background = false), (touched.foreground = false), render()));
+    tint.addEventListener("input", () => (useBrand(), render()));
+    for (const chip of chips) {
+      chip.addEventListener("click", () => {
+        const [brandPrimary, brandBackground, brandMode] = chip.dataset.brand!.split("|") as [string, string, string];
+        useBrand();
+        primary.value = brandPrimary;
+        touched = { background: !!brandBackground, foreground: false };
+        if (brandBackground) background.value = brandBackground;
+        dark.checked = brandMode === "dark";
+        tint.value = "0.5";
+        chip.setAttribute("aria-pressed", "true");
+        render();
+      });
+    }
+    for (const radio of radios) {
+      radio.addEventListener("change", () => {
+        mode = "theme";
+        theme = radio.value;
+        overrides = {};
+        for (const chip of chips) chip.setAttribute("aria-pressed", "false");
+        render();
+      });
+    }
+    for (const input of fine) {
+      input.addEventListener("input", () => {
+        overrides[input.dataset.token!] = input.value;
+        render();
+      });
+    }
+    setupTabs(document.querySelector(".studio-code")!, (next) => {
+      tab = next;
+      code.textContent = sample();
+    });
+
+    render(false);
+  </script>
+</Site>

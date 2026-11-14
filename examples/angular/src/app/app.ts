@@ -1,6 +1,6 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, signal, ViewChild } from '@angular/core';
-import type { InstantMapElement, Marker } from 'instantmap';
-import { staticUrl } from 'instantmap/server';
+import type { InstantMapElement, Marker } from 'instantmap-js';
+import { staticUrl } from 'instantmap-js/server';
 import { instantMapSrc } from './instantmap-src';
 import { listings } from './listings';
 

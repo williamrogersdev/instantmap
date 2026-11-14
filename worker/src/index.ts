@@ -3,19 +3,36 @@ import wasm from "../pkg/instantmap_wasm_bg.wasm";
 import regular from "../../fixtures/noto-sans-regular-0-255.pbf";
 import medium from "../../fixtures/noto-sans-medium-0-255.pbf";
 import italic from "../../fixtures/noto-sans-italic-0-255.pbf";
-import { decodeColors, paletteWords, resolvePalette, THEMES } from "../../packages/instantmap/src/themes.ts";
+import { THEMES } from "../../packages/instantmap/src/themes.ts";
+import { BadRequest, cacheKey, fingerprint, jpegQuality, type MapRequest, parseRequest } from "./params.ts";
 
-interface Env {
-  TILE_URL: string;
-  ASSETS: Fetcher;
+interface RateLimit {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
 }
 
-const MAX_SIZE = 1280;
-const MAX_MARKERS = 2000;
-const MAX_TILE_ZOOM = 15;
-const MAX_LABEL = 10;
+interface Env {
+  /** Vector tile source, Protomaps schema: https://example.com/{z}/{x}/{y}.mvt */
+  TILE_URL: string;
+  ASSETS: Fetcher;
+  /** Optional. An R2 bucket that keeps rendered tiles, so each is drawn once for the whole world rather than once per data centre. */
+  TILE_CACHE?: R2Bucket;
+  /** Optional. A rate limiting binding applied to renders only; cached pictures are never limited. */
+  RENDER_LIMIT?: RateLimit;
+}
+
+// Bump when the renderer draws anything differently. Theme changes are picked up on their own.
+const RENDERER_VERSION = "5";
+const CACHE_VERSION = `${RENDERER_VERSION}.${fingerprint(JSON.stringify(THEMES))}`;
 const IMAGE_TTL = 60 * 60 * 24 * 7;
-const CORS = { "access-control-allow-origin": "*" };
+const UPSTREAM_TTL = 60 * 60 * 24 * 7;
+const UPSTREAM_TIMEOUT_MS = 8000;
+
+const SHARED = {
+  "access-control-allow-origin": "*",
+  "timing-allow-origin": "*",
+  "cross-origin-resource-policy": "cross-origin",
+  "x-content-type-options": "nosniff",
+};
 
 let renderer: Renderer | undefined;
 
@@ -27,156 +44,130 @@ function getRenderer(): Renderer {
   return renderer;
 }
 
-class BadRequest extends Error {}
-
-function number(value: string | null, name: string, min: number, max: number, fallback?: number): number {
-  if (value === null || value === "") {
-    if (fallback === undefined) throw new BadRequest(`${name} is required`);
-    return fallback;
+async function fetchTile(env: Env, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
+  const url = env.TILE_URL.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y));
+  // One more try for a timeout, a dropped connection or a 5xx: a single slow tile should not fail a picture made of nine.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const response = await fetch(url, { cf: { cacheTtl: UPSTREAM_TTL, cacheEverything: true }, signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) });
+      if (response.status === 404 || response.status === 204) return undefined;
+      if (response.ok) return new Uint8Array(await response.arrayBuffer());
+      if (response.status < 500 || attempt) throw new Error(`upstream tile ${z}/${x}/${y} returned ${response.status}`);
+    } catch (error) {
+      if (attempt) throw error;
+    }
   }
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
-    throw new BadRequest(`${name} must be a number from ${min} to ${max}`);
-  }
-  return parsed;
-}
-
-function pair(value: string | null, name: string): [number, number] {
-  const parts = (value ?? "").split(",");
-  if (parts.length !== 2) throw new BadRequest(`${name} must be longitude,latitude`);
-  return [number(parts[0]!, `${name} longitude`, -180, 180), number(parts[1]!, `${name} latitude`, -85.06, 85.06)];
-}
-
-function palette(url: URL): Uint32Array {
-  const theme = url.searchParams.get("theme") ?? "daylight";
-  if (!(theme in THEMES)) throw new BadRequest(`theme must be one of ${Object.keys(THEMES).join(", ")}`);
-  return paletteWords(resolvePalette(theme, decodeColors(url.searchParams.get("colors"))));
 }
 
 async function fetchTiles(env: Env, ids: Uint32Array) {
-  const count = ids.length / 3;
-  const responses = await Promise.all(
-    Array.from({ length: count }, async (_, index) => {
-      const [z, x, y] = [ids[index * 3]!, ids[index * 3 + 1]!, ids[index * 3 + 2]!];
-      const url = env.TILE_URL.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y));
-      const response = await fetch(url, { cf: { cacheTtl: IMAGE_TTL, cacheEverything: true } });
-      if (response.status === 404 || response.status === 204) return undefined;
-      if (!response.ok) throw new Error(`upstream tile ${z}/${x}/${y} returned ${response.status}`);
-      return { id: [z, x, y], bytes: new Uint8Array(await response.arrayBuffer()) };
+  const fetched = await Promise.all(
+    Array.from({ length: ids.length / 3 }, async (_, index) => {
+      const id = [ids[index * 3]!, ids[index * 3 + 1]!, ids[index * 3 + 2]!] as const;
+      return { id, bytes: await fetchTile(env, ...id) };
     }),
   );
-  const present = responses.filter((tile): tile is NonNullable<typeof tile> => tile !== undefined && tile.bytes.length > 0);
+  const present = fetched.filter((tile): tile is { id: (typeof tile)["id"]; bytes: Uint8Array } => !!tile.bytes?.length);
   const data = new Uint8Array(present.reduce((sum, tile) => sum + tile.bytes.length, 0));
   let offset = 0;
   for (const tile of present) {
     data.set(tile.bytes, offset);
     offset += tile.bytes.length;
   }
-  return {
-    ids: Uint32Array.from(present.flatMap((tile) => tile.id)),
-    lengths: Uint32Array.from(present.map((tile) => tile.bytes.length)),
-    data,
-  };
+  return { ids: Uint32Array.from(present.flatMap((tile) => tile.id)), lengths: Uint32Array.from(present.map((tile) => tile.bytes.length)), data };
 }
 
-function parseMarkers(url: URL): { values: Float64Array; labels: string } {
-  const singles = (url.searchParams.get("markers") ?? "").split(";").filter(Boolean);
-  const clusters = (url.searchParams.get("clusters") ?? "").split(";").filter(Boolean);
-  if (singles.length + clusters.length > MAX_MARKERS) throw new BadRequest(`at most ${MAX_MARKERS} markers and clusters in total`);
-  const values = new Float64Array((singles.length + clusters.length) * 4);
-  const labels: string[] = [];
-  singles.forEach((entry, index) => {
-    const [longitude, latitude, ...rest] = entry.split(",");
-    const [lng, lat] = pair(`${longitude},${latitude}`, "marker");
-    values.set([lng, lat, 1, 0], index * 4);
-    labels.push(rest.join(",").replace(/[\n\r]/g, "").slice(0, MAX_LABEL));
-  });
-  clusters.forEach((entry, offset) => {
-    const [longitude, latitude, count] = entry.split(",");
-    const [lng, lat] = pair(`${longitude},${latitude}`, "cluster");
-    values.set([lng, lat, Math.round(number(count ?? null, "cluster count", 2, 10_000_000)), 0], (singles.length + offset) * 4);
-    labels.push("");
-  });
-  return { values, labels: labels.join("\n") };
+async function render(request: MapRequest, env: Env): Promise<{ bytes: Uint8Array; upstreamMs: number }> {
+  const instance = getRenderer();
+  const camera = request.kind === "tile" ? tileCamera(request.z, request.x, request.y, request.ratio) : Float64Array.from([request.longitude, request.latitude, request.zoom, request.width, request.height, request.ratio]);
+  const started = Date.now();
+  const tiles = await fetchTiles(env, tilesFor(camera));
+  const upstreamMs = Date.now() - started;
+  const quality = request.png ? 0 : jpegQuality(request.ratio);
+  const bytes =
+    request.kind === "tile"
+      ? instance.render(camera, tiles.ids, tiles.lengths, tiles.data, request.look.palette, new Float64Array(), "", 0, quality)
+      : instance.render(camera, tiles.ids, tiles.lengths, tiles.data, request.look.palette, request.markers.values, request.markers.labels, request.clusterDistance, quality);
+  return { bytes, upstreamMs };
 }
 
-function image(bytes: Uint8Array, png: boolean): Response {
+// Requests for a picture that is already being drawn in this isolate wait for that drawing rather than starting another.
+const inFlight = new Map<string, Promise<{ bytes: Uint8Array; upstreamMs: number }>>();
+
+function renderOnce(key: string, request: MapRequest, env: Env): Promise<{ bytes: Uint8Array; upstreamMs: number }> {
+  let pending = inFlight.get(key);
+  if (!pending) {
+    pending = render(request, env).finally(() => inFlight.delete(key));
+    inFlight.set(key, pending);
+  }
+  return pending;
+}
+
+function image(bytes: Uint8Array | ReadableStream, png: boolean, source: "render" | "store", timing = ""): Response {
   return new Response(bytes, {
     headers: {
-      ...CORS,
+      ...SHARED,
       "content-type": png ? "image/png" : "image/jpeg",
       "cache-control": `public, max-age=${IMAGE_TTL}, immutable`,
       "x-attribution": "OpenStreetMap contributors, Protomaps",
+      "x-instantmap-cache": source === "store" ? "store" : "miss",
+      ...(timing ? { "server-timing": timing } : {}),
     },
   });
 }
 
-async function renderStatic(url: URL, env: Env): Promise<Response> {
-  const [longitude, latitude] = pair(url.searchParams.get("center"), "center");
-  const zoom = number(url.searchParams.get("zoom"), "zoom", 0, 18);
-  const sizes = (url.searchParams.get("size") ?? "640x400").split("x");
-  if (sizes.length !== 2) throw new BadRequest("size must be WIDTHxHEIGHT");
-  const width = number(sizes[0]!, "width", 16, MAX_SIZE);
-  const height = number(sizes[1]!, "height", 16, MAX_SIZE);
-  const ratio = number(url.searchParams.get("r"), "r", 1, 2, 1);
-  const format = url.searchParams.get("format") ?? "jpg";
-  if (format !== "jpg" && format !== "png") throw new BadRequest("format must be jpg or png");
-  const clusterDistance = number(url.searchParams.get("cluster"), "cluster", 0, 120, 44);
-  const colors = palette(url);
-  const markers = parseMarkers(url);
-  const instance = getRenderer();
-  const camera = Float64Array.from([longitude, latitude, zoom, Math.round(width), Math.round(height), Math.round(ratio)]);
-  const tiles = await fetchTiles(env, tilesFor(camera));
-  const bytes = instance.render(camera, tiles.ids, tiles.lengths, tiles.data, colors, markers.values, markers.labels, clusterDistance, format === "png" ? 0 : 86);
-  return image(bytes, format === "png");
-}
-
-async function renderTile(match: RegExpMatchArray, url: URL, env: Env): Promise<Response> {
-  const [z, x, y] = [Number(match[1]), Number(match[2]), Number(match[3])];
-  const ratio = match[4] ? 2 : 1;
-  const png = match[5] === "png";
-  if (z > MAX_TILE_ZOOM || x >= 2 ** z || y >= 2 ** z) throw new BadRequest("tile out of range");
-  const colors = palette(url);
-  const instance = getRenderer();
-  const camera = tileCamera(z, x, y, ratio);
-  const tiles = await fetchTiles(env, tilesFor(camera));
-  const bytes = instance.render(camera, tiles.ids, tiles.lengths, tiles.data, colors, new Float64Array(), "", 0, png ? 0 : 86);
-  return image(bytes, png);
-}
-
-const RENDERER_VERSION = "4";
-
-const fingerprint = (text: string): string => {
-  let hash = 2166136261;
-  for (let index = 0; index < text.length; index++) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
-  return (hash >>> 0).toString(36);
-};
-
-const CACHE_VERSION = `${RENDERER_VERSION}.${fingerprint(JSON.stringify(THEMES))}`;
-
-const TILE_PATH = /^\/tiles\/(\d{1,2})\/(\d{1,6})\/(\d{1,6})(@2x)?\.(jpg|png)$/;
+const text = (message: string, status: number, extra: Record<string, string> = {}): Response =>
+  new Response(message, { status, headers: { ...SHARED, "content-type": "text/plain; charset=utf-8", "cache-control": "no-store", ...extra } });
 
 export default {
   async fetch(request, env, context): Promise<Response> {
     const url = new URL(request.url);
-    const tile = url.pathname.match(TILE_PATH);
-    if (url.pathname !== "/static" && !tile) return env.ASSETS.fetch(request);
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...CORS, "access-control-allow-methods": "GET, HEAD" } });
-    if (request.method !== "GET" && request.method !== "HEAD") return new Response("method not allowed", { status: 405, headers: CORS });
-    const cache = caches.default;
-    const cacheUrl = new URL(url);
-    cacheUrl.searchParams.set("_v", CACHE_VERSION);
-    const cacheKey = new Request(cacheUrl, { method: "GET" });
-    const cached = await cache.match(cacheKey);
-    if (cached) return cached;
+    if (url.pathname === "/health") return Response.json({ ok: true, renderer: CACHE_VERSION }, { headers: { ...SHARED, "cache-control": "no-store" } });
+    let parsed: MapRequest | undefined;
     try {
-      const response = tile ? await renderTile(tile, url, env) : await renderStatic(url, env);
-      if (request.method === "GET") context.waitUntil(cache.put(cacheKey, response.clone()));
+      parsed = parseRequest(url);
+    } catch (error) {
+      if (error instanceof BadRequest) return text(error.message, 400);
+      throw error;
+    }
+    if (!parsed) return env.ASSETS.fetch(request);
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...SHARED, "access-control-allow-methods": "GET, HEAD", "access-control-max-age": "86400" } });
+    if (request.method !== "GET" && request.method !== "HEAD") return text("method not allowed", 405, { allow: "GET, HEAD, OPTIONS" });
+
+    const key = cacheKey(parsed, CACHE_VERSION, url.searchParams);
+    const cache = caches.default;
+    const cacheRequest = new Request(`${url.origin}/__cache/${key}`);
+    const cached = await cache.match(cacheRequest);
+    if (cached) {
+      const hit = new Response(cached.body, cached);
+      hit.headers.set("x-instantmap-cache", "hit");
+      hit.headers.delete("server-timing");
+      return hit;
+    }
+
+    // Tiles are shared by every visitor looking at the same place, so they are worth keeping for good.
+    // (An R2 key may be at most 1,024 bytes; a tile with a very long colour list is simply not kept.)
+    const store = parsed.kind === "tile" && key.length <= 900 ? env.TILE_CACHE : undefined;
+    try {
+      if (store) {
+        const kept = await store.get(key);
+        if (kept) {
+          const response = image(kept.body, parsed.png, "store");
+          context.waitUntil(cache.put(cacheRequest, response.clone()));
+          return response;
+        }
+      }
+      if (env.RENDER_LIMIT) {
+        const { success } = await env.RENDER_LIMIT.limit({ key: request.headers.get("cf-connecting-ip") ?? "unknown" });
+        if (!success) return text("too many uncached map requests, try again shortly", 429, { "retry-after": "10" });
+      }
+      const { bytes, upstreamMs } = await renderOnce(key, parsed, env);
+      const response = image(bytes, parsed.png, "render", `upstream;dur=${upstreamMs}`);
+      context.waitUntil(cache.put(cacheRequest, response.clone()));
+      if (store) context.waitUntil(store.put(key, bytes, { httpMetadata: { contentType: parsed.png ? "image/png" : "image/jpeg" } }));
       return response;
     } catch (error) {
-      if (error instanceof BadRequest) return new Response(error.message, { status: 400, headers: { ...CORS, "content-type": "text/plain; charset=utf-8" } });
-      console.error(error);
-      return new Response("render failed", { status: 502, headers: CORS });
+      console.error(JSON.stringify({ message: "render failed", path: url.pathname, error: error instanceof Error ? error.message : String(error) }));
+      return text("render failed", 502);
     }
   },
 } satisfies ExportedHandler<Env>;

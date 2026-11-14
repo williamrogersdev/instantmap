@@ -1,0 +1,51 @@
+# Publishes the npm package and creates a GitHub release when a tag like v0.2.0 is pushed.
+#
+# Required: the NPM_TOKEN repository secret, an npm granular access token with publish rights
+# for the `instantmap-js` package. Alternatively, configure npm Trusted Publishing for this
+# workflow on npmjs.com and remove the token (then drop NODE_AUTH_TOKEN below).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: bun install --frozen-lockfile
+      - name: Check the tag matches the package version
+        run: |
+          version="$(node -p "require('./packages/instantmap/package.json').version")"
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match packages/instantmap/package.json version $version. Bump the version, or retag."
+            exit 1
+          fi
+      - name: Test
+        run: bun test
+        working-directory: packages/instantmap
+      - name: Build
+        run: bun run build
+        working-directory: packages/instantmap
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        working-directory: packages/instantmap
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create GitHub release
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

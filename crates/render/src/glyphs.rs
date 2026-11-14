@@ -142,6 +142,8 @@ fn sample(glyph: &Glyph, x: f32, y: f32) -> f32 {
     top * (1.0 - fraction_y) + bottom * fraction_y
 }
 
+// Text placement needs every one of these inputs; a parameter struct would only move the list.
+#[allow(clippy::too_many_arguments)]
 pub fn draw_text(
     canvas: &mut Canvas,
     font: &FontStack,

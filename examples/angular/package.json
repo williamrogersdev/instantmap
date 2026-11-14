@@ -20,7 +20,7 @@
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "instantmap": "file:../../packages/instantmap"
+    "instantmap-js": "file:../../packages/instantmap"
   },
   "devDependencies": {
     "@angular/build": "^22.2.7",

@@ -1,4 +1,4 @@
-import type { Marker } from "instantmap";
+import type { Marker } from "instantmap-js";
 
 export const center: [number, number] = [-97.7431, 30.2672];
 export const zoom = 12;

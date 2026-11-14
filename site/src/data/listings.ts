@@ -6,6 +6,8 @@ export interface Listing {
   title: string;
   subtitle: string;
   href: string;
+  image: string;
+  badge?: string;
 }
 
 const NEIGHBOURHOODS: readonly [name: string, lng: number, lat: number, spreadLng: number, spreadLat: number, rent: number][] = [
@@ -58,6 +60,8 @@ export function sanFranciscoListings(count: number, seed = 20261113): Listing[] 
       title: `${pick(ADJECTIVES, random)} ${KINDS[kind]}`,
       subtitle: `${name}, ${beds === 0 ? "studio" : `${beds} bed`}, per month`,
       href: `#listing-${id}`,
+      image: `/listings/home-${(id % 6) + 1}.svg`,
+      ...(id % 7 === 0 ? { badge: "New" } : {}),
     };
   });
 }

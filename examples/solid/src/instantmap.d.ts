@@ -1,4 +1,4 @@
-import type { InstantMapElement, InstantMapEventMap, Marker } from "instantmap";
+import type { InstantMapElement, InstantMapEventMap, Marker } from "instantmap-js";
 import "solid-js";
 
 declare module "solid-js" {

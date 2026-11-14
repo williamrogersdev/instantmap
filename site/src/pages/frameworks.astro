@@ -1,0 +1,118 @@
+---
+import Site from "../layouts/Site.astro";
+import { FRAMEWORKS, REPO } from "../data/site.ts";
+
+const description = "Instant Map is a standard web component, so it works in plain HTML and every framework. Step-by-step guides and example apps for Next.js, React, React Router, Astro, Vue, Nuxt, SvelteKit, Angular and Solid.";
+
+const htmlSample = `<script type="module"
+  src="https://instantmap.org/instant-map.js"></script>
+
+<instant-map
+  center="-122.42,37.77"
+  zoom="12"
+  style="height:480px">
+</instant-map>
+
+<script type="module">
+  const map = document.querySelector("instant-map");
+  map.markers = await fetch("/api/listings")
+    .then((response) => response.json());
+</script>`;
+
+const reactSample = `import { InstantMap } from "instantmap-js/react";
+
+export function ListingsMap({ listings }) {
+  return (
+    <InstantMap
+      center={[-122.42, 37.77]}
+      zoom={12}
+      markers={listings}
+      style={{ height: 480 }}
+      onMarkerClick={(marker) => router.push(marker.href)}
+    />
+  );
+}`;
+
+const serverSample = `import { staticUrl } from "instantmap-js/server";
+
+// Any server: build the address of the first image
+// and put it in the HTML as a plain <img>.
+const poster = staticUrl({
+  center: [-122.42, 37.77],
+  zoom: 12,
+  width: 960,
+  height: 480,
+  ratio: 2,
+  markers: listings,
+});`;
+
+const entries = [
+  ["instantmap-js", "The element, types and helpers"],
+  ["instantmap-js/react", "The React component"],
+  ["instantmap-js/server", "First-image addresses and palettes, no DOM needed"],
+  ["instantmap-js/brand", "Map colours from brand colours"],
+  ["instantmap-js/card", "The built-in card, to reuse or extend"],
+  ["instantmap-js/instant-map.js", "The script-tag build"],
+];
+---
+
+<Site title="Frameworks" description={description} path="/frameworks/">
+  <div class="page-head">
+    <p class="crumbs"><a href="/">Instant Map</a> / Frameworks</p>
+    <h1>Works where you already work.</h1>
+    <p class="lead">Instant Map is a standard web component with a React component and a server helper for the first image. Every guide is written from a working example app in the repository.</p>
+    <div class="install" style="max-width:420px">
+      <code>npm install instantmap-js</code>
+      <button type="button" class="copy" data-copy="npm install instantmap-js">Copy</button>
+    </div>
+  </div>
+
+  <section aria-labelledby="guides-title">
+    <h2 id="guides-title">Pick your stack</h2>
+    <ul class="tiles">
+      {FRAMEWORKS.map(([name, slug, note]) => <li><a href={`/docs/frameworks/${slug}/`}><strong>{name}</strong><span>{note}</span></a></li>)}
+    </ul>
+    <a class="more" href={`${REPO}/tree/master/examples`}>Example apps on GitHub</a>
+  </section>
+
+  <section aria-labelledby="code-title">
+    <h2 id="code-title">The whole integration</h2>
+    <div class="pair">
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>Any page</h3><button type="button" class="copy" data-copy={htmlSample}>Copy</button></div>
+        <pre><code>{htmlSample}</code></pre>
+      </div>
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>React and Next.js</h3><button type="button" class="copy" data-copy={reactSample}>Copy</button></div>
+        <pre><code>{reactSample}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="server-title">
+    <div class="split">
+      <div>
+        <h2 id="server-title">First image from any server</h2>
+        <p class="lead">Where your pages are rendered on a server, put the map image in the HTML so it shows before any script. The helper runs in Node, Bun, Deno and edge runtimes. For other languages, the image address is a plain URL you can build by hand.</p>
+        <a class="more" href="/docs/reference/http-api/">HTTP API reference</a>
+      </div>
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>Server</h3><button type="button" class="copy" data-copy={serverSample}>Copy</button></div>
+        <pre><code>{serverSample}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="package-title">
+    <h2 id="package-title">What is in the package</h2>
+    <div class="table panel">
+      <table>
+        <thead><tr><th>Import</th><th>What it is</th></tr></thead>
+        <tbody>
+          {entries.map(([name, note]) => <tr><td><code>{name}</code></td><td>{note}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">TypeScript types are included. The package has no dependencies; React is an optional peer for the React component.</p>
+  </section>
+</Site>

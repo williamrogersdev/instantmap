@@ -10,7 +10,7 @@ Use the `<instant-map>` element directly in a SvelteKit page. The load function 
 ## Install
 
 ```sh
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
@@ -18,7 +18,7 @@ npm install instantmap
 Build the poster URL in `+page.server.ts` so it is part of the server HTML.
 
 ```ts title="src/routes/+page.server.ts"
-import { staticUrl } from 'instantmap/server';
+import { staticUrl } from 'instantmap-js/server';
 import { listings } from '$lib/listings';
 
 const center: [number, number] = [-97.74, 30.27];
@@ -40,13 +40,13 @@ Define the element in `onMount`, then give it the markers. The element only exis
 ```svelte title="src/routes/+page.svelte"
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { InstantMapElement } from 'instantmap';
+	import type { InstantMapElement } from 'instantmap-js';
 
 	let { data } = $props();
 	let map: InstantMapElement | undefined = $state();
 
 	onMount(async () => {
-		await import('instantmap');
+		await import('instantmap-js');
 		if (map) map.markers = data.markers;
 	});
 </script>
@@ -84,7 +84,7 @@ Set `markers` as a property. Listen with an `on` attribute, and call methods on 
 
 ```svelte title="src/routes/+page.svelte"
 <script lang="ts">
-	import type { Marker } from 'instantmap';
+	import type { Marker } from 'instantmap-js';
 
 	let opened = $state('Click a price to open its card.');
 
@@ -101,7 +101,7 @@ Set `markers` as a property. Listen with an `on` attribute, and call methods on 
 
 ## Common mistakes
 
-- Importing `instantmap` at the top of the file. It touches `customElements`, which does not exist on the server. Import it inside `onMount`.
+- Importing `instantmap-js` at the top of the file. It touches `customElements`, which does not exist on the server. Import it inside `onMount`.
 - Giving the map no height. It collapses to nothing.
 - Setting `markers` as an attribute. It is a property, so assign `map.markers = ...`.
 - Building the poster URL in the browser. The server HTML then has no first image.
@@ -109,7 +109,7 @@ Set `markers` as a property. Listen with an `on` attribute, and call methods on 
 ## Prompt for your agent
 
 ```text
-Add an Instant Map to my SvelteKit app. Follow https://instantmap.org/docs/frameworks/sveltekit.md exactly. Build the poster URL with staticUrl from instantmap/server in +page.server.ts, render it as an img inside the instant-map element, and import instantmap inside onMount before setting map.markers. Give the map a fixed height. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
+Add an Instant Map to my SvelteKit app. Follow https://instantmap.org/docs/frameworks/sveltekit.md exactly. Build the poster URL with staticUrl from instantmap-js/server in +page.server.ts, render it as an img inside the instant-map element, and import instantmap inside onMount before setting map.markers. Give the map a fixed height. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
 ```
 
 ## Full example

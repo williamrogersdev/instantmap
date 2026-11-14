@@ -1,0 +1,215 @@
+---
+import { staticUrl } from "instantmap-js/server";
+import Site from "../layouts/Site.astro";
+import { sanFranciscoListings } from "../data/listings.ts";
+import { kb, sizes } from "../data/site.ts";
+
+const listings = sanFranciscoListings(120);
+const poster = staticUrl({ src: "", center: [-122.4295, 37.7668], zoom: 12.5, width: 1280, height: 560, ratio: 2, markers: listings });
+const description = `How fast Instant Map is and why: the first view is one cached image with 0 KB of JavaScript, the loader is ${kb(sizes.upfront)} KB gzipped, and the ${kb(sizes.engine)} KB engine loads on first touch. Time it on your own connection.`;
+
+const measureSample = `// In the browser: when did the first map image arrive?
+const image = performance
+  .getEntriesByType("resource")
+  .find((entry) => entry.name.includes("/static?"));
+console.log(Math.round(image.responseEnd), "ms");
+
+// From a terminal: was it drawn now or served from cache?
+// curl -sI "https://instantmap.org/static?center=-122.42,37.77&zoom=12" \\
+//   | grep -i -e x-instantmap-cache -e server-timing`;
+---
+
+<Site title="Speed" description={description} path="/speed/" preload={[{ href: poster }]}>
+  <div class="page-head">
+    <p class="crumbs"><a href="/">Instant Map</a> / Speed</p>
+    <h1>Fast, because the first view is a picture.</h1>
+    <p class="lead">A map does not need a program to be seen. Instant Map sends the view as one cached image, and loads the interactive part only when someone reaches for it. The numbers below are measured on this page, on your connection.</p>
+  </div>
+
+  <section aria-labelledby="visit-title">
+    <h2 id="visit-title">This visit</h2>
+    <instant-map id="speed-map" class="frame-map" center="-122.4295,37.7668" zoom="12.5" style="height:clamp(260px,38vw,440px);margin-top:24px" aria-label="Map of sample San Francisco rentals">
+      <img src={poster} alt="Map of sample San Francisco rentals" fetchpriority="high" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+    </instant-map>
+    <dl class="stats" aria-live="polite">
+      <div class="panel">
+        <dt>Map image arrived</dt>
+        <dd id="stat-image">…</dd>
+        <dd class="note" id="stat-image-note">Counted from the start of this page load.</dd>
+      </div>
+      <div class="panel">
+        <dt>JavaScript needed to see it</dt>
+        <dd>0<small>KB</small></dd>
+        <dd class="note">The image is a plain <code>&lt;img&gt;</code> in the HTML.</dd>
+      </div>
+      <div class="panel">
+        <dt>Loader, after the image</dt>
+        <dd id="stat-loader">{kb(sizes.upfront)}<small>KB</small></dd>
+        <dd class="note">Gzipped. Waits for a touch and does nothing else.</dd>
+      </div>
+      <div class="panel">
+        <dt>Engine, on first touch</dt>
+        <dd id="stat-engine">{kb(sizes.engine)}<small>KB</small></dd>
+        <dd class="note" id="stat-engine-note">Not loaded yet. Point at the map above.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="test-title">
+    <h2 id="test-title">Time a fresh load</h2>
+    <p>The test loads a map from nothing, twice. The first is a view that is asked for often, so it is normally already cached. The second is a view nobody has asked for, so the server fetches the map data and draws it while you wait. Each clock stops when the image is on screen.</p>
+    <div class="actions" style="margin-top:20px">
+      <button type="button" class="button primary" id="test-start">Run the test</button>
+    </div>
+    <ul class="runs" aria-live="polite">
+      <li class="panel" data-run="cached">
+        <h3>A popular view</h3>
+        <span class="time">–</span>
+        <p>Asked for often, so it is normally already drawn and cached.</p>
+      </li>
+      <li class="panel" data-run="fresh">
+        <h3>A brand-new view</h3>
+        <span class="time">–</span>
+        <p>Drawn for you now, then cached for a week.</p>
+      </li>
+    </ul>
+    <div class="test-screen" id="test-screen"><p>Press run</p></div>
+    <p class="fine">Times depend on your connection and on how close you are to a Cloudflare data centre. A second run of the first test may come straight from your browser's cache; the result says so when it does.</p>
+  </section>
+
+  <section aria-labelledby="budget-title">
+    <h2 id="budget-title">What is loaded, and when</h2>
+    <div class="table panel">
+      <table>
+        <thead><tr><th>When</th><th>What</th><th>Size, gzipped</th></tr></thead>
+        <tbody>
+          <tr><td>With the HTML</td><td>One map image</td><td class="num">0 KB of JavaScript</td></tr>
+          <tr><td>After the image shows</td><td>Loader: the element, the camera and the wake-up logic</td><td class="num">{kb(sizes.upfront)} KB</td></tr>
+          <tr><td>First point, touch or focus</td><td>Engine: tiles, gestures, markers, clusters, keyboard, cards</td><td class="num">{kb(sizes.engine)} KB</td></tr>
+          <tr><td>While the map is moved</td><td>256 px map tiles, only for the zoom level you stop on</td><td class="num">images</td></tr>
+          <tr><td>When a card may open</td><td>Card pictures for the markers nearest the centre, in idle time</td><td class="num">images</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">These sizes are read from the build that made this page. Every change to the project is checked against a size limit of 8 KB for the loader and 13 KB for the engine.</p>
+  </section>
+
+  <section aria-labelledby="why-title">
+    <h2 id="why-title">How it stays fast</h2>
+    <ul class="checks">
+      <li class="panel"><h3>Images are drawn once</h3><p>The server draws each view and tile once and caches it for a week. Addresses that mean the same picture share one cached copy.</p></li>
+      <li class="panel"><h3>Nothing runs until it is wanted</h3><p>The engine is fetched on the first sign of intent. A press that lands while it loads is replayed, so the first drag is not lost.</p></li>
+      <li class="panel"><h3>Markers are stamped, not redrawn</h3><p>Each distinct marker is painted once and copied to the canvas on every frame, so a thousand markers move as easily as ten.</p></li>
+      <li class="panel"><h3>No wasted tile requests</h3><p>A zoom animation does not request tiles for the levels it passes through, and requests for tiles that left the screen are cancelled.</p></li>
+      <li class="panel"><h3>Lighter pictures on sharp screens</h3><p>Double-density images are compressed harder, which the extra pixels hide. They download about a third smaller.</p></li>
+      <li class="panel"><h3>Card pictures are ready first</h3><p>Pictures for nearby markers are fetched while the browser is idle, and on hover, so a card opens with its photo in place.</p></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="measure-title">
+    <div class="split">
+      <div>
+        <h2 id="measure-title">Measure it yourself</h2>
+        <p class="lead">Every rendered image says whether it came from cache and how long the map data took to fetch, so you can check the numbers in your own tools.</p>
+        <a class="more" href="/docs/reference/http-api/">HTTP API reference</a>
+      </div>
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>Timing</h3><button type="button" class="copy" data-copy={measureSample}>Copy</button></div>
+        <pre><code>{measureSample}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import type { InstantMapElement } from "instantmap-js";
+    import { sanFranciscoListings } from "../data/listings.ts";
+    import { byId, formatMs } from "../scripts/shared.ts";
+
+    const map = byId<InstantMapElement>("speed-map");
+    map.markers = sanFranciscoListings(120);
+
+    const resources = (): PerformanceResourceTiming[] => performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+    const setKb = (id: string, bytes: number): void => byId(id).replaceChildren((bytes / 1024).toFixed(1), Object.assign(document.createElement("small"), { textContent: "KB" }));
+
+    const showImage = (): void => {
+      const image = resources().find((entry) => entry.name.includes("/static?"));
+      if (!image) return;
+      byId("stat-image").replaceChildren(String(Math.round(image.responseEnd)), Object.assign(document.createElement("small"), { textContent: "ms" }));
+      if (image.transferSize === 0 && image.decodedBodySize > 0) byId("stat-image-note").textContent = "From your browser's cache on this visit.";
+    };
+    const poster = map.querySelector("img")!;
+    if (poster.complete) showImage();
+    else poster.addEventListener("load", () => requestAnimationFrame(showImage));
+
+    // Script sizes as this browser received them. Before the engine loads, every script from /im/ belongs to the loader.
+    const scripts = (): PerformanceResourceTiming[] => resources().filter((entry) => /\/instant-map\.js$|\/im\/[^/]+\.js$/.test(new URL(entry.name).pathname));
+    let loaderFiles = new Set<string>();
+    addEventListener("load", () => {
+      const loaded = scripts();
+      loaderFiles = new Set(loaded.map((entry) => entry.name));
+      const bytes = loaded.reduce((sum, entry) => sum + entry.encodedBodySize, 0);
+      if (bytes) setKb("stat-loader", bytes);
+    });
+    map.addEventListener("interactive", () => {
+      const engine = scripts().filter((entry) => !loaderFiles.has(entry.name));
+      const bytes = engine.reduce((sum, entry) => sum + entry.encodedBodySize, 0);
+      if (bytes) setKb("stat-engine", bytes);
+      const took = engine.length ? Math.max(...engine.map((entry) => entry.responseEnd)) - Math.min(...engine.map((entry) => entry.startTime)) : 0;
+      byId("stat-engine-note").textContent = took ? `Loaded in ${formatMs(took)} when you reached for the map.` : "Loaded when you reached for the map.";
+    });
+
+    interface Result {
+      kind: string;
+      run: string;
+      ms?: number;
+      error?: string;
+      fromBrowserCache?: boolean;
+    }
+
+    const screen = byId("test-screen");
+    function run(name: "cached" | "fresh"): Promise<void> {
+      const item = document.querySelector<HTMLElement>(`[data-run="${name}"]`)!;
+      const time = item.querySelector<HTMLElement>(".time")!;
+      const note = item.querySelector<HTMLElement>("p")!;
+      const fresh = name === "fresh";
+      const center = fresh ? `${(-122.4194 + (Math.random() - 0.5) * 0.02).toFixed(5)},${(37.7749 + (Math.random() - 0.5) * 0.016).toFixed(5)}` : "-122.4194,37.7749";
+      const zoom = fresh ? (12 + Math.random() * 0.4).toFixed(2) : "12";
+      const frame = document.createElement("iframe");
+      frame.title = fresh ? "A brand-new map view" : "A popular map view";
+      const started = performance.now();
+      let ticking = requestAnimationFrame(function tick() {
+        time.textContent = formatMs(performance.now() - started);
+        ticking = requestAnimationFrame(tick);
+      });
+      return new Promise((resolve) => {
+        const finish = (result: Result): void => {
+          cancelAnimationFrame(ticking);
+          removeEventListener("message", listen);
+          clearTimeout(timer);
+          time.textContent = result.ms ? formatMs(result.ms) : "did not finish";
+          if (result.ms) note.textContent = result.fromBrowserCache ? "Came from your browser's cache, with no request at all." : fresh ? "Drawn for you just now. It is cached for the next visitor." : "Asked for often, so it is normally already drawn and cached.";
+          resolve();
+        };
+        const listen = (event: MessageEvent<Result>): void => {
+          if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data?.kind !== "instantmap-speed" || event.data.run !== name) return;
+          finish(event.data);
+        };
+        const timer = window.setTimeout(() => finish({ kind: "instantmap-speed", run: name, error: "timed out" }), 30000);
+        addEventListener("message", listen);
+        frame.src = `/examples/speed-frame.html?run=${name}&center=${encodeURIComponent(center)}&zoom=${zoom}`;
+        screen.replaceChildren(frame);
+      });
+    }
+
+    const start = byId<HTMLButtonElement>("test-start");
+    start.addEventListener("click", async () => {
+      start.disabled = true;
+      start.textContent = "Running";
+      for (const time of document.querySelectorAll(".runs .time")) time.textContent = "–";
+      await run("cached");
+      await run("fresh");
+      start.disabled = false;
+      start.textContent = "Run it again";
+    });
+  </script>
+</Site>

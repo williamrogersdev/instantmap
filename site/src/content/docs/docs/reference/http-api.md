@@ -10,7 +10,24 @@ The image server is a Cloudflare Worker. It renders map images from vector tiles
 - **Hosted:** `https://instantmap.org` works for prototypes and small sites, with no key and no guarantees.
 - **Production:** run your own copy, which takes about ten minutes. See [Self-hosting](/docs/guides/self-hosting/).
 
-Every response sends `Access-Control-Allow-Origin: *` and `Cache-Control: public, max-age=604800, immutable`. A URL always renders the same picture, so caches, CDNs and email clients can keep it.
+Every image response sends `Access-Control-Allow-Origin: *` and `Cache-Control: public, max-age=604800, immutable`. A URL always renders the same picture, so caches, CDNs and email clients can keep it.
+
+## Response headers
+
+| Header | Value |
+| --- | --- |
+| `x-instantmap-cache` | `hit` when the picture came from the edge cache, `store` when it came from the optional `TILE_CACHE` R2 bucket, `miss` when it was just drawn. |
+| `server-timing` | `upstream;dur=…` on a miss: the milliseconds spent fetching vector tiles. |
+| `timing-allow-origin` | `*`, so pages on other origins can read the timing. |
+| `x-attribution` | The attribution text. |
+
+## Caching
+
+A picture is cached under the request as the server understood it, not as it was written. Unknown query parameters, the order of parameters and different spellings of the same value (`zoom=12` and `zoom=12.0`) all share one cached picture, so adding a cache-busting parameter does not draw it again.
+
+## `GET /health`
+
+Returns `{ "ok": true, "renderer": "…" }` with `Cache-Control: no-store`. The `renderer` value changes when the renderer or the themes change. Use it for uptime checks.
 
 ## `GET /static`
 
@@ -32,7 +49,7 @@ https://instantmap.org/static?center=-97.74,30.27&zoom=12&size=1200x630&r=2&mark
 | `clusters` | no | `lng,lat,count;…` | | Pre-clustered bubbles. `staticUrl()` writes these for you. |
 | `cluster` | no | pixels | 0…120 | Merge distance for `markers`. Default `44`. `0` turns clustering off. |
 | `v` | no | text | any | Style version. `staticUrl()` adds it so that browsers fetch a new image when the default look of a release changes. The server ignores it. |
-| `format` | no | `jpg` · `png` | | Default `jpg`, a progressive JPEG at quality 86. |
+| `format` | no | `jpg` · `png` | | Default `jpg`. JPEGs are progressive, at quality 86, or 72 when `r=2`. |
 
 Build these URLs with [`staticUrl()`](/docs/reference/javascript/#staticurl) rather than by hand. `staticUrl()` clusters your markers in the same way the browser does and drops the ones outside the frame, so a URL for 50,000 markers stays short.
 
@@ -43,7 +60,7 @@ Build these URLs with [`staticUrl()`](/docs/reference/javascript/#staticurl) rat
 | Variant | Example |
 | --- | --- |
 | Standard | `/tiles/12/944/1652.jpg` |
-| Retina | `/tiles/12/944/1652@2x.jpg` |
+| Retina | `/tiles/12/944/1652@2x.jpg` (JPEG quality 72; 1x is 86) |
 | PNG | `/tiles/12/944/1652.png` |
 | Themed | `/tiles/12/944/1652.jpg?theme=midnight&colors=accent:ff5a5f` |
 
@@ -55,7 +72,10 @@ Tiles never contain markers. Labels are placed per tile, so a `/static` image at
 | --- | --- | --- |
 | `400` | A sentence naming the bad parameter, e.g. `zoom must be a number from 0 to 18` | Invalid input. Fix the request; retrying won't help. |
 | `405` | `method not allowed` | Only `GET`, `HEAD` and `OPTIONS` are served. |
+| `429` | `too many uncached map requests, try again shortly` | Only on a server that has a render rate limit configured. Sent with `Retry-After`. Cached pictures are never limited. |
 | `502` | `render failed` | The upstream vector tiles failed or the render crashed. Safe to retry. |
+
+Upstream tile requests time out after 8 seconds and are tried once more before a request fails with `502`. Errors are never cached.
 
 ## Attribution
 

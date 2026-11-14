@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instant Map: card examples</title>
+<meta name="robots" content="noindex">
+<script type="module" src="/instant-map.js"></script>
+<style>
+  body{margin:0;padding:16px;font-family:system-ui;background:#f3f4ef;color:#0f2233}
+  main{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+  figure{margin:0}
+  figcaption{font-weight:600;margin-bottom:8px}
+  instant-map{height:440px;border-radius:12px}
+  #brand{--im-card-radius:4px;--im-card-accent:#c2410c;--im-card-font:Georgia,serif;--im-card-width:240px;--im-card-image-ratio:16/9}
+  .mine{width:220px;padding:12px;border-radius:10px;background:#0f2233;color:#fff;font:14px/1.4 system-ui;box-shadow:0 10px 24px #0004}
+  .mine h3{margin:0 0 4px;font-size:15px}
+  .mine p{margin:0 0 6px}
+  .mine a{color:#19d3a2}
+  .mine button{all:unset;float:right;cursor:pointer;padding:0 4px}
+</style>
+</head>
+<body>
+<main>
+  <figure><figcaption>Built-in card</figcaption><instant-map id="stacked" center="-96.80,32.79" zoom="12" load="eager"></instant-map></figure>
+  <figure><figcaption>Row layout, own link text</figcaption><instant-map id="row" center="-96.80,32.79" zoom="12" load="eager" card-layout="row" card-action="See listing"></instant-map></figure>
+  <figure><figcaption>No image, midnight theme</figcaption><instant-map id="plain" center="-96.80,32.79" zoom="12" load="eager" theme="midnight"></instant-map></figure>
+  <figure><figcaption>Restyled with CSS variables</figcaption><instant-map id="brand" center="-96.80,32.79" zoom="12" load="eager" theme="paper"></instant-map></figure>
+  <figure><figcaption>Your own markup, from a template</figcaption>
+    <instant-map id="template" center="-96.80,32.79" zoom="12" load="eager">
+      <template data-card>
+        <article class="mine">
+          <button type="button" data-close aria-label="Close">✕</button>
+          <h3>{{title}}</h3>
+          <p>{{subtitle}} · {{data.beds}} beds</p>
+          <a href="{{href}}" data-if="href">Open {{label}}</a>
+        </article>
+      </template>
+    </instant-map>
+  </figure>
+</main>
+<script type="module">
+  const listing = (id, withImage = true) => ({
+    id,
+    lng: -96.8 + (((id * 37) % 11) - 5) * 0.012,
+    lat: 32.79 + (((id * 53) % 9) - 4) * 0.009,
+    label: `$${1400 + id * 150}`,
+    title: ["Sunny corner flat", "Garden studio", "Top-floor loft with a long name that wraps", "Quiet 2-bed"][id % 4],
+    subtitle: `${["Uptown", "Deep Ellum", "Oak Lawn", "Bishop Arts"][id % 4]} · per month`,
+    href: `#listing-${id}`,
+    data: { beds: 1 + (id % 3) },
+    ...(withImage ? { image: `/listings/home-${(id % 6) + 1}.svg` } : {}),
+    ...(id % 3 === 0 ? { badge: "New" } : {}),
+  });
+  const selected = new URLSearchParams(location.search).get("select") ?? 3;
+  for (const map of document.querySelectorAll("instant-map")) {
+    map.markers = Array.from({ length: 9 }, (_, id) => listing(id, map.id !== "plain"));
+    map.addEventListener("interactive", () => map.select(selected), { once: true });
+  }
+</script>
+</body>
+</html>

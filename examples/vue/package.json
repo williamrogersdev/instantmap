@@ -9,7 +9,7 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "instantmap": "file:../../packages/instantmap",
+    "instantmap-js": "file:../../packages/instantmap",
     "vue": "^3.5.45"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import type { Marker } from "instantmap";
+import type { Marker } from "instantmap-js";
 
 export interface Listing {
   price: number;

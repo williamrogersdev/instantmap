@@ -9,7 +9,7 @@
     "typecheck": "nuxt prepare && vue-tsc --noEmit -p .nuxt/tsconfig.app.json"
   },
   "dependencies": {
-    "instantmap": "file:../../packages/instantmap",
+    "instantmap-js": "file:../../packages/instantmap",
     "nuxt": "^4.6.4",
     "vue": "^3.5.45"
   },

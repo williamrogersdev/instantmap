@@ -1,5 +1,5 @@
 ---
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import { center, listings, zoom } from "../lib/listings";
 
 const src = import.meta.env.PUBLIC_INSTANTMAP_SRC ?? "https://instantmap.org";
@@ -27,7 +27,7 @@ const poster = staticUrl({ src, center, zoom, width: 1280, height: 720, ratio: 2
       </instant-map>
     </main>
     <script>
-      import { defineInstantMap } from "instantmap";
+      import { defineInstantMap } from "instantmap-js";
       import { listings } from "../lib/listings";
 
       defineInstantMap();

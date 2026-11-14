@@ -1,0 +1,8 @@
+# Instant Map: everything here is public documentation. Search engines and AI crawlers are welcome.
+User-agent: *
+Allow: /
+Disallow: /examples/
+
+Sitemap: https://instantmap.org/sitemap-index.xml
+
+# For language models: https://instantmap.org/llms.txt

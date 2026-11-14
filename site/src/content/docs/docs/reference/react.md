@@ -1,12 +1,12 @@
 ---
 title: React component
-description: Props, events and the imperative handle of <InstantMap> from instantmap/react.
+description: Props, events and the imperative handle of <InstantMap> from instantmap-js/react.
 sidebar:
   order: 2
 ---
 
 ```tsx
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 
 <InstantMap
   center={[-97.7431, 30.2672]}
@@ -27,10 +27,12 @@ Works with React 18 and 19, on the client and on the server. The file starts wit
 | `zoom` | `number` | required | A new value jumps the map there. |
 | `markers` | `Marker<Data>[]` | `[]` | Pass a new array to update. Memoise it if you build it in render. |
 | `theme` | `"daylight" \| "midnight" \| "paper" \| "mono"` | `"daylight"` | |
-| `colors` | `Partial<Record<PaletteKey, string>>` | none | Memoise it if you build it in render. |
+| `colors` | `Partial<Record<PaletteKey, string>>` | none | Memoise it if you build it in render. Pass `undefined` to clear the overrides. |
 | `cluster` | `number \| false` | `44` | |
 | `selected` | `id \| null` | uncontrolled | Controls the selection. |
-| `renderPopup` | `(marker) => ReactNode` or `null` | default card | Your own popup, rendered through a portal, so context, state and Tailwind all work. `null` turns popups off. |
+| `card` | `CardOptions` | `{}` | Options for the built-in card: `{ layout?, action?, target?, closeLabel? }`. See [Cards and popups](/docs/guides/popups/). Not used when `renderPopup` is set. |
+| `cardImages` | `"visible" \| "hover" \| "off"` | `"visible"` | When card images are fetched ahead of a click. |
+| `renderPopup` | `(marker) => ReactNode` or `null` | built-in card | Your own card, rendered through a portal, so context, state and Tailwind all work. `null` turns cards off. |
 | `src` | `string` | `"https://instantmap.org"` | Your image server. |
 | `load` | `"intent" \| "visible" \| "eager" \| "none"` | `"intent"` | |
 | `scrollZoom` | `"cooperative" \| "always" \| "off"` | `"cooperative"` | |
@@ -62,6 +64,34 @@ const map = useRef<InstantMapHandle<Listing>>(null);
 <InstantMap ref={map} center={center} zoom={11} markers={listings} />
 ```
 
+## Brand colours
+
+`theme` and `colors` are the two props `brandTheme()` returns, so spread the result:
+
+```tsx
+import { brandTheme } from "instantmap-js/server";
+
+const brand = brandTheme({ primary: "#e11d48", background: "#fff7ed" }); // outside the component, or memoised
+
+<InstantMap center={center} zoom={12} markers={listings} {...brand} />;
+```
+
+See [Customising the look](/docs/guides/theming/#brand-colours-from-your-style-guide).
+
+## Built-in card
+
+```tsx
+<InstantMap
+  center={center}
+  zoom={12}
+  markers={listings}
+  card={{ layout: "row", action: "See listing", target: "_blank" }}
+  cardImages="hover"
+/>
+```
+
+Restyle it with the `--im-card-*` CSS variables, set from a stylesheet on the map's `className` or on any ancestor.
+
 ## Custom popup
 
 ```tsx
@@ -77,3 +107,5 @@ const map = useRef<InstantMapHandle<Listing>>(null);
   )}
 />
 ```
+
+Use `renderPopup={null}` when a click should navigate instead of opening a card, and handle `onMarkerClick`.

@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "instantmap": "file:../../packages/instantmap",
+    "instantmap-js": "file:../../packages/instantmap",
     "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"

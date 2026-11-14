@@ -1,4 +1,4 @@
-import { staticUrl } from 'instantmap/server';
+import { staticUrl } from 'instantmap-js/server';
 import { listings } from '#lib/server/listings.ts';
 import type { PageServerLoad } from './$types';
 

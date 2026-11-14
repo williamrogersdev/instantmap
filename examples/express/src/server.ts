@@ -1,5 +1,5 @@
 import express from "express";
-import { posterHtml } from "instantmap/server";
+import { posterHtml } from "instantmap-js/server";
 import { listings } from "./listings";
 
 const src = process.env.INSTANTMAP_SRC || "https://instantmap.org";

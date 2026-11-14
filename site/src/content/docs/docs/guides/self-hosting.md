@@ -71,7 +71,27 @@ Your server also serves `/instant-map.js` and the font, so you can load the clie
 | Your own PMTiles on R2 | The URL of a [PMTiles Worker](https://docs.protomaps.com/deploy/cloudflare) in front of your bucket | Download a planet or regional `.pmtiles` build, upload it to R2, and deploy Protomaps' serverless Worker. You own every part of the stack. |
 | Any z/x/y server | Your URL with `{z}`, `{x}`, `{y}` | Must use the Protomaps schema (layers `earth`, `water`, `landuse`, `roads`, `boundaries`, `places`, `buildings`). |
 
-The Worker caches upstream tiles for 7 days, so your tile source sees roughly one request per tile per data centre per week.
+The Worker caches upstream tiles for 7 days, so your tile source sees roughly one request per tile per data centre per week (once per tile in total with the `TILE_CACHE` bucket below). A request to the tile source times out after 8 seconds and is retried once.
+
+## Optional: keep tiles in R2
+
+By default each Cloudflare data centre draws a tile the first time someone near it asks. To draw every tile once for the whole world, add an R2 bucket named `TILE_CACHE`. Tiles then come from the bucket first and are drawn only when the bucket does not have them.
+
+```bash
+cd worker && bunx wrangler r2 bucket create instantmap-tiles
+```
+
+Then uncomment the `r2_buckets` block in `worker/wrangler.jsonc`:
+
+```jsonc
+"r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }]
+```
+
+Give the bucket a lifecycle rule, for example delete objects after 90 days, so it cannot grow without bound. Only tiles are stored. Static images are not.
+
+## Optional: limit uncached renders
+
+A request that has to be drawn costs CPU time. To cap how many uncached pictures one address can ask for, add a rate limit binding named `RENDER_LIMIT` (the `ratelimits` block in `worker/wrangler.jsonc`, 600 per 60 seconds in the example). Pictures that are already cached are never limited. A request over the limit gets `429` with `Retry-After: 10`. Without the binding there is no limit and the Worker never returns `429`.
 
 ## Check it
 
@@ -79,4 +99,6 @@ The Worker caches upstream tiles for 7 days, so your tile source sees roughly on
 curl -sI "https://maps.example.com/static?center=0,51.5&zoom=10&size=400x300" | grep -iE "^(HTTP|content-type|cache-control)"
 ```
 
-You should see `200`, `image/jpeg` and `public, max-age=604800, immutable`.
+You should see `200`, `image/jpeg` and `public, max-age=604800, immutable`. Ask again and the response carries `x-instantmap-cache: hit`.
+
+The Worker also answers `GET /health` with `{ "ok": true, "renderer": "…" }`, which suits an uptime check.

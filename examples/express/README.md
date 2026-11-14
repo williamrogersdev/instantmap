@@ -1,6 +1,6 @@
 # Instant Map in Express
 
-`posterHtml()` from `instantmap/server` renders the `<instant-map>` element with the first image inside it. The page loads the element from the CDN script and sets the markers from inline JSON.
+`posterHtml()` from `instantmap-js/server` renders the `<instant-map>` element with the first image inside it. The page loads the element from the CDN script and sets the markers from inline JSON.
 
 ```sh
 bun install

@@ -10,7 +10,7 @@ You will end up with an Astro page that ships the first map image in the HTML an
 ## Install
 
 ```bash
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
@@ -19,7 +19,7 @@ Put your markers in a module so the page and the script share them.
 
 ```ts
 // src/lib/listings.ts
-import type { Marker } from "instantmap";
+import type { Marker } from "instantmap-js";
 
 export const center: [number, number] = [-97.7431, 30.2672];
 export const zoom = 12;
@@ -32,7 +32,7 @@ export const listings: Marker[] = [
 
 ```astro
 ---
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import { center, listings, zoom } from "../lib/listings";
 
 const poster = staticUrl({ center, zoom, width: 1280, height: 720, ratio: 2, markers: listings });
@@ -55,7 +55,7 @@ const poster = staticUrl({ center, zoom, width: 1280, height: 720, ratio: 2, mar
 </instant-map>
 
 <script>
-  import { defineInstantMap } from "instantmap";
+  import { defineInstantMap } from "instantmap-js";
   import { listings } from "../lib/listings";
 
   defineInstantMap();
@@ -74,7 +74,7 @@ If you would rather not build the markup, `posterHtml` returns the whole element
 
 ```astro
 ---
-import { posterHtml } from "instantmap/server";
+import { posterHtml } from "instantmap-js/server";
 
 const map = posterHtml({ center: [-97.7431, 30.2672], zoom: 12, width: 1280, height: 720, alt: "Map of Austin" });
 ---
@@ -82,7 +82,7 @@ const map = posterHtml({ center: [-97.7431, 30.2672], zoom: 12, width: 1280, hei
 <Fragment set:html={map} />
 
 <script>
-  import { defineInstantMap } from "instantmap";
+  import { defineInstantMap } from "instantmap-js";
 
   defineInstantMap();
 </script>
@@ -116,7 +116,7 @@ Markers set from the script do not change the server image. Pass the same marker
 ## Common mistakes
 
 - Do not use `client:only`. Astro would skip the server render and you lose the instant first image. Use a plain `<script>`.
-- Import the element with `defineInstantMap()`. A bare `import "instantmap"` can be removed by the production build, and the element never registers.
+- Import the element with `defineInstantMap()`. A bare `import "instantmap-js"` can be removed by the production build, and the element never registers.
 - Keep the element and the poster in agreement: same `center`, `zoom` and size.
 - Give the element a height. It has none by default, so the map is invisible without one.
 - Set `position: relative` on the element, so the poster can fill it.

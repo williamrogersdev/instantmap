@@ -15,7 +15,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"dependencies": {
-		"instantmap": "file:../../packages/instantmap"
+		"instantmap-js": "file:../../packages/instantmap"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^6.0.2",

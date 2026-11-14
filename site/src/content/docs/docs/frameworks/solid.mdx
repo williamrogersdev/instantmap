@@ -10,15 +10,15 @@ Use the `<instant-map>` element in a Solid component. Solid has special prefixes
 ## Install
 
 ```sh
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
 
-Call `defineInstantMap()` once before rendering. A bare `import "instantmap"` is dropped by the bundler, so the element never gets defined.
+Call `defineInstantMap()` once before rendering. A bare `import "instantmap-js"` is dropped by the bundler, so the element never gets defined.
 
 ```tsx title="src/index.tsx"
-import { defineInstantMap } from "instantmap";
+import { defineInstantMap } from "instantmap-js";
 import { render } from "solid-js/web";
 import { App } from "./app";
 
@@ -29,7 +29,7 @@ render(() => <App />, document.getElementById("root")!);
 Tell TypeScript about the element.
 
 ```ts title="src/instantmap.d.ts"
-import type { InstantMapElement, InstantMapEventMap, Marker } from "instantmap";
+import type { InstantMapElement, InstantMapEventMap, Marker } from "instantmap-js";
 import "solid-js";
 
 declare module "solid-js" {
@@ -48,7 +48,7 @@ declare module "solid-js" {
 ```
 
 ```tsx title="src/app.tsx"
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import { listings } from "./listings";
 
 const center: [number, number] = [-97.74, 30.27];
@@ -96,7 +96,7 @@ Use `on:markerclick` and a `ref` for camera calls.
 
 ```tsx title="src/app.tsx"
 import { createSignal } from "solid-js";
-import type { InstantMapElement } from "instantmap";
+import type { InstantMapElement } from "instantmap-js";
 
 export function App() {
   let map: InstantMapElement | undefined;
@@ -124,13 +124,13 @@ export function App() {
 
 - Writing `center="..."` or `markers={...}` without a prefix. Solid sets them as properties and the element ignores them. Use `attr:` for strings and `prop:` for the markers array.
 - Writing `onMarkerClick`. Solid lowercases event names for custom elements. Use `on:markerclick`.
-- Importing `instantmap` for its side effect only. Call `defineInstantMap()`.
+- Importing `instantmap-js` for its side effect only. Call `defineInstantMap()`.
 - Giving the map no height. It collapses to nothing.
 
 ## Prompt for your agent
 
 ```text
-Add an Instant Map to my SolidJS app. Follow https://instantmap.org/docs/frameworks/solid.md exactly. Call defineInstantMap() from instantmap before render, declare instant-map in the solid-js JSX IntrinsicElements, and use attr:center, attr:zoom, prop:markers and on:markerclick on the element. Render a staticUrl poster img from instantmap/server inside it and give the map a fixed height. Build and confirm the page loads a /static? image first.
+Add an Instant Map to my SolidJS app. Follow https://instantmap.org/docs/frameworks/solid.md exactly. Call defineInstantMap() from instantmap before render, declare instant-map in the solid-js JSX IntrinsicElements, and use attr:center, attr:zoom, prop:markers and on:markerclick on the element. Render a staticUrl poster img from instantmap-js/server inside it and give the map a fixed height. Build and confirm the page loads a /static? image first.
 ```
 
 ## Full example

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { InstantMap, type InstantMapHandle } from "instantmap/react";
-import type { Marker } from "instantmap";
+import { InstantMap, type InstantMapHandle } from "instantmap-js/react";
+import type { Marker } from "instantmap-js";
 import { makeListings, type Listing } from "../listings";
 import type { Route } from "./+types/home";
 

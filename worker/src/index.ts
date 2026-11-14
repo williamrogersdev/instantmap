@@ -76,24 +76,32 @@ async function fetchTiles(env: Env, ids: Uint32Array) {
   return { ids: Uint32Array.from(present.flatMap((tile) => tile.id)), lengths: Uint32Array.from(present.map((tile) => tile.bytes.length)), data };
 }
 
-async function render(request: MapRequest, env: Env): Promise<{ bytes: Uint8Array; upstreamMs: number }> {
+interface Drawn {
+  bytes: Uint8Array;
+  /** Milliseconds spent fetching vector tiles. */
+  upstreamMs: number;
+  /** Milliseconds spent drawing and encoding. */
+  renderMs: number;
+}
+
+async function render(request: MapRequest, env: Env): Promise<Drawn> {
   const instance = getRenderer();
   const camera = request.kind === "tile" ? tileCamera(request.z, request.x, request.y, request.ratio) : Float64Array.from([request.longitude, request.latitude, request.zoom, request.width, request.height, request.ratio]);
   const started = Date.now();
   const tiles = await fetchTiles(env, tilesFor(camera));
-  const upstreamMs = Date.now() - started;
+  const fetched = Date.now();
   const quality = request.png ? 0 : jpegQuality(request.ratio);
   const bytes =
     request.kind === "tile"
       ? instance.render(camera, tiles.ids, tiles.lengths, tiles.data, request.look.palette, new Float64Array(), "", 0, quality)
       : instance.render(camera, tiles.ids, tiles.lengths, tiles.data, request.look.palette, request.markers.values, request.markers.labels, request.clusterDistance, quality);
-  return { bytes, upstreamMs };
+  return { bytes, upstreamMs: fetched - started, renderMs: Date.now() - fetched };
 }
 
 // Requests for a picture that is already being drawn in this isolate wait for that drawing rather than starting another.
-const inFlight = new Map<string, Promise<{ bytes: Uint8Array; upstreamMs: number }>>();
+const inFlight = new Map<string, Promise<Drawn>>();
 
-function renderOnce(key: string, request: MapRequest, env: Env): Promise<{ bytes: Uint8Array; upstreamMs: number }> {
+function renderOnce(key: string, request: MapRequest, env: Env): Promise<Drawn> {
   let pending = inFlight.get(key);
   if (!pending) {
     pending = render(request, env).finally(() => inFlight.delete(key));
@@ -133,6 +141,9 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...SHARED, "access-control-allow-methods": "GET, HEAD", "access-control-max-age": "86400" } });
     if (request.method !== "GET" && request.method !== "HEAD") return text("method not allowed", 405, { allow: "GET, HEAD, OPTIONS" });
 
+    // Cloudflare's cache in front of this Worker ("cache" in wrangler.jsonc) answers a repeated address without running
+    // any of this. That cache is keyed by the address as written; the one below is keyed by what the address means, so
+    // the same picture asked for with its parameters in another order, or after a new deployment, is still not drawn twice.
     const key = cacheKey(parsed, CACHE_VERSION, url.searchParams);
     const cache = caches.default;
     const cacheRequest = new Request(`${url.origin}/__cache/${key}`);
@@ -160,8 +171,22 @@ export default {
         const { success } = await env.RENDER_LIMIT.limit({ key: request.headers.get("cf-connecting-ip") ?? "unknown" });
         if (!success) return text("too many uncached map requests, try again shortly", 429, { "retry-after": "10" });
       }
-      const { bytes, upstreamMs } = await renderOnce(key, parsed, env);
-      const response = image(bytes, parsed.png, "render", `upstream;dur=${upstreamMs}`);
+      const { bytes, upstreamMs, renderMs } = await renderOnce(key, parsed, env);
+      // One line per drawing, for Workers Logs: which pictures are drawn, where, and where the time goes.
+      console.log(
+        JSON.stringify({
+          message: "render",
+          kind: parsed.kind,
+          ...(parsed.kind === "tile" ? { z: parsed.z, x: parsed.x, y: parsed.y } : { zoom: parsed.zoom, width: parsed.width, height: parsed.height }),
+          ratio: parsed.ratio,
+          format: parsed.png ? "png" : "jpeg",
+          upstreamMs,
+          renderMs,
+          bytes: bytes.length,
+          colo: request.cf?.colo,
+        }),
+      );
+      const response = image(bytes, parsed.png, "render", `upstream;dur=${upstreamMs}, render;dur=${renderMs}`);
       context.waitUntil(cache.put(cacheRequest, response.clone()));
       if (store) context.waitUntil(store.put(key, bytes, { httpMetadata: { contentType: parsed.png ? "image/png" : "image/jpeg" } }));
       return response;

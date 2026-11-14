@@ -89,7 +89,9 @@ Add the bucket to `r2_buckets` and name the archive in `vars`, in `worker/wrangl
 ]
 ```
 
-The archive must use the Protomaps basemap schema. To refresh the map, overwrite the archive: the Worker notices the change and no deployment is needed. Places outside the archive's coverage are drawn without map data.
+The archive must use the Protomaps basemap schema. To refresh the map, overwrite the archive: the Worker notices the change and no deployment is needed. Places outside the archive's coverage are drawn without map data. If the bucket has no archive under that name, the Worker logs a warning and uses `TILE_URL`.
+
+The checked-in configuration binds `MAP_DATA` to a bucket named `instantmap-map-data` and sets `MAP_ARCHIVE`. Create that bucket and upload your archive, or remove both to use `TILE_URL` only.
 
 ## How pictures are cached
 

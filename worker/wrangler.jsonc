@@ -8,7 +8,10 @@
   "rules": [{ "type": "Data", "globs": ["**/*.pbf"], "fallthrough": false }],
   "vars": {
     // A vector tile source in the Protomaps schema. Self-hosting: point this at your own.
-    "TILE_URL": "https://www.repackify.com/map-tiles/v1/tiles/{z}/{x}/{y}.mvt"
+    "TILE_URL": "https://www.repackify.com/map-tiles/v1/tiles/{z}/{x}/{y}.mvt",
+    // The PMTiles archive in the MAP_DATA bucket below. With that bucket bound, map data is read from it and
+    // TILE_URL is not used. Self-hosting without an archive: remove this line and the MAP_DATA bucket.
+    "MAP_ARCHIVE": "v1/north-america.pmtiles"
   },
   "routes": [{ "pattern": "instantmap.org", "custom_domain": true }],
   // Cloudflare keeps finished pictures in front of the Worker and answers repeats without running it. The cache is
@@ -23,5 +26,8 @@
   "observability": { "enabled": true },
   "upload_source_maps": true,
 
-  "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }]
+  "r2_buckets": [
+    { "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" },
+    { "binding": "MAP_DATA", "bucket_name": "instantmap-map-data" }
+  ]
 }

@@ -4,7 +4,7 @@ import regular from "../../fixtures/noto-sans-regular-0-255.pbf";
 import medium from "../../fixtures/noto-sans-medium-0-255.pbf";
 import italic from "../../fixtures/noto-sans-italic-0-255.pbf";
 import { THEMES } from "../../packages/instantmap/src/themes.ts";
-import { archiveTile } from "./archive.ts";
+import { ArchiveMissing, archiveTile } from "./archive.ts";
 import { BadRequest, cacheKey, fingerprint, jpegQuality, type MapRequest, parseRequest } from "./params.ts";
 
 interface RateLimit {
@@ -14,7 +14,7 @@ interface RateLimit {
 interface Env {
   /** Vector tile source, Protomaps schema: https://example.com/{z}/{x}/{y}.mvt */
   TILE_URL: string;
-  /** Optional. An R2 bucket holding a PMTiles archive of the map data. When bound, tiles are read from it and TILE_URL is not used. */
+  /** Optional. An R2 bucket holding a PMTiles archive of the map data. When it holds MAP_ARCHIVE, tiles are read from it and TILE_URL is not used. */
   MAP_DATA?: R2Bucket;
   /** The archive's name in MAP_DATA, for example "v1/north-america.pmtiles". */
   MAP_ARCHIVE?: string;
@@ -107,11 +107,19 @@ function vectorTile(env: Env, context: ExecutionContext, z: number, x: number, y
   return entry.pending;
 }
 
+let archiveMissingUntil = 0;
+
 async function loadVectorTile(env: Env, context: ExecutionContext, key: string, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
-  if (env.MAP_DATA) {
+  if (env.MAP_DATA && env.MAP_ARCHIVE && Date.now() > archiveMissingUntil) {
     // Already in R2, one read away: keeping a second copy under mvt/ would only add a lookup.
-    if (!env.MAP_ARCHIVE) throw new Error("MAP_DATA is bound but MAP_ARCHIVE, the archive's name in the bucket, is not set");
-    return archiveTile(env.MAP_DATA, env.MAP_ARCHIVE, z, x, y);
+    try {
+      return await archiveTile(env.MAP_DATA, env.MAP_ARCHIVE, z, x, y);
+    } catch (error) {
+      if (!(error instanceof ArchiveMissing)) throw error;
+      // No archive in the bucket (a local run, or one not uploaded yet): use TILE_URL, and look again in a minute.
+      archiveMissingUntil = Date.now() + 60_000;
+      console.warn(JSON.stringify({ message: "map archive missing, using TILE_URL", archive: env.MAP_ARCHIVE }));
+    }
   }
   const store = env.TILE_CACHE;
   if (!store) return fetchFromSource(env, z, x, y);

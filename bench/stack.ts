@@ -1,6 +1,6 @@
 // Starts what a benchmark or profile runs against: a fixture tile server and the Worker under `wrangler dev`,
 // with no network dependency. Pass a url to measure something already running instead (a deployment, a preview).
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -53,21 +53,16 @@ export async function startStack(url?: string, options: { source?: "http" | "arc
   const state = mkdtempSync(join(tmpdir(), "instantmap-bench-state-"));
   const extra: string[] = [];
   if (options.source === "archive") {
-    // The same configuration with one more bucket, written next to the real one so its relative paths still hold.
-    const config = join(root, "worker/.wrangler-bench.jsonc");
-    const base = readFileSync(join(root, "worker/wrangler.jsonc"), "utf8");
-    const marker = '"r2_buckets": [';
-    if (!base.includes(marker)) throw new Error("worker/wrangler.jsonc has no r2_buckets list to add the map data bucket to");
-    writeFileSync(config, base.replace(marker, `${marker}{ "binding": "MAP_DATA", "bucket_name": "instantmap-bench-map-data" }, `));
+    // Put the fixture archive in the local copy of the MAP_DATA bucket, under its own name.
     const archive = join(state, "fixtures.pmtiles");
     const { buildFixtureArchive } = await import("../worker/test/fixture-archive.ts");
     writeFileSync(archive, buildFixtureArchive());
-    const put = Bun.spawnSync(["bunx", "wrangler", "r2", "object", "put", "instantmap-bench-map-data/fixtures.pmtiles", "--file", archive, "--local", "--persist-to", state, "-c", config], {
+    const put = Bun.spawnSync(["bunx", "wrangler", "r2", "object", "put", "instantmap-map-data/fixtures.pmtiles", "--file", archive, "--local", "--persist-to", state], {
       cwd: join(root, "worker"),
       env: { ...process.env, WRANGLER_SEND_METRICS: "false", CI: "1" },
     });
     if (put.exitCode !== 0) throw new Error(`could not store the fixture archive in local R2: ${put.stderr.toString()}`);
-    extra.push("-c", config, "--var", "MAP_ARCHIVE:fixtures.pmtiles");
+    extra.push("--var", "MAP_ARCHIVE:fixtures.pmtiles");
   }
   children.push(
     Bun.spawn(["bunx", "wrangler", "dev", ...extra, "--port", String(port), "--inspector-port", String(inspectorPort), "--persist-to", state, "--var", `TILE_URL:http://localhost:${tilePort}/{z}/{x}/{y}.mvt`], {

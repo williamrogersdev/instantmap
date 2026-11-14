@@ -1,5 +1,5 @@
 import { boundsOf, DEFAULT_CLUSTER_DISTANCE, latitudeOf, longitudeOf, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
-import { DEFAULT_SRC, MAX_STATIC_SIZE, staticUrl } from "./static-url.ts";
+import { DEFAULT_SRC, MAX_STATIC_SIZE, pixelRatio, staticUrl } from "./static-url.ts";
 import { decodeColors, parseColor } from "./colors.ts";
 import type { AnimationOptions, Bounds, Camera, CameraOptions, CardOptions, FitOptions, InstantMapEventMap, LngLat, LoadMode, Marker, PopupRenderer, Theme } from "./types.ts";
 
@@ -529,7 +529,7 @@ export class InstantMapElement<Data = unknown> extends Base {
       zoom: state.zoom,
       width: Math.min(MAX_STATIC_SIZE, this.clientWidth || 640),
       height: Math.min(MAX_STATIC_SIZE, this.clientHeight || 400),
-      ratio: (globalThis.devicePixelRatio ?? 1) > 1 ? 2 : 1,
+      ratio: pixelRatio(this.getAttribute("detail")),
       theme: state.theme as Theme,
       colors: state.colors,
       markers: state.markers,

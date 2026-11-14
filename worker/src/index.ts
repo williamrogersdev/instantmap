@@ -21,7 +21,7 @@ interface Env {
 }
 
 // Bump when the renderer draws anything differently. Theme changes are picked up on their own.
-const RENDERER_VERSION = "5";
+const RENDERER_VERSION = "6";
 const CACHE_VERSION = `${RENDERER_VERSION}.${fingerprint(JSON.stringify(THEMES))}`;
 const IMAGE_TTL = 60 * 60 * 24 * 7;
 const UPSTREAM_TTL = 60 * 60 * 24 * 7;

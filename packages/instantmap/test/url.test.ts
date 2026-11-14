@@ -1,8 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
 import { decodeColors, encodeColors, parseColor } from "../src/colors.ts";
 import { CHROME, CHROME_KEYS, parseMarkerList } from "../src/element.ts";
 import { posterHtml } from "../src/poster-html.ts";
-import { staticUrl, tileUrl } from "../src/static-url.ts";
+import { pixelRatio, staticUrl, tileUrl } from "../src/static-url.ts";
 import { decodePaletteColors, PALETTE_KEYS, paletteWords, resolvePalette, THEMES } from "../src/themes.ts";
 
 const base = { src: "https://maps.example", center: [-122.42, 37.77] as [number, number], zoom: 12, width: 640, height: 400 };
@@ -97,5 +97,44 @@ describe("parseMarkerList", () => {
       { id: 0, lng: -122.4, lat: 37.7, label: "$9" },
       { id: 2, lng: 1, lat: 2 },
     ]);
+  });
+});
+
+describe("pixelRatio", () => {
+  const scope = globalThis as { devicePixelRatio?: number };
+  const setConnection = (connection: unknown) => Object.defineProperty(globalThis.navigator, "connection", { value: connection, configurable: true });
+  afterEach(() => {
+    delete scope.devicePixelRatio;
+    setConnection(undefined);
+  });
+
+  test("is 1 on a standard screen whatever is asked", () => {
+    scope.devicePixelRatio = 1;
+    expect(pixelRatio("high")).toBe(1);
+  });
+
+  test("is 2 on a dense screen when the browser does not report the connection", () => {
+    scope.devicePixelRatio = 3;
+    expect(pixelRatio(null)).toBe(2);
+  });
+
+  test("drops to 1 on a dense screen when the visitor saves data or the connection is slow", () => {
+    scope.devicePixelRatio = 2;
+    setConnection({ saveData: true, effectiveType: "4g", downlink: 10 });
+    expect(pixelRatio("auto")).toBe(1);
+    setConnection({ saveData: false, effectiveType: "3g", downlink: 0.6 });
+    expect(pixelRatio(null)).toBe(1);
+    setConnection({ saveData: false, effectiveType: "4g", downlink: 1.6 });
+    expect(pixelRatio(null)).toBe(1);
+    setConnection({ saveData: false, effectiveType: "4g", downlink: 9 });
+    expect(pixelRatio(null)).toBe(2);
+  });
+
+  test("detail overrides the connection", () => {
+    scope.devicePixelRatio = 2;
+    setConnection({ saveData: true });
+    expect(pixelRatio("high")).toBe(2);
+    setConnection({ downlink: 10 });
+    expect(pixelRatio("low")).toBe(1);
   });
 });

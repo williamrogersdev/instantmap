@@ -1,7 +1,7 @@
 import { CARD_CSS, CARD_STYLE_ID, cardFromTemplate, defaultCard, safeUrl } from "./card.ts";
 import { boundsOf, clusterAt, type Group, MAX_LABEL_LENGTH, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
 import { type Bridge, type EngineHandle, type InstantMapElement, type MapState, MAX_ZOOM } from "./element.ts";
-import { tileUrl } from "./static-url.ts";
+import { pixelRatio, tileUrl } from "./static-url.ts";
 import { type Palette, resolvePalette } from "./themes.ts";
 import type { AnimationOptions, CameraOptions, CardImages, CardOptions, Cluster, Marker, ScrollZoom } from "./types.ts";
 
@@ -120,6 +120,8 @@ export class Engine<Data = unknown> implements EngineHandle {
   #frame = 0;
   #active = false;
   #idle = false;
+  /** Decided once, when the first tile is asked for, so one map does not mix sharp and soft tiles. */
+  #ratio?: 1 | 2;
   #idleWaiters: (() => void)[] = [];
   #pointers = new Map<number, { x: number; y: number }>();
   #pinch: { distance: number; midX: number; midY: number } | null = null;
@@ -757,7 +759,7 @@ export class Engine<Data = unknown> implements EngineHandle {
     const size = TILE_SIZE * 2 ** (state.zoom - z);
     const left = state.x * this.#world - width / 2;
     const top = state.y * this.#world - height / 2;
-    const ratio = (globalThis.devicePixelRatio ?? 1) > 1 ? 2 : 1;
+    const ratio = (this.#ratio ??= pixelRatio(this.#host.getAttribute("detail")));
     const wanted = new Set<string>();
     let pending = 0;
     const firstRow = Math.max(0, Math.floor(top / size));

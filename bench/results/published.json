@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-11-14",
-  "commit": "31578f9",
+  "commit": "4331ed4",
   "version": "0.1.0",
   "target": "local",
   "machine": {
@@ -30,8 +30,8 @@
     }
   ],
   "sizes": {
-    "upfront": 7528,
-    "engine": 11635
+    "upfront": 7642,
+    "engine": 11649
   },
   "renderer": {
     "iterations": 30,
@@ -44,29 +44,29 @@
         "tiles": 9,
         "markers": 0,
         "decodeMs": {
-          "median": 0.224,
-          "p90": 0.228,
-          "min": 0.202
+          "median": 0.233,
+          "p90": 0.24,
+          "min": 0.228
         },
         "renderMs": {
-          "median": 19.155,
-          "p90": 19.953,
-          "min": 18.459
+          "median": 20.833,
+          "p90": 21.666,
+          "min": 20.476
         },
         "jpegMs": {
-          "median": 1.597,
-          "p90": 1.636,
-          "min": 1.543
+          "median": 1.675,
+          "p90": 1.907,
+          "min": 1.605
         },
         "pngMs": {
-          "median": 15.272,
-          "p90": 15.763,
-          "min": 14.362
+          "median": 16.382,
+          "p90": 16.977,
+          "min": 15.772
         },
         "totalJpegMs": {
-          "median": 20.98,
-          "p90": 21.785,
-          "min": 20.248
+          "median": 22.823,
+          "p90": 23.608,
+          "min": 22.327
         },
         "jpegBytes": 64038,
         "pngBytes": 239457
@@ -79,31 +79,31 @@
         "tiles": 9,
         "markers": 0,
         "decodeMs": {
-          "median": 0.224,
-          "p90": 0.228,
-          "min": 0.207
+          "median": 0.234,
+          "p90": 0.269,
+          "min": 0.229
         },
         "renderMs": {
-          "median": 52.749,
-          "p90": 55.03,
-          "min": 51.354
+          "median": 57.687,
+          "p90": 59.902,
+          "min": 55.916
         },
         "jpegMs": {
-          "median": 5.631,
-          "p90": 6.018,
-          "min": 5.478
+          "median": 6.365,
+          "p90": 7.62,
+          "min": 5.744
         },
         "pngMs": {
-          "median": 33.412,
-          "p90": 35.6,
-          "min": 32.549
+          "median": 36.751,
+          "p90": 38.018,
+          "min": 35.315
         },
         "totalJpegMs": {
-          "median": 58.823,
-          "p90": 61.065,
-          "min": 57.079
+          "median": 64.81,
+          "p90": 66.481,
+          "min": 62.495
         },
-        "jpegBytes": 156386,
+        "jpegBytes": 131464,
         "pngBytes": 542798
       },
       {
@@ -114,31 +114,31 @@
         "tiles": 9,
         "markers": 0,
         "decodeMs": {
-          "median": 0.236,
-          "p90": 0.244,
-          "min": 0.218
+          "median": 0.246,
+          "p90": 0.262,
+          "min": 0.24
         },
         "renderMs": {
-          "median": 54.86,
-          "p90": 56.259,
-          "min": 52.751
+          "median": 59.458,
+          "p90": 62.614,
+          "min": 58.287
         },
         "jpegMs": {
-          "median": 5.689,
-          "p90": 5.852,
-          "min": 5.526
+          "median": 6.255,
+          "p90": 8.245,
+          "min": 5.667
         },
         "pngMs": {
-          "median": 33.702,
-          "p90": 35.47,
-          "min": 32.336
+          "median": 36.58,
+          "p90": 38.169,
+          "min": 35.188
         },
         "totalJpegMs": {
-          "median": 60.74,
-          "p90": 62.257,
-          "min": 58.558
+          "median": 66.949,
+          "p90": 69.445,
+          "min": 64.809
         },
-        "jpegBytes": 164013,
+        "jpegBytes": 137836,
         "pngBytes": 568130
       },
       {
@@ -149,31 +149,31 @@
         "tiles": 9,
         "markers": 0,
         "decodeMs": {
-          "median": 0.185,
-          "p90": 0.217,
-          "min": 0.174
+          "median": 0.197,
+          "p90": 0.206,
+          "min": 0.191
         },
         "renderMs": {
-          "median": 28.185,
-          "p90": 31.745,
-          "min": 26.654
+          "median": 31.276,
+          "p90": 32.115,
+          "min": 30.252
         },
         "jpegMs": {
-          "median": 5.114,
-          "p90": 5.83,
-          "min": 5.03
+          "median": 5.89,
+          "p90": 6.756,
+          "min": 5.23
         },
         "pngMs": {
-          "median": 18.366,
-          "p90": 19.766,
-          "min": 17.854
+          "median": 20.171,
+          "p90": 21.249,
+          "min": 19.319
         },
         "totalJpegMs": {
-          "median": 33.479,
-          "p90": 37.052,
-          "min": 31.911
+          "median": 37.611,
+          "p90": 38.723,
+          "min": 36.086
         },
-        "jpegBytes": 99570,
+        "jpegBytes": 85925,
         "pngBytes": 287592
       },
       {
@@ -184,31 +184,31 @@
         "tiles": 9,
         "markers": 0,
         "decodeMs": {
-          "median": 0.156,
-          "p90": 0.166,
-          "min": 0.126
+          "median": 0.182,
+          "p90": 0.223,
+          "min": 0.169
         },
         "renderMs": {
-          "median": 21.813,
-          "p90": 22.639,
-          "min": 21.554
+          "median": 24.638,
+          "p90": 25.306,
+          "min": 22.202
         },
         "jpegMs": {
-          "median": 4.76,
-          "p90": 4.872,
-          "min": 4.655
+          "median": 5.82,
+          "p90": 6.909,
+          "min": 5.061
         },
         "pngMs": {
-          "median": 11.775,
-          "p90": 12.061,
-          "min": 11.626
+          "median": 13.527,
+          "p90": 14.959,
+          "min": 12.79
         },
         "totalJpegMs": {
-          "median": 26.748,
-          "p90": 27.569,
-          "min": 26.365
+          "median": 30.695,
+          "p90": 31.783,
+          "min": 29.467
         },
-        "jpegBytes": 66697,
+        "jpegBytes": 60800,
         "pngBytes": 115025
       },
       {
@@ -219,31 +219,31 @@
         "tiles": 12,
         "markers": 0,
         "decodeMs": {
-          "median": 0.278,
-          "p90": 0.291,
-          "min": 0.263
+          "median": 0.301,
+          "p90": 0.335,
+          "min": 0.286
         },
         "renderMs": {
-          "median": 86.785,
-          "p90": 89.712,
-          "min": 85.683
+          "median": 99.286,
+          "p90": 101.153,
+          "min": 95.201
         },
         "jpegMs": {
-          "median": 10.95,
-          "p90": 11.255,
-          "min": 10.67
+          "median": 12.333,
+          "p90": 14.429,
+          "min": 11.318
         },
         "pngMs": {
-          "median": 61.564,
-          "p90": 63.86,
-          "min": 61.029
+          "median": 69.601,
+          "p90": 71.748,
+          "min": 66.808
         },
         "totalJpegMs": {
-          "median": 98.053,
-          "p90": 101.144,
-          "min": 96.77
+          "median": 111.691,
+          "p90": 115.009,
+          "min": 108.642
         },
-        "jpegBytes": 281836,
+        "jpegBytes": 237144,
         "pngBytes": 1002877
       },
       {
@@ -254,31 +254,31 @@
         "tiles": 12,
         "markers": 400,
         "decodeMs": {
-          "median": 0.279,
-          "p90": 0.289,
-          "min": 0.262
+          "median": 0.294,
+          "p90": 0.324,
+          "min": 0.287
         },
         "renderMs": {
-          "median": 92.269,
-          "p90": 94.034,
-          "min": 90.496
+          "median": 102.927,
+          "p90": 104.615,
+          "min": 99.851
         },
         "jpegMs": {
-          "median": 11.061,
-          "p90": 11.289,
-          "min": 10.745
+          "median": 12.184,
+          "p90": 13.21,
+          "min": 11.398
         },
         "pngMs": {
-          "median": 74.317,
-          "p90": 76.394,
-          "min": 73.148
+          "median": 81.781,
+          "p90": 83.905,
+          "min": 79.754
         },
         "totalJpegMs": {
-          "median": 103.561,
-          "p90": 105.461,
-          "min": 101.773
+          "median": 115.848,
+          "p90": 117.001,
+          "min": 112.506
         },
-        "jpegBytes": 304791,
+        "jpegBytes": 257052,
         "pngBytes": 1127490
       },
       {
@@ -289,29 +289,29 @@
         "tiles": 16,
         "markers": 0,
         "decodeMs": {
-          "median": 0.158,
-          "p90": 0.166,
-          "min": 0.139
+          "median": 0.172,
+          "p90": 0.202,
+          "min": 0.164
         },
         "renderMs": {
-          "median": 18.852,
-          "p90": 19.717,
-          "min": 18.408
+          "median": 21.206,
+          "p90": 22.175,
+          "min": 20.268
         },
         "jpegMs": {
-          "median": 4.918,
-          "p90": 5.033,
-          "min": 4.824
+          "median": 5.407,
+          "p90": 6.738,
+          "min": 5.176
         },
         "pngMs": {
-          "median": 17.842,
-          "p90": 18.956,
-          "min": 17.409
+          "median": 19.111,
+          "p90": 19.465,
+          "min": 18.639
         },
         "totalJpegMs": {
-          "median": 23.909,
-          "p90": 25.066,
-          "min": 23.421
+          "median": 26.997,
+          "p90": 28.354,
+          "min": 25.769
         },
         "jpegBytes": 93836,
         "pngBytes": 202366
@@ -323,14 +323,14 @@
       "name": "tile-1x-jpeg",
       "description": "One 512-point tile, JPEG",
       "firstMs": {
-        "median": 28.18,
-        "p90": 36.82,
-        "min": 23.61
+        "median": 34.82,
+        "p90": 46.46,
+        "min": 29.11
       },
       "repeatMs": {
-        "median": 1.57,
-        "p90": 2.23,
-        "min": 1.39
+        "median": 2.6,
+        "p90": 4.08,
+        "min": 1.92
       },
       "bytes": 65745,
       "firstSources": [
@@ -341,16 +341,16 @@
       "name": "tile-2x-jpeg",
       "description": "One 512-point tile at 2×, JPEG",
       "firstMs": {
-        "median": 67.78,
-        "p90": 81.1,
-        "min": 58.01
+        "median": 80.89,
+        "p90": 94.85,
+        "min": 75.45
       },
       "repeatMs": {
-        "median": 1.41,
-        "p90": 2.15,
-        "min": 1.26
+        "median": 2.8,
+        "p90": 3.04,
+        "min": 2.01
       },
-      "bytes": 146345,
+      "bytes": 124510,
       "firstSources": [
         "drawn"
       ]
@@ -359,14 +359,14 @@
       "name": "tile-2x-png",
       "description": "One 512-point tile at 2×, PNG",
       "firstMs": {
-        "median": 107.3,
-        "p90": 129.17,
-        "min": 82.66
+        "median": 118.66,
+        "p90": 146.28,
+        "min": 91.33
       },
       "repeatMs": {
-        "median": 1.65,
-        "p90": 2.1,
-        "min": 1.53
+        "median": 3.15,
+        "p90": 3.44,
+        "min": 2.86
       },
       "bytes": 455691,
       "firstSources": [
@@ -377,16 +377,16 @@
       "name": "static-2x",
       "description": "First image, 960×540 at 2×, no markers",
       "firstMs": {
-        "median": 145.12,
-        "p90": 167.11,
-        "min": 141.21
+        "median": 160.32,
+        "p90": 193.82,
+        "min": 153.93
       },
       "repeatMs": {
-        "median": 1.62,
-        "p90": 2.36,
-        "min": 1.49
+        "median": 2.95,
+        "p90": 3.92,
+        "min": 2.62
       },
-      "bytes": 312251,
+      "bytes": 263714,
       "firstSources": [
         "drawn"
       ]
@@ -395,16 +395,16 @@
       "name": "static-2x-50-markers",
       "description": "First image, 960×540 at 2×, 50 markers",
       "firstMs": {
-        "median": 160.15,
-        "p90": 163.42,
-        "min": 157.45
+        "median": 171.3,
+        "p90": 174.01,
+        "min": 167.51
       },
       "repeatMs": {
-        "median": 1.87,
-        "p90": 2.26,
-        "min": 1.74
+        "median": 3.41,
+        "p90": 5.39,
+        "min": 3.17
       },
-      "bytes": 343268,
+      "bytes": 289881,
       "firstSources": [
         "drawn"
       ]
@@ -413,16 +413,16 @@
       "name": "static-2x-400-markers",
       "description": "First image, 960×540 at 2×, 400 markers",
       "firstMs": {
-        "median": 253.78,
-        "p90": 339.13,
-        "min": 250.7
+        "median": 273.66,
+        "p90": 274.65,
+        "min": 270.8
       },
       "repeatMs": {
-        "median": 3.47,
-        "p90": 3.77,
-        "min": 2.99
+        "median": 3.97,
+        "p90": 4.36,
+        "min": 3.67
       },
-      "bytes": 404637,
+      "bytes": 342330,
       "firstSources": [
         "drawn"
       ]
@@ -436,19 +436,9 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 40.5,
-          "p90": 75.1,
-          "min": 24.9
-        },
-        "firstContentfulPaintMs": {
-          "median": 56,
-          "p90": 56,
-          "min": 56
-        },
-        "largestContentfulPaintMs": {
-          "median": 56,
-          "p90": 56,
-          "min": 56
+          "median": 44.7,
+          "p90": 45.7,
+          "min": 42.9
         },
         "loadRequests": {
           "median": 4,
@@ -456,9 +446,9 @@
           "min": 4
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
           "median": 276.42,
@@ -466,9 +456,9 @@
           "min": 276.42
         },
         "loadScriptMs": {
-          "median": 4.09,
-          "p90": 4.84,
-          "min": 3.9
+          "median": 4.59,
+          "p90": 5.36,
+          "min": 4.57
         },
         "loadBlockingMs": {
           "median": 0,
@@ -476,14 +466,14 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 39.3,
-          "p90": 78.6,
-          "min": 37.5
+          "median": 43.9,
+          "p90": 45.9,
+          "min": 43.4
         },
         "wakeToIdleMs": {
-          "median": 982.8,
-          "p90": 1001.3,
-          "min": 966.9
+          "median": 982.7,
+          "p90": 983.6,
+          "min": 966.6
         },
         "dragFrameMs": {
           "median": 16.7,
@@ -491,7 +481,7 @@
           "min": 16.7
         },
         "dragFrameP95Ms": {
-          "median": 16.7,
+          "median": 16.8,
           "p90": 16.8,
           "min": 16.7
         },
@@ -501,13 +491,13 @@
           "min": 0
         },
         "dragMainThreadMsPerFrame": {
-          "median": 1.37,
-          "p90": 1.51,
-          "min": 1.24
+          "median": 1.7,
+          "p90": 1.72,
+          "min": 1.63
         },
         "dragSettleMs": {
           "median": 0,
-          "p90": 7.8,
+          "p90": 0.1,
           "min": 0
         },
         "zoomFrameMs": {
@@ -526,29 +516,29 @@
           "min": 0
         },
         "zoomMainThreadMsPerFrame": {
-          "median": 0.66,
-          "p90": 0.72,
-          "min": 0.58
+          "median": 0.75,
+          "p90": 0.79,
+          "min": 0.73
         },
         "zoomSettleMs": {
           "median": 0,
-          "p90": 556.7,
+          "p90": 0,
           "min": 0
         },
         "markers2000Ms": {
-          "median": 26.1,
-          "p90": 28.2,
-          "min": 24.3
+          "median": 28.6,
+          "p90": 29.6,
+          "min": 27.4
         },
         "markers10000Ms": {
-          "median": 38.1,
-          "p90": 40.7,
-          "min": 33.6
+          "median": 42.2,
+          "p90": 45.4,
+          "min": 41.8
         },
         "totalScriptMs": {
-          "median": 72.27,
-          "p90": 77.27,
-          "min": 66.41
+          "median": 81.9,
+          "p90": 85.48,
+          "min": 79.96
         },
         "totalBlockingMs": {
           "median": 0,
@@ -569,19 +559,9 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 27.2,
-          "p90": 164.1,
-          "min": 24.2
-        },
-        "firstContentfulPaintMs": {
-          "median": 144,
-          "p90": 144,
-          "min": 144
-        },
-        "largestContentfulPaintMs": {
-          "median": 144,
-          "p90": 144,
-          "min": 144
+          "median": 44.1,
+          "p90": 46.2,
+          "min": 42.9
         },
         "loadRequests": {
           "median": 4,
@@ -589,19 +569,19 @@
           "min": 4
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
-          "median": 688.53,
-          "p90": 688.53,
-          "min": 688.53
+          "median": 583.83,
+          "p90": 583.83,
+          "min": 583.83
         },
         "loadScriptMs": {
-          "median": 4.02,
-          "p90": 4.39,
-          "min": 3.82
+          "median": 5.5,
+          "p90": 5.73,
+          "min": 4.51
         },
         "loadBlockingMs": {
           "median": 0,
@@ -609,14 +589,14 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 45.3,
-          "p90": 48.5,
-          "min": 44.2
+          "median": 51.2,
+          "p90": 53.2,
+          "min": 49.3
         },
         "wakeToIdleMs": {
-          "median": 982.3,
-          "p90": 983.4,
-          "min": 966.7
+          "median": 983.3,
+          "p90": 1000.1,
+          "min": 982
         },
         "dragFrameMs": {
           "median": 16.7,
@@ -624,7 +604,7 @@
           "min": 16.7
         },
         "dragFrameP95Ms": {
-          "median": 16.8,
+          "median": 16.7,
           "p90": 16.8,
           "min": 16.7
         },
@@ -634,9 +614,9 @@
           "min": 0
         },
         "dragMainThreadMsPerFrame": {
-          "median": 3.96,
-          "p90": 4.06,
-          "min": 3.85
+          "median": 4.42,
+          "p90": 4.48,
+          "min": 4.38
         },
         "dragSettleMs": {
           "median": 0,
@@ -659,29 +639,29 @@
           "min": 0
         },
         "zoomMainThreadMsPerFrame": {
-          "median": 1.34,
-          "p90": 1.49,
-          "min": 1.31
+          "median": 1.58,
+          "p90": 1.62,
+          "min": 1.54
         },
         "zoomSettleMs": {
           "median": 0,
-          "p90": 0,
+          "p90": 0.1,
           "min": 0
         },
         "markers2000Ms": {
-          "median": 27.5,
-          "p90": 29.3,
-          "min": 16.9
+          "median": 29.5,
+          "p90": 30.4,
+          "min": 27.7
         },
         "markers10000Ms": {
-          "median": 36.7,
-          "p90": 45.7,
-          "min": 36.2
+          "median": 39.5,
+          "p90": 39.6,
+          "min": 39
         },
         "totalScriptMs": {
-          "median": 61.03,
-          "p90": 66.29,
-          "min": 60.05
+          "median": 72.4,
+          "p90": 73.02,
+          "min": 70.4
         },
         "totalBlockingMs": {
           "median": 0,
@@ -689,9 +669,9 @@
           "min": 0
         },
         "heapMb": {
-          "median": 3.43,
-          "p90": 3.43,
-          "min": 3.43
+          "median": 3.44,
+          "p90": 3.44,
+          "min": 3.44
         }
       }
     },
@@ -702,19 +682,19 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 598.2,
-          "p90": 615.2,
-          "min": 594.8
+          "median": 559.1,
+          "p90": 565.6,
+          "min": 554
         },
         "firstContentfulPaintMs": {
-          "median": 320,
+          "median": 312,
           "p90": 324,
-          "min": 316
+          "min": 308
         },
         "largestContentfulPaintMs": {
-          "median": 320,
+          "median": 312,
           "p90": 324,
-          "min": 316
+          "min": 308
         },
         "loadRequests": {
           "median": 4,
@@ -722,19 +702,19 @@
           "min": 4
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
-          "median": 228.98,
-          "p90": 228.98,
-          "min": 228.98
+          "median": 193.15,
+          "p90": 193.15,
+          "min": 193.15
         },
         "loadScriptMs": {
-          "median": 15.64,
-          "p90": 16.16,
-          "min": 14.3
+          "median": 21.61,
+          "p90": 26.55,
+          "min": 19.89
         },
         "loadBlockingMs": {
           "median": 0,
@@ -742,14 +722,14 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 203.2,
-          "p90": 204.8,
-          "min": 201.1
+          "median": 210.5,
+          "p90": 213.7,
+          "min": 208.8
         },
         "wakeToIdleMs": {
-          "median": 1900.8,
-          "p90": 1917.1,
-          "min": 1883.8
+          "median": 1815.3,
+          "p90": 1817.4,
+          "min": 1800.2
         },
         "dragFrameMs": {
           "median": 16.7,
@@ -767,13 +747,13 @@
           "min": 0
         },
         "dragMainThreadMsPerFrame": {
-          "median": 4.46,
-          "p90": 5.01,
-          "min": 4.09
+          "median": 6.31,
+          "p90": 6.4,
+          "min": 6.21
         },
         "dragSettleMs": {
-          "median": 1.9,
-          "p90": 6.3,
+          "median": 0.3,
+          "p90": 0.7,
           "min": 0
         },
         "zoomFrameMs": {
@@ -788,38 +768,38 @@
         },
         "zoomSlowFramesPercent": {
           "median": 0,
-          "p90": 0,
+          "p90": 1.72,
           "min": 0
         },
         "zoomMainThreadMsPerFrame": {
-          "median": 1.51,
-          "p90": 2.13,
-          "min": 1.29
+          "median": 2.12,
+          "p90": 2.34,
+          "min": 2.04
         },
         "zoomSettleMs": {
-          "median": 0.1,
-          "p90": 0.8,
+          "median": 0,
+          "p90": 0.1,
           "min": 0
         },
         "markers2000Ms": {
-          "median": 28.5,
-          "p90": 30.4,
-          "min": 26.9
+          "median": 33.4,
+          "p90": 34,
+          "min": 30.1
         },
         "markers10000Ms": {
-          "median": 51.8,
-          "p90": 52.8,
-          "min": 48.1
+          "median": 71.1,
+          "p90": 73.9,
+          "min": 69.2
         },
         "totalScriptMs": {
-          "median": 144.41,
-          "p90": 196.59,
-          "min": 123.34
+          "median": 238.87,
+          "p90": 247.24,
+          "min": 229.01
         },
         "totalBlockingMs": {
-          "median": 0,
-          "p90": 0,
-          "min": 0
+          "median": 6,
+          "p90": 9,
+          "min": 4
         },
         "heapMb": {
           "median": 3.12,
@@ -835,19 +815,19 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 1941.6,
-          "p90": 1957.9,
-          "min": 1940.6
+          "median": 1359.3,
+          "p90": 1361,
+          "min": 1346.2
         },
         "firstContentfulPaintMs": {
-          "median": 752,
-          "p90": 756,
-          "min": 752
+          "median": 736,
+          "p90": 740,
+          "min": 736
         },
         "largestContentfulPaintMs": {
-          "median": 752,
-          "p90": 756,
-          "min": 752
+          "median": 736,
+          "p90": 740,
+          "min": 736
         },
         "loadRequests": {
           "median": 4,
@@ -855,19 +835,19 @@
           "min": 4
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
-          "median": 199.98,
-          "p90": 199.98,
-          "min": 199.98
+          "median": 88.4,
+          "p90": 88.4,
+          "min": 88.4
         },
         "loadScriptMs": {
-          "median": 30.02,
-          "p90": 31.26,
-          "min": 28.65
+          "median": 34.38,
+          "p90": 41.39,
+          "min": 32.14
         },
         "loadBlockingMs": {
           "median": 0,
@@ -875,14 +855,14 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 673.9,
-          "p90": 677.2,
-          "min": 642.4
+          "median": 654.9,
+          "p90": 669,
+          "min": 637
         },
         "wakeToIdleMs": {
-          "median": 3732.8,
-          "p90": 3748.5,
-          "min": 3716.8
+          "median": 2416.4,
+          "p90": 2432.1,
+          "min": 2416.2
         },
         "dragFrameMs": {
           "median": 16.7,
@@ -890,7 +870,7 @@
           "min": 16.7
         },
         "dragFrameP95Ms": {
-          "median": 16.8,
+          "median": 16.7,
           "p90": 16.8,
           "min": 16.7
         },
@@ -900,13 +880,13 @@
           "min": 0
         },
         "dragMainThreadMsPerFrame": {
-          "median": 7.12,
-          "p90": 7.26,
-          "min": 5.48
+          "median": 7.46,
+          "p90": 7.63,
+          "min": 7.32
         },
         "dragSettleMs": {
-          "median": 58.7,
-          "p90": 79.5,
+          "median": 0,
+          "p90": 9.1,
           "min": 0
         },
         "zoomFrameMs": {
@@ -925,39 +905,39 @@
           "min": 0
         },
         "zoomMainThreadMsPerFrame": {
-          "median": 2.36,
-          "p90": 2.74,
-          "min": 2.27
+          "median": 2.82,
+          "p90": 2.89,
+          "min": 2.66
         },
         "zoomSettleMs": {
-          "median": 280.1,
-          "p90": 294.8,
-          "min": 227.5
+          "median": 0,
+          "p90": 0.4,
+          "min": 0
         },
         "markers2000Ms": {
-          "median": 51.3,
-          "p90": 53,
-          "min": 47.6
+          "median": 54.6,
+          "p90": 55,
+          "min": 53.1
         },
         "markers10000Ms": {
-          "median": 120.9,
-          "p90": 141.1,
-          "min": 118.3
+          "median": 132.2,
+          "p90": 141.7,
+          "min": 130.6
         },
         "totalScriptMs": {
-          "median": 338.67,
-          "p90": 347.18,
-          "min": 331.53
+          "median": 381.96,
+          "p90": 404.03,
+          "min": 373.45
         },
         "totalBlockingMs": {
-          "median": 78,
-          "p90": 83,
-          "min": 77
+          "median": 105,
+          "p90": 116,
+          "min": 95
         },
         "heapMb": {
           "median": 3.36,
-          "p90": 3.37,
-          "min": 3.36
+          "p90": 3.39,
+          "min": 3.35
         }
       }
     },
@@ -968,29 +948,29 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 49,
+          "median": 45,
           "p90": 53,
-          "min": 41
+          "min": 43
         },
         "firstContentfulPaintMs": {
-          "median": 32,
-          "p90": 35,
-          "min": 31
+          "median": 34,
+          "p90": 37,
+          "min": 32
         },
         "largestContentfulPaintMs": {
-          "median": 32,
-          "p90": 35,
-          "min": 31
+          "median": 34,
+          "p90": 37,
+          "min": 32
         },
         "loadRequests": {
           "median": 5,
           "p90": 5,
-          "min": 5
+          "min": 4
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
           "median": 276.42,
@@ -1003,24 +983,24 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 40,
-          "p90": 46,
-          "min": 28
+          "median": 44,
+          "p90": 54,
+          "min": 44
         },
         "wakeToIdleMs": {
-          "median": 967,
-          "p90": 984,
-          "min": 955
+          "median": 959,
+          "p90": 976,
+          "min": 952
         },
         "dragFrameMs": {
-          "median": 16.66,
-          "p90": 16.66,
-          "min": 16.66
+          "median": 8.34,
+          "p90": 8.34,
+          "min": 8.34
         },
         "dragFrameP95Ms": {
-          "median": 16.68,
-          "p90": 16.72,
-          "min": 16.68
+          "median": 8.96,
+          "p90": 9.16,
+          "min": 8.5
         },
         "dragSlowFramesPercent": {
           "median": 0,
@@ -1029,18 +1009,18 @@
         },
         "dragSettleMs": {
           "median": 0,
-          "p90": 1,
+          "p90": 0,
           "min": 0
         },
         "zoomFrameMs": {
-          "median": 16.66,
-          "p90": 16.66,
-          "min": 16.66
+          "median": 8.34,
+          "p90": 8.34,
+          "min": 8.34
         },
         "zoomFrameP95Ms": {
-          "median": 16.68,
-          "p90": 17.02,
-          "min": 16.68
+          "median": 9.08,
+          "p90": 9.18,
+          "min": 8.9
         },
         "zoomSlowFramesPercent": {
           "median": 0,
@@ -1053,14 +1033,14 @@
           "min": 0
         },
         "markers2000Ms": {
-          "median": 22,
-          "p90": 29,
-          "min": 18
+          "median": 11,
+          "p90": 12,
+          "min": 10
         },
         "markers10000Ms": {
-          "median": 47,
-          "p90": 53,
-          "min": 39
+          "median": 38,
+          "p90": 47,
+          "min": 36
         },
         "totalBlockingMs": {
           "median": 0,
@@ -1076,19 +1056,19 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 53,
-          "p90": 61,
-          "min": 38
+          "median": 52,
+          "p90": 54,
+          "min": 43
         },
         "firstContentfulPaintMs": {
-          "median": 34,
-          "p90": 38,
-          "min": 31
+          "median": 35,
+          "p90": 43,
+          "min": 33
         },
         "largestContentfulPaintMs": {
-          "median": 34,
-          "p90": 38,
-          "min": 31
+          "median": 35,
+          "p90": 43,
+          "min": 33
         },
         "loadRequests": {
           "median": 5,
@@ -1096,14 +1076,14 @@
           "min": 5
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
-          "median": 688.53,
-          "p90": 688.53,
-          "min": 688.53
+          "median": 583.83,
+          "p90": 583.83,
+          "min": 583.83
         },
         "loadBlockingMs": {
           "median": 0,
@@ -1111,24 +1091,24 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 47,
-          "p90": 48,
-          "min": 44
+          "median": 48,
+          "p90": 52,
+          "min": 46
         },
         "wakeToIdleMs": {
-          "median": 972,
-          "p90": 993,
-          "min": 958
+          "median": 963,
+          "p90": 971,
+          "min": 963
         },
         "dragFrameMs": {
-          "median": 16.66,
-          "p90": 16.66,
-          "min": 16.66
+          "median": 8.34,
+          "p90": 8.34,
+          "min": 8.34
         },
         "dragFrameP95Ms": {
-          "median": 16.68,
-          "p90": 16.68,
-          "min": 16.68
+          "median": 9.1,
+          "p90": 9.18,
+          "min": 8.84
         },
         "dragSlowFramesPercent": {
           "median": 0,
@@ -1137,18 +1117,18 @@
         },
         "dragSettleMs": {
           "median": 0,
-          "p90": 569,
+          "p90": 0,
           "min": 0
         },
         "zoomFrameMs": {
-          "median": 16.66,
-          "p90": 16.66,
-          "min": 16.66
+          "median": 8.34,
+          "p90": 8.34,
+          "min": 8.34
         },
         "zoomFrameP95Ms": {
-          "median": 16.68,
-          "p90": 17.06,
-          "min": 16.68
+          "median": 8.96,
+          "p90": 9.04,
+          "min": 8.84
         },
         "zoomSlowFramesPercent": {
           "median": 0,
@@ -1161,14 +1141,14 @@
           "min": 0
         },
         "markers2000Ms": {
-          "median": 28,
-          "p90": 33,
-          "min": 22
+          "median": 12,
+          "p90": 14,
+          "min": 11
         },
         "markers10000Ms": {
-          "median": 44,
-          "p90": 56,
-          "min": 40
+          "median": 42,
+          "p90": 45,
+          "min": 39
         },
         "totalBlockingMs": {
           "median": 0,
@@ -1184,14 +1164,14 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 42,
-          "p90": 45,
-          "min": 38
+          "median": 44,
+          "p90": 270,
+          "min": 40
         },
         "firstContentfulPaintMs": {
-          "median": 27,
-          "p90": 28,
-          "min": 26
+          "median": 29,
+          "p90": 124,
+          "min": 27
         },
         "loadRequests": {
           "median": 4,
@@ -1199,9 +1179,9 @@
           "min": 4
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
           "median": 276.42,
@@ -1214,14 +1194,14 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 26,
-          "p90": 27,
-          "min": 25
+          "median": 29,
+          "p90": 98,
+          "min": 29
         },
         "wakeToIdleMs": {
           "median": 960,
-          "p90": 962,
-          "min": 958
+          "p90": 1226,
+          "min": 959
         },
         "dragFrameMs": {
           "median": 17,
@@ -1229,9 +1209,9 @@
           "min": 17
         },
         "dragFrameP95Ms": {
-          "median": 19,
-          "p90": 19,
-          "min": 18
+          "median": 17,
+          "p90": 17,
+          "min": 17
         },
         "dragSlowFramesPercent": {
           "median": 0,
@@ -1240,7 +1220,7 @@
         },
         "dragSettleMs": {
           "median": 0,
-          "p90": 0,
+          "p90": 632,
           "min": 0
         },
         "zoomFrameMs": {
@@ -1249,9 +1229,9 @@
           "min": 17
         },
         "zoomFrameP95Ms": {
-          "median": 19,
-          "p90": 19,
-          "min": 18
+          "median": 18,
+          "p90": 18,
+          "min": 17
         },
         "zoomSlowFramesPercent": {
           "median": 0,
@@ -1260,17 +1240,17 @@
         },
         "zoomSettleMs": {
           "median": 0,
-          "p90": 0,
+          "p90": 193,
           "min": 0
         },
         "markers2000Ms": {
-          "median": 27,
-          "p90": 27,
-          "min": 24
+          "median": 28,
+          "p90": 29,
+          "min": 28
         },
         "markers10000Ms": {
-          "median": 35,
-          "p90": 36,
+          "median": 37,
+          "p90": 49,
           "min": 34
         },
         "totalBlockingMs": {
@@ -1287,14 +1267,14 @@
       "runs": 5,
       "metrics": {
         "firstImageMs": {
-          "median": 40,
+          "median": 42,
           "p90": 45,
           "min": 39
         },
         "firstContentfulPaintMs": {
           "median": 28,
-          "p90": 29,
-          "min": 27
+          "p90": 30,
+          "min": 28
         },
         "loadRequests": {
           "median": 4,
@@ -1302,14 +1282,14 @@
           "min": 4
         },
         "loadScriptKb": {
-          "median": 16.98,
-          "p90": 16.98,
-          "min": 16.98
+          "median": 17.2,
+          "p90": 17.2,
+          "min": 17.2
         },
         "firstImageKb": {
-          "median": 688.53,
-          "p90": 688.53,
-          "min": 688.53
+          "median": 583.83,
+          "p90": 583.83,
+          "min": 583.83
         },
         "loadBlockingMs": {
           "median": 0,
@@ -1317,14 +1297,14 @@
           "min": 0
         },
         "wakeMs": {
-          "median": 27,
-          "p90": 28,
-          "min": 27
+          "median": 30,
+          "p90": 31,
+          "min": 28
         },
         "wakeToIdleMs": {
-          "median": 964,
-          "p90": 980,
-          "min": 962
+          "median": 963,
+          "p90": 964,
+          "min": 960
         },
         "dragFrameMs": {
           "median": 17,
@@ -1332,9 +1312,9 @@
           "min": 17
         },
         "dragFrameP95Ms": {
-          "median": 18,
-          "p90": 19,
-          "min": 18
+          "median": 17,
+          "p90": 18,
+          "min": 17
         },
         "dragSlowFramesPercent": {
           "median": 0,
@@ -1343,7 +1323,7 @@
         },
         "dragSettleMs": {
           "median": 0,
-          "p90": 0,
+          "p90": 667,
           "min": 0
         },
         "zoomFrameMs": {
@@ -1353,12 +1333,12 @@
         },
         "zoomFrameP95Ms": {
           "median": 18,
-          "p90": 19,
-          "min": 18
+          "p90": 18,
+          "min": 17
         },
         "zoomSlowFramesPercent": {
           "median": 0,
-          "p90": 0,
+          "p90": 1.96,
           "min": 0
         },
         "zoomSettleMs": {
@@ -1367,9 +1347,9 @@
           "min": 0
         },
         "markers2000Ms": {
-          "median": 26,
-          "p90": 27,
-          "min": 26
+          "median": 29,
+          "p90": 29,
+          "min": 28
         },
         "markers10000Ms": {
           "median": 35,

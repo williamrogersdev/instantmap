@@ -54,6 +54,7 @@ Attributes are for HTML and server templates. Every attribute also has a JavaScr
 | `src` | URL | `https://instantmap.org` (or the origin the script was loaded from) | Origin of the image server (your own Worker in production). |
 | `load` | `intent` · `visible` · `eager` · `none` | `intent` | When the interactive map loads. `intent`: first hover, touch, focus or wheel. `visible`: when the map scrolls into view and the browser is idle (hover, touch and focus still load it sooner). `eager`: straight away. `none`: never, the map stays a picture. Read once, when the element starts. |
 | `scroll-zoom` | `cooperative` · `always` · `off` | `cooperative` | `cooperative` lets the page scroll and zooms only with ⌘/Ctrl held, or after the visitor has dragged the map. |
+| `detail` | `auto` · `high` · `low` | `auto` | Picture density on dense screens. `auto` asks for 2× pictures, and for 1× (about a third of the bytes) when the visitor has asked the browser to save data or the connection is slow. `high` always asks for 2×, `low` always for 1×. Browsers that do not report the connection get 2×. |
 | `card` | `off` | cards on | `card="off"` turns cards off. |
 | `card-layout` | `stacked` · `row` | `stacked` | Layout of the built-in card. |
 | `card-action` | text, `off` or empty | `View details` | Text of the card's link to `href`. An empty value or `off` hides the link. |

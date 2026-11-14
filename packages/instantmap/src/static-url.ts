@@ -74,6 +74,25 @@ export function staticUrl(options: StaticUrlInput): string {
   return `${src}/static?${params}`;
 }
 
+interface Connection {
+  saveData?: boolean;
+  effectiveType?: string;
+  downlink?: number;
+}
+
+/**
+ * How dense a picture to ask for: 2 on a dense screen, 1 otherwise. With detail "auto", a visitor who has asked
+ * the browser to save data, or whose connection is slow, gets 1: about a third of the bytes, a little softer.
+ * Browsers that do not report the connection get 2.
+ */
+export function pixelRatio(detail?: string | null): 1 | 2 {
+  if (detail === "low" || (globalThis.devicePixelRatio ?? 1) <= 1) return 1;
+  if (detail === "high") return 2;
+  const connection = (globalThis.navigator as { connection?: Connection } | undefined)?.connection;
+  if (!connection) return 2;
+  return connection.saveData || /2g|3g/.test(connection.effectiveType ?? "") || (connection.downlink ?? 10) < 2.5 ? 1 : 2;
+}
+
 export function tileUrl(src: string, z: number, x: number, y: number, ratio: number, theme?: string, colors?: Partial<Record<string, string>>): string {
   const params = new URLSearchParams({ v: STYLE_VERSION });
   if (theme && theme !== "daylight") params.set("theme", theme);

@@ -1,5 +1,5 @@
 import { clusterAt, DEFAULT_CLUSTER_DISTANCE, latitudeOf, longitudeOf, MAX_LABEL_LENGTH, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
-import { encodeColors } from "./themes.ts";
+import { encodeColors } from "./colors.ts";
 import type { Marker, StaticUrlOptions } from "./types.ts";
 
 declare const INSTANT_MAP_FROM_SCRIPT: boolean | undefined;

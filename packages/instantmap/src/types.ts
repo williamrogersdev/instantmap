@@ -13,7 +13,20 @@ export interface Marker<Data = unknown> {
   subtitle?: string;
   image?: string;
   href?: string;
+  /** A short tag shown on the card, such as "New". */
+  badge?: string;
   data?: Data;
+}
+
+export interface CardOptions {
+  /** "stacked" puts the image on top (the default); "row" puts a small image beside the text. */
+  layout?: "stacked" | "row";
+  /** The text of the link to `marker.href`. `false` leaves the link out. Default "View details". */
+  action?: string | false;
+  /** Where the link opens. Default "_self". */
+  target?: "_self" | "_blank";
+  /** The accessible name of the close button. Default "Close". */
+  closeLabel?: string;
 }
 
 export interface Camera {
@@ -46,6 +59,13 @@ export interface Cluster<Data = unknown> {
 export type PopupContent = HTMLElement | string | null | undefined;
 
 export type PopupRenderer<Data = unknown> = (marker: Marker<Data>) => PopupContent;
+
+export type LoadMode = "intent" | "visible" | "eager" | "none";
+
+export type ScrollZoom = "cooperative" | "always" | "off";
+
+/** When card images are fetched ahead of a click: for markers in view, on hover or press only, or never. */
+export type CardImages = "visible" | "hover" | "off";
 
 export interface StaticUrlOptions {
   src?: string;

@@ -1,10 +1,10 @@
 "use client";
 
-import { type CSSProperties, forwardRef, type ReactNode, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { type CSSProperties, forwardRef, type ReactNode, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { defineInstantMap, type InstantMapElement } from "./index.ts";
 import { staticUrl } from "./static-url.ts";
-import type { Camera, Cluster, LngLat, Marker, Theme } from "./types.ts";
+import type { Camera, CardImages, CardOptions, Cluster, LngLat, LoadMode, Marker, ScrollZoom, Theme } from "./types.ts";
 
 export interface InstantMapProps<Data = unknown> {
   center: LngLat;
@@ -15,8 +15,12 @@ export interface InstantMapProps<Data = unknown> {
   cluster?: number | false;
   selected?: string | number | null;
   src?: string;
-  load?: "intent" | "visible" | "eager" | "none";
-  scrollZoom?: "cooperative" | "always" | "off";
+  load?: LoadMode;
+  scrollZoom?: ScrollZoom;
+  /** Options for the built-in card: layout, link text, link target. */
+  card?: CardOptions;
+  /** When card images are fetched ahead of a click. Default "visible". */
+  cardImages?: CardImages;
   posterWidth?: number;
   posterHeight?: number;
   alt?: string;
@@ -57,6 +61,7 @@ declare module "react" {
         load?: string;
         "scroll-zoom"?: string;
         cluster?: string;
+        "card-images"?: string;
         class?: string;
       };
     }
@@ -90,8 +95,13 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
 
   useEffect(() => {
     const node = element.current;
-    if (node && props.colors) node.colors = props.colors;
+    if (node) node.colors = props.colors ?? {};
   }, [props.colors]);
+
+  useEffect(() => {
+    const node = element.current;
+    if (node) node.card = props.card ?? {};
+  }, [props.card]);
 
   useEffect(() => {
     const node = element.current;
@@ -121,18 +131,23 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
 
   const width = props.posterWidth ?? 1280;
   const height = props.posterHeight ?? 720;
-  const poster = staticUrl({
-    ...(props.src ? { src: props.src } : {}),
-    center: props.center,
-    zoom: props.zoom,
-    width,
-    height,
-    ratio: 2,
-    ...(props.theme ? { theme: props.theme } : {}),
-    ...(props.colors ? { colors: props.colors } : {}),
-    ...(props.markers ? { markers: props.markers } : {}),
-    ...(props.cluster !== undefined ? { cluster: props.cluster } : {}),
-  });
+  // Building the address clusters every marker, so it is only redone when something it depends on changes.
+  const poster = useMemo(
+    () =>
+      staticUrl({
+        ...(props.src ? { src: props.src } : {}),
+        center: props.center,
+        zoom: props.zoom,
+        width,
+        height,
+        ratio: 2,
+        ...(props.theme ? { theme: props.theme } : {}),
+        ...(props.colors ? { colors: props.colors } : {}),
+        ...(props.markers ? { markers: props.markers } : {}),
+        ...(props.cluster !== undefined ? { cluster: props.cluster } : {}),
+      }),
+    [props.src, props.center[0], props.center[1], props.zoom, width, height, props.theme, props.colors, props.markers, props.cluster],
+  );
 
   return (
     <instant-map
@@ -144,6 +159,7 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
       load={props.load}
       scroll-zoom={props.scrollZoom}
       cluster={props.cluster === false ? "off" : props.cluster === undefined ? undefined : String(props.cluster)}
+      card-images={props.cardImages}
       class={props.className}
       style={{ display: "block", position: "relative", ...props.style }}
       suppressHydrationWarning

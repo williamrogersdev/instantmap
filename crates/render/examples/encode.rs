@@ -75,7 +75,7 @@ fn main() {
             started.elapsed()
         );
 
-        for quality in [85, 92] {
+        for quality in [68, 74, 80, 86] {
             let started = Instant::now();
             let mut out = Vec::new();
             jpeg_encoder::Encoder::new(&mut out, quality)

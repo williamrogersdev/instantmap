@@ -1,0 +1,192 @@
+
+ ⛅️ wrangler 4.161.0
+────────────────────
+Your Worker has access to the following bindings:
+Binding                        Resource                  Mode
+env.ASSETS                     Assets                    local
+env.TILE_URL ("(hidden)")      Environment Variable      local
+
+⎔ Starting local server...
+Wrangler detected this dev session is running in an AI agent.
+The Local Explorer API is available at http://localhost:8798/cdn-cgi/local/explorer/api
+Useful routes:
+  GET http://localhost:8798/cdn-cgi/local/explorer/api/local/workers - local Workers and bindings
+  POST http://localhost:8798/cdn-cgi/local/explorer/api/local/scheduled?worker=<name> - invoke a Worker's scheduled handler; cron is required (see the OpenAPI schema for the full request)
+  GET http://localhost:8798/cdn-cgi/local/explorer/api/storage/kv/namespaces - KV namespaces
+  GET http://localhost:8798/cdn-cgi/local/explorer/api/d1/database - D1 databases
+  GET http://localhost:8798/cdn-cgi/local/explorer/api/r2/buckets - R2 buckets
+  GET http://localhost:8798/cdn-cgi/local/explorer/api/workers/durable_objects/namespaces - Durable Object namespaces
+  GET http://localhost:8798/cdn-cgi/local/explorer/api/workflows - Workflows
+  POST http://localhost:8798/cdn-cgi/local/explorer/api/local/observability/query - run a read-only SQL query (SELECT/WITH only) over captured request traces and console logs. Tables: spans, logs (read attributes via json(attributes)). Example:
+    curl -X POST http://localhost:8798/cdn-cgi/local/explorer/api/local/observability/query -H 'Content-Type: application/json' -d '{"sql":"SELECT service, name, outcome, duration_ms FROM spans WHERE parent_id IS NULL LIMIT 20"}'
+  POST http://localhost:8798/cdn-cgi/local/explorer/api/local/observability/clear - clear all captured traces and logs
+If the routes above don't cover what you need, fetch the full OpenAPI schema (large - use only as a last resort):
+  GET http://localhost:8798/cdn-cgi/local/explorer/api - OpenAPI schema
+[wrangler:info] Ready on http://localhost:8798
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (116ms)
+[wrangler:info] GET /tiles/12/946/1652.jpg 200 OK (39ms)
+[wrangler:info] GET /static 200 OK (245ms)
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (95ms)
+[wrangler:info] GET /tiles/12/946/1652.jpg 200 OK (35ms)
+[wrangler:info] GET /static 200 OK (236ms)
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (80ms)
+[wrangler:info] GET /tiles/12/946/1652.jpg 200 OK (32ms)
+[wrangler:info] GET /static 200 OK (237ms)
+⎔ Reloading local server...
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+[wrangler:info] GET /instant-map.js 200 OK (4ms)
+[wrangler:info] GET /examples/basic.html 307 Temporary Redirect (2ms)
+[wrangler:info] GET /examples/basic 200 OK (1ms)
+[wrangler:info] GET /instant-map.js 200 OK (2ms)
+[wrangler:info] GET /im/19atdp2a.js 200 OK (2ms)
+[wrangler:info] GET /static 200 OK (76ms)
+[wrangler:info] GET /static 200 OK (134ms)
+[wrangler:info] GET /im/9dyhndb5.js 200 OK (2ms)
+[wrangler:info] GET /fonts/noto-sans-500.woff2 200 OK (2ms)
+[wrangler:info] GET /tiles/12/653/1582@2x.jpg 200 OK (20ms)
+[wrangler:info] GET /tiles/12/654/1582@2x.jpg 200 OK (31ms)
+[wrangler:info] GET /tiles/12/654/1583@2x.jpg 200 OK (41ms)
+[wrangler:info] GET /tiles/12/655/1582@2x.jpg 200 OK (52ms)
+[wrangler:info] GET /tiles/12/656/1582@2x.jpg 200 OK (65ms)
+[wrangler:info] GET /tiles/12/653/1583@2x.jpg 200 OK (76ms)
+[wrangler:info] GET /tiles/12/656/1583@2x.jpg 200 OK (60ms)
+[wrangler:info] GET /tiles/12/656/1584@2x.jpg 200 OK (52ms)
+[wrangler:info] GET /tiles/12/655/1584@2x.jpg 200 OK (51ms)
+[wrangler:info] GET /tiles/12/653/1584@2x.jpg 200 OK (50ms)
+[wrangler:info] GET /tiles/12/655/1583@2x.jpg 200 OK (57ms)
+[wrangler:info] GET /tiles/12/654/1584@2x.jpg 200 OK (57ms)
+[wrangler:info] GET /tiles/12/657/1582@2x.jpg 200 OK (14ms)
+[wrangler:info] GET /tiles/12/657/1584@2x.jpg 200 OK (32ms)
+[wrangler:info] GET /tiles/12/657/1583@2x.jpg 200 OK (32ms)
+[wrangler:info] GET /tiles/13/1309/3165@2x.jpg 200 OK (16ms)
+[wrangler:info] GET /tiles/13/1309/3166@2x.jpg 200 OK (50ms)
+[wrangler:info] GET /tiles/13/1310/3165@2x.jpg 200 OK (51ms)
+[wrangler:info] GET /tiles/13/1311/3165@2x.jpg 200 OK (51ms)
+[wrangler:info] GET /tiles/13/1312/3165@2x.jpg 200 OK (51ms)
+[wrangler:info] GET /tiles/13/1313/3165@2x.jpg 200 OK (61ms)
+[wrangler:info] GET /tiles/13/1312/3167@2x.jpg 200 OK (66ms)
+[wrangler:info] GET /tiles/13/1313/3166@2x.jpg 200 OK (66ms)
+[wrangler:info] GET /tiles/13/1310/3166@2x.jpg 200 OK (46ms)
+[wrangler:info] GET /tiles/13/1311/3167@2x.jpg 200 OK (67ms)
+[wrangler:info] GET /tiles/13/1309/3167@2x.jpg 200 OK (67ms)
+[wrangler:info] GET /tiles/13/1312/3166@2x.jpg 200 OK (67ms)
+[wrangler:info] GET /tiles/13/1310/3167@2x.jpg 200 OK (68ms)
+[wrangler:info] GET /tiles/13/1311/3166@2x.jpg 200 OK (49ms)
+[wrangler:info] GET /tiles/14/2619/6332@2x.jpg 200 OK (16ms)
+[wrangler:info] GET /tiles/14/2619/6333@2x.jpg 200 OK (57ms)
+[wrangler:info] GET /tiles/14/2620/6332@2x.jpg 200 OK (59ms)
+[wrangler:info] GET /tiles/14/2621/6332@2x.jpg 200 OK (59ms)
+[wrangler:info] GET /tiles/14/2622/6332@2x.jpg 200 OK (59ms)
+[wrangler:info] GET /tiles/14/2623/6332@2x.jpg 200 OK (58ms)
+[wrangler:info] GET /tiles/14/2620/6333@2x.jpg 200 OK (54ms)
+[wrangler:info] GET /tiles/14/2622/6333@2x.jpg 200 OK (26ms)
+[wrangler:info] GET /tiles/14/2621/6333@2x.jpg 200 OK (30ms)
+[wrangler:info] GET /tiles/15/5243/12665@2x.jpg 200 OK (21ms)
+[wrangler:info] GET /tiles/15/5239/12664@2x.jpg 200 OK (69ms)
+[wrangler:info] GET /tiles/15/5240/12664@2x.jpg 200 OK (69ms)
+[wrangler:info] GET /tiles/15/5241/12664@2x.jpg 200 OK (69ms)
+[wrangler:info] GET /tiles/15/5242/12664@2x.jpg 200 OK (67ms)
+[wrangler:info] GET /tiles/15/5240/12665@2x.jpg 200 OK (67ms)
+[wrangler:info] GET /tiles/15/5239/12665@2x.jpg 200 OK (64ms)
+[wrangler:info] GET /tiles/15/5240/12666@2x.jpg 200 OK (45ms)
+[wrangler:info] GET /tiles/15/5241/12665@2x.jpg 200 OK (37ms)
+[wrangler:info] GET /tiles/15/5238/12665@2x.jpg 200 OK (48ms)
+[wrangler:info] GET /tiles/15/5238/12664@2x.jpg 200 OK (49ms)
+[wrangler:info] GET /tiles/15/5237/12664@2x.jpg 200 OK (12ms)
+[wrangler:info] GET /tiles/15/5237/12665@2x.jpg 200 OK (21ms)
+⎔ Reloading local server...
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+[wrangler:info] GET /examples/cards.html 307 Temporary Redirect (3ms)
+[wrangler:info] GET /examples/cards 200 OK (3ms)
+[wrangler:info] GET /instant-map.js 200 OK (2ms)
+[wrangler:info] GET /im/xq5e133f.js 200 OK (3ms)
+[wrangler:info] GET /im/hvcjhy9r.js 200 OK (3ms)
+[wrangler:info] GET /static 200 OK (95ms)
+[wrangler:info] GET /static 200 OK (150ms)
+[wrangler:info] GET /static 200 OK (262ms)
+[wrangler:info] GET /static 200 OK (262ms)
+[wrangler:info] GET /static 200 OK (319ms)
+[wrangler:info] GET /static 200 OK (376ms)
+[wrangler:info] GET /fonts/noto-sans-500.woff2 200 OK (4ms)
+[wrangler:info] GET /tiles/12/946/1653@2x.jpg 200 OK (84ms)
+[wrangler:info] GET /tiles/12/946/1653@2x.jpg 200 OK (153ms)
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (241ms)
+[wrangler:info] GET /listings/home-4.svg 200 OK (37ms)
+[wrangler:info] GET /tiles/12/946/1653@2x.jpg 200 OK (393ms)
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (396ms)
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (470ms)
+[wrangler:info] GET /tiles/12/945/1652@2x.jpg 200 OK (139ms)
+[wrangler:info] GET /tiles/12/945/1653@2x.jpg 200 OK (120ms)
+[wrangler:info] GET /tiles/12/945/1652@2x.jpg 200 OK (120ms)
+[wrangler:info] GET /tiles/12/945/1653@2x.jpg 200 OK (176ms)
+[wrangler:info] GET /tiles/12/945/1652@2x.jpg 200 OK (233ms)
+[wrangler:info] GET /tiles/12/946/1651@2x.jpg 200 OK (178ms)
+[wrangler:info] GET /tiles/12/945/1651@2x.jpg 200 OK (246ms)
+[wrangler:info] GET /tiles/12/945/1651@2x.jpg 200 OK (202ms)
+[wrangler:info] GET /listings/home-2.svg 200 OK (71ms)
+[wrangler:info] GET /listings/home-5.svg 200 OK (70ms)
+[wrangler:info] GET /tiles/12/946/1651@2x.jpg 200 OK (261ms)
+[wrangler:info] GET /listings/home-1.svg 200 OK (60ms)
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+[wrangler:info] GET /brand-test.html 307 Temporary Redirect (5ms)
+[wrangler:info] GET /brand-test 200 OK (3ms)
+[wrangler:info] GET /static 200 OK (229ms)
+[wrangler:info] GET /static 200 OK (228ms)
+[wrangler:info] GET /static 200 OK (388ms)
+[wrangler:info] GET /static 200 OK (390ms)
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (128ms)
+[wrangler:info] GET /tiles/12/946/1652@2x.jpg 200 OK (3ms)
+[wrangler:info] GET /tiles/12/946/1652.jpg 200 OK (36ms)
+[wrangler:info] GET /static 400 Bad Request (3ms)
+[wrangler:info] GET /health 200 OK (3ms)
+[wrangler:info] GET /tiles/99/1/1.jpg 400 Bad Request (2ms)
+[wrangler:info] POST /static 405 Method Not Allowed (3ms)
+Your Worker has access to the following bindings:
+Binding                        Resource                  Mode
+env.ASSETS                     Assets                    local
+env.TILE_URL ("(hidden)")      Environment Variable      local
+
+⎔ Reloading local server...
+[wrangler:info] ✨ Parsed 3 valid header rules.
+⎔ Local server updated and ready

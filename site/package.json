@@ -8,8 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "prebuild": "bun run scripts/generate-theme-docs.ts && cp ../packages/instantmap/dist/instant-map.js ../packages/instantmap/dist/instant-map.js.map public/",
-    "predev": "bun run scripts/generate-theme-docs.ts && cp ../packages/instantmap/dist/instant-map.js ../packages/instantmap/dist/instant-map.js.map public/"
+    "prebuild": "bun run scripts/generate-theme-docs.ts && bun run ../scripts/copy-cdn.ts",
+    "predev": "bun run scripts/generate-theme-docs.ts && bun run ../scripts/copy-cdn.ts"
   },
   "dependencies": {
     "@astrojs/starlight": "0.43.0",

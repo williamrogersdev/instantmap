@@ -1,4 +1,5 @@
 import type { InstantMapElement } from "instantmap";
+import { resolvePalette } from "instantmap/server";
 import type { Listing } from "../data/listings.ts";
 
 declare global {
@@ -130,7 +131,8 @@ function setupStudio(listings: Listing[]): void {
 
   const render = (): void => {
     map.colors = Object.fromEntries(Object.entries(overrides).map(([key, value]) => [key, value.startsWith("#") ? value : `#${value}`]));
-    for (const input of inputs) input.value = map.palette[input.dataset.token as (typeof TOKENS)[number]].slice(0, 7);
+    const palette = resolvePalette(map.theme, map.colors);
+    for (const input of inputs) input.value = palette[input.dataset.token as (typeof TOKENS)[number]].slice(0, 7);
     code.textContent = studioCode(tab, map.theme, encoded());
   };
 

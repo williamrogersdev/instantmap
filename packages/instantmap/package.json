@@ -1,32 +1,108 @@
 {
   "name": "instantmap",
   "version": "0.1.0",
-  "description": "A map that arrives as one image and becomes interactive when you touch it. 13 KB gzipped, no dependencies, any framework.",
+  "description": "A map that arrives as one image and becomes interactive when you touch it. About 7 KB of JavaScript up front, no dependencies, any framework.",
   "license": "MIT",
   "type": "module",
   "homepage": "https://instantmap.org",
-  "repository": { "type": "git", "url": "git+https://github.com/williamrogersdev/instantmap.git", "directory": "packages/instantmap" },
-  "keywords": ["map", "maps", "static map", "web component", "custom element", "react", "nextjs", "astro", "protomaps", "openstreetmap"],
-  "sideEffects": ["./dist/index.js", "./dist/instant-map.js", "./dist/chunk-*.js"],
-  "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-    "./server": { "types": "./dist/server.d.ts", "default": "./dist/server.js" },
-    "./react": { "types": "./dist/react.d.ts", "default": "./dist/react.js" },
-    "./instant-map.js": "./dist/instant-map.js"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/williamrogersdev/instantmap.git",
+    "directory": "packages/instantmap"
   },
-  "files": ["dist", "README.md"],
-  "peerDependencies": { "react": ">=18", "react-dom": ">=18" },
-  "peerDependenciesMeta": { "react": { "optional": true }, "react-dom": { "optional": true } },
+  "keywords": [
+    "map",
+    "maps",
+    "static map",
+    "web component",
+    "custom element",
+    "react",
+    "nextjs",
+    "astro",
+    "protomaps",
+    "openstreetmap",
+    "vue",
+    "svelte",
+    "angular",
+    "solid",
+    "branded map",
+    "map tiles",
+    "cloudflare workers"
+  ],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/cdn/*.js",
+    "./dist/cdn/im/*.js",
+    "./dist/chunk-*.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "default": "./dist/react.js"
+    },
+    "./card": {
+      "types": "./dist/card.d.ts",
+      "default": "./dist/card.js"
+    },
+    "./brand": {
+      "types": "./dist/brand.d.ts",
+      "default": "./dist/brand.js"
+    },
+    "./instant-map.js": "./dist/cdn/instant-map.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "scripts": {
     "build": "NODE_ENV=production bun run build.ts",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "prepublishOnly": "bun run build && bun test",
+    "size": "bun run ../../scripts/check-size.ts"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^21.0.4",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "typescript": "5.9.3"
+  },
+  "author": "William Rogers",
+  "bugs": {
+    "url": "https://github.com/williamrogersdev/instantmap/issues"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

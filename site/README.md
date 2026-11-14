@@ -1,49 +1,21 @@
-# Starlight Starter Kit: Basics
+# site
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+The instantmap.org landing pages and docs, built with Astro and Starlight.
 
-```
-bun create astro@latest -- --template starlight
-```
+Run `bun run build` in `packages/instantmap` first. The site copies the script-tag build into itself with `scripts/copy-cdn.ts`.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Commands
 
-## 🚀 Project Structure
+Run these in this folder.
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+| Command | Does |
+| --- | --- |
+| `bun run dev` | Local dev server |
+| `bun run build` | Build to `dist/` |
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
+## Where things live
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+- Pages: `src/pages`
+- Docs: `src/content/docs/docs`
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
-
-Static assets, like favicons, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Each docs page is also served as Markdown at its address plus `.md`, and all of them are summarised in `/llms.txt`.

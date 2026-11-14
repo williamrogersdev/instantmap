@@ -17,6 +17,8 @@ map.markers = stores.map((store) => ({
   label: store.openNow ? "Open" : undefined, // a short pill label, or nothing for a dot
   title: store.name,
   subtitle: store.address,
+  badge: store.isNew ? "New" : undefined,
+  image: store.photoUrl,   // about 560 px wide, see Cards and popups
   href: `/stores/${store.slug}`,
   data: store,             // the original record, typed through Marker<Store>
 }));
@@ -27,6 +29,8 @@ map.markers = stores.map((store) => ({
 | `label` set | A pill with the text, for example `$420`, `4.8★`, `Open` or `12 min`. Ten characters at most. |
 | no `label` | A dot in the theme's `accent` colour. |
 | several markers close together | A cluster bubble showing the count. Clicking it zooms in. |
+
+The `title`, `subtitle`, `badge`, `image`, `href` and `label` fields fill the card that opens when a marker is clicked. See [Cards and popups](/docs/guides/popups/). Card photos are fetched ahead of the click for the markers nearest the centre, so serve them about 560 px wide, in WebP or AVIF, with long cache headers.
 
 ## Updating
 

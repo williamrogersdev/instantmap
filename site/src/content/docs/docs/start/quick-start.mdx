@@ -38,7 +38,7 @@ import "instantmap";
 </TabItem>
 </Tabs>
 
-That's a working map. The first frame is one image. Hover or touch it and the interactive map takes over.
+That's a working map. The first frame is one image, and the page loads about 7 KB of JavaScript gzipped before anyone touches it. Hover or touch the map and it fetches about 11 KB more, then the interactive map takes over.
 
 <instant-map center="-122.4194,37.7749" zoom="12"></instant-map>
 
@@ -55,7 +55,7 @@ map.markers = [
 ];
 ```
 
-A label draws a price pill. Click a pill to open its card. Markers that crowd together merge into a numbered cluster, and clicking a cluster zooms into it.
+A label draws a price pill. Click a pill to open its card, which shows the title, subtitle, image, label and link. See [Cards and popups](/docs/guides/popups/) to restyle it. Markers that crowd together merge into a numbered cluster, and clicking a cluster zooms into it.
 
 ## 3. Make it yours
 
@@ -63,7 +63,7 @@ A label draws a price pill. Click a pill to open its card. Markers that crowd to
 <instant-map theme="midnight" colors="accent:ff5a5f" center="-122.4194,37.7749" zoom="12" style="height: 420px"></instant-map>
 ```
 
-There are four built-in themes and 36 colour tokens. See [Themes](/docs/reference/themes/).
+There are four built-in themes and 36 colour tokens. See [Themes](/docs/reference/themes/). To start from your brand colours instead, pass them to `brandTheme()`. See [Customising the look](/docs/guides/theming/#brand-colours-from-your-style-guide).
 
 ## Next
 

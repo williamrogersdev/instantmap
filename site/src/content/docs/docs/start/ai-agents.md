@@ -40,7 +40,7 @@ Build a search-results layout with a list on the left and an Instant Map on the 
 **Match my brand**
 
 ```text
-Style our Instant Map to match the app. Read https://instantmap.org/docs/reference/themes.md. Start from the theme closest to our UI (daylight, midnight, paper or mono) and override only the tokens that need to change: accent, marker, cluster and selected from our brand colours. Apply the same theme and colors to staticUrl() so the first image matches.
+Style our Instant Map to match the app. Read https://instantmap.org/docs/guides/theming.md. Build the theme with brandTheme() from instantmap/server, passing our brand colours (primary, background, foreground). Spread the result into staticUrl() or <InstantMap> so the first image and the live map use the same colours. Then style the marker card with the --im-card-* CSS variables from https://instantmap.org/docs/guides/popups.md.
 ```
 
 ## Install the skill
@@ -68,3 +68,6 @@ These are the mistakes agents make most often with maps. Every guide repeats the
 5. **Don't wrap it in `dynamic(..., { ssr: false })`** or `client:only`. That throws away the instant first paint, which is the whole point.
 6. **Use `instantmap/react` in React.** In other frameworks, use the element directly.
 7. **Keep marker labels short.** Prices or counts, ten characters at most.
+8. **Use the built-in card before writing your own.** Marker fields (`title`, `subtitle`, `image`, `badge`, `href`), the `card-*` options, the `--im-card-*` CSS variables and a `<template data-card>` cover most designs.
+9. **Build brand colours with `brandTheme()`** and spread the result into the server image and the element, instead of picking tokens by hand.
+10. **Serve card images about 560 px wide**, in WebP or AVIF.

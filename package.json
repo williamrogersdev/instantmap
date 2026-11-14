@@ -12,9 +12,12 @@
     "verify": "bun run scripts/verify-page.ts",
     "test": "cargo test --workspace && (cd packages/instantmap && bun test) && (cd worker && bun test)",
     "typecheck": "(cd packages/instantmap && bunx tsc --noEmit) && (cd worker && bunx tsc --noEmit)",
-    "lint": "oxlint packages/instantmap/src worker/src scripts site/src && cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
+    "lint": "oxlint packages/instantmap/src worker/src scripts bench site/src && cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
     "size": "bun run scripts/check-size.ts",
     "e2e": "bun run scripts/e2e.ts",
+    "bench": "bun run bench/run.ts",
+    "bench:compare": "bun run bench/compare.ts",
+    "profile": "bun run bench/profile.ts",
     "check": "bun run lint && bun run typecheck && bun run test && bun run build && bun run size"
   },
   "devDependencies": {

@@ -9,6 +9,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Smaller loader: about 7 KB gzipped up front, and the engine, about 11 KB, loads on first intent.
 - Sprite-based marker drawing.
 - Tile retry.
+- Benchmarks (`bun run bench`), a comparison tool and one-command profiling (`bun run profile`), with results published at `/benchmarks/`.
 - Worker: Cloudflare Workers Cache in front of the Worker, a rate limit on uncached renders, and one log line per render with fetch and draw times.
 - Redesigned built-in card with layouts, CSS custom properties, `<template data-card>` and image warming.
 - `brandTheme()` and `brandThemeFromCss()`.
@@ -23,6 +24,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 - `map.palette`. Use `resolvePalette`.
 - `defaultPopup`. Use `defaultCard` from `instantmap-js/card`.
+
+### Fixed
+
+- `whenIdle()` no longer waits forever when the map is already idle with one more frame to draw.
 
 ## [0.1.0]
 

@@ -120,6 +120,7 @@ export class Engine<Data = unknown> implements EngineHandle {
   #frame = 0;
   #active = false;
   #idle = false;
+  #idleWaiters: (() => void)[] = [];
   #pointers = new Map<number, { x: number; y: number }>();
   #pinch: { distance: number; midX: number; midY: number } | null = null;
   #samples: { x: number; y: number; t: number }[] = [];
@@ -230,7 +231,9 @@ export class Engine<Data = unknown> implements EngineHandle {
 
   whenIdle(): Promise<void> {
     if (this.#idle && !this.#frame) return Promise.resolve();
-    return new Promise((resolve) => this.#host.addEventListener("idle", () => resolve(), { once: true }));
+    // Not the "idle" event: that fires only when the map goes from busy to idle, and a map that is already idle
+    // with one more frame to draw would never fire it.
+    return new Promise((resolve) => this.#idleWaiters.push(resolve));
   }
 
   /** Starts a drag from a press that began before the engine had loaded. */
@@ -725,6 +728,7 @@ export class Engine<Data = unknown> implements EngineHandle {
       this.#warmVisible();
       host.dispatchEvent(new Event("idle"));
     }
+    if (this.#idle) for (const resolve of this.#idleWaiters.splice(0)) resolve();
     if (this.#wakeRunning()) this.schedule();
   }
 

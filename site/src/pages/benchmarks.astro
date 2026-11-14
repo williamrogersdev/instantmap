@@ -1,0 +1,268 @@
+---
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import Site from "../layouts/Site.astro";
+import { kb, REPO } from "../data/site.ts";
+
+interface Spread {
+  median: number;
+  p90: number;
+  min: number;
+}
+interface Results {
+  date: string;
+  commit: string;
+  version: string;
+  machine: { os: string; arch: string; cpu: string; cores: number; memoryGb: number };
+  sizes?: { upfront: number; engine: number };
+  profiles: { name: string; description: string }[];
+  renderer?: { iterations: number; scenes: { name: string; width: number; height: number; pixelRatio: number; markers: number; decodeMs: Spread; renderMs: Spread; jpegMs: Spread; totalJpegMs: Spread; jpegBytes: number }[] };
+  server?: { name: string; description: string; firstMs: Spread; repeatMs: Spread; bytes: number }[];
+  browser?: { browser: string; browserVersion: string; profile: string; runs: number; metrics: Record<string, Spread> }[];
+}
+
+// Written by `bun run bench --publish`. Every number on this page comes from this file.
+const data = JSON.parse(readFileSync(resolve(process.cwd(), "../bench/results/published.json"), "utf8")) as Results;
+
+const show = (value: number | undefined, digits = 0): string => (value === undefined || !Number.isFinite(value) ? "n/a" : value.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits }));
+const median = (item: { metrics: Record<string, Spread> } | undefined, key: string, digits = 0): string => show(item?.metrics[key]?.median, digits);
+
+const browsers = data.browser ?? [];
+const chromium = browsers.filter((item) => item.browser === "chromium");
+const others = browsers.filter((item) => item.browser !== "chromium");
+const desktop = chromium.find((item) => item.profile === "desktop");
+const lowEnd = chromium.find((item) => item.profile === "phone-low");
+const title = (name: string): string => name.replace(/-/g, " ").replace(/^./, (letter) => letter.toUpperCase());
+const browserName: Record<string, string> = { chromium: "Chromium", firefox: "Firefox", webkit: "WebKit" };
+
+const metrics: [label: string, key: string, digits: number, note: string][] = [
+  ["First map image on screen", "firstImageMs", 0, "ms from the start of the page load, nothing cached"],
+  ["Script time before the first image", "loadScriptMs", 1, "ms of JavaScript run by then"],
+  ["Waking the map", "wakeMs", 0, "ms from the first pointer move until the map can be dragged"],
+  ["Wake until live tiles are drawn", "wakeToIdleMs", 0, "ms, includes the hand-over from the image and downloading the tiles"],
+  ["Drag, slowest frames", "dragFrameP95Ms", 1, "ms per frame at the 95th percentile; 16.7 is a full 60 frames a second"],
+  ["Drag, main thread per frame", "dragMainThreadMsPerFrame", 2, "ms of work per frame, out of 16.7 available"],
+  ["Drag, slow frames", "dragSlowFramesPercent", 1, "% of frames that took longer than 25 ms"],
+  ["Zoom, slowest frames", "zoomFrameP95Ms", 1, "ms per frame at the 95th percentile"],
+  ["Replace with 2,000 markers", "markers2000Ms", 0, "ms until they are drawn"],
+  ["Replace with 10,000 markers", "markers10000Ms", 0, "ms until they are drawn"],
+  ["Blocking time, whole visit", "totalBlockingMs", 0, "ms of main-thread tasks beyond 50 ms each"],
+  ["Script time, whole visit", "totalScriptMs", 0, "ms of JavaScript for load, wake, drag, zoom and markers"],
+  ["JavaScript memory after the visit", "heapMb", 1, "MB"],
+];
+const shown = (items: typeof browsers) => metrics.filter(([, key]) => items.some((item) => item.metrics[key] && Number.isFinite(item.metrics[key]!.median)));
+
+const sceneNames: Record<string, string> = {
+  "tile-city-1x": "City tile",
+  "tile-city-2x": "City tile at 2×",
+  "tile-metro-2x": "Metro-area tile at 2×",
+  "tile-region-2x": "Regional tile at 2×",
+  "tile-world-2x": "Country-scale tile at 2×",
+  "static-city-2x": "First image, city, at 2×",
+  "static-city-2x-400-markers": "First image, city, 400 markers, at 2×",
+  "static-national-1x": "First image, country scale",
+};
+
+const description = `Measured results for Instant Map ${data.version}: time to the first map image, the cost of waking the map, frame times while dragging and zooming, marker updates, memory, and how long the server takes to draw a picture. Includes the method and the commands to run it yourself.`;
+const commands = `git clone ${REPO}.git && cd instantmap
+bun install && (cd worker && bun install) && bun run build
+bun run bench`;
+---
+
+<Site title="Benchmarks" description={description} path="/benchmarks/">
+  <div class="page-head">
+    <p class="crumbs"><a href="/">Instant Map</a> / Benchmarks</p>
+    <h1>Measured, and repeatable.</h1>
+    <p class="lead">These are the results of the benchmark suite in the repository, run on {data.date} against version {data.version}. Every number comes from one run of one command, and you can run the same command on your own machine.</p>
+  </div>
+
+  <section aria-labelledby="summary-title">
+    <h2 id="summary-title">The short version</h2>
+    <dl class="stats">
+      <div class="panel">
+        <dt>First map image, desktop</dt>
+        <dd>{median(desktop, "firstImageMs")}<small>ms</small></dd>
+        <dd class="note">From the start of the page load, with nothing cached.</dd>
+      </div>
+      <div class="panel">
+        <dt>Script run before that image</dt>
+        <dd>{median(desktop, "loadScriptMs", 1)}<small>ms</small></dd>
+        <dd class="note">{data.sizes ? `The loader is ${kb(data.sizes.upfront)} KB gzipped.` : "Desktop."}</dd>
+      </div>
+      <div class="panel">
+        <dt>Main thread per frame while dragging</dt>
+        <dd>{median(desktop, "dragMainThreadMsPerFrame", 2)}<small>ms</small></dd>
+        <dd class="note">Out of the 16.7 ms a frame has at 60 frames a second.</dd>
+      </div>
+      {
+        lowEnd && (
+          <div class="panel">
+            <dt>Same drag, low-end phone profile</dt>
+            <dd>{median(lowEnd, "dragMainThreadMsPerFrame", 2)}<small>ms</small></dd>
+            <dd class="note">CPU slowed six times.</dd>
+          </div>
+        )
+      }
+    </dl>
+  </section>
+
+  {
+    chromium.length > 0 && (
+      <section aria-labelledby="browser-title">
+        <h2 id="browser-title">In the browser</h2>
+        <p>One visit is: load the page with nothing cached, move the pointer onto the map, drag it, zoom in three levels, then replace the markers with 2,000 and with 10,000. Each figure is the median of {chromium[0]!.runs} visits in {browserName.chromium} {chromium[0]!.browserVersion.split(".")[0]}.</p>
+        <div class="table panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Measure</th>
+                {chromium.map((item) => <th class="num">{title(item.profile)}</th>)}
+                <th>Unit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown(chromium).map(([label, key, digits, note]) => (
+                <tr>
+                  <td>{label}</td>
+                  {chromium.map((item) => <td class="num">{median(item, key, digits)}</td>)}
+                  <td>{note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <h3>The device profiles</h3>
+        <ul class="plain">
+          {data.profiles.map((profile) => <li><strong>{title(profile.name)}.</strong> {profile.description}.</li>)}
+        </ul>
+        <p class="fine">The phone profiles slow the CPU and the network of the test machine. They imitate slower devices; they are not measurements on real phones.</p>
+      </section>
+    )
+  }
+
+  {
+    others.length > 0 && (
+      <section aria-labelledby="engines-title">
+        <h2 id="engines-title">Other browser engines</h2>
+        <p>The same visit in the other engines, on the desktop and laptop profiles. CPU and network limits, script time and memory are only available in Chromium, so those rows are left out here.</p>
+        <div class="table panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Measure</th>
+                {others.map((item) => <th class="num">{browserName[item.browser] ?? item.browser}, {title(item.profile).toLowerCase()}</th>)}
+                <th>Unit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown(others).map(([label, key, digits, note]) => (
+                <tr>
+                  <td>{label}</td>
+                  {others.map((item) => <td class="num">{median(item, key, digits)}</td>)}
+                  <td>{note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    data.server && (
+      <section aria-labelledby="server-title">
+        <h2 id="server-title">Drawing a picture on the server</h2>
+        <p>Time for one HTTP request to the image service, running locally with map data on the same machine. “First” is a picture that has to be drawn. “Again” is the same address a second time, answered from cache.</p>
+        <div class="table panel">
+          <table>
+            <thead><tr><th>Request</th><th class="num">First, ms</th><th class="num">Again, ms</th><th class="num">Size, KB</th></tr></thead>
+            <tbody>
+              {data.server.map((item) => (
+                <tr><td>{item.description}</td><td class="num">{show(item.firstMs.median)}</td><td class="num">{show(item.repeatMs.median, 1)}</td><td class="num">{show(item.bytes / 1024)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="fine">A deployed service adds the time to fetch map data, which depends on where that data is kept. Run the suite against your own deployment with <code>bun run bench --url https://your-domain</code>.</p>
+      </section>
+    )
+  }
+
+  {
+    data.renderer && (
+      <section aria-labelledby="renderer-title">
+        <h2 id="renderer-title">The renderer by itself</h2>
+        <p>The Rust renderer, compiled natively, turning vector tiles into a JPEG. Median of {data.renderer.iterations} runs, in milliseconds.</p>
+        <div class="table panel">
+          <table>
+            <thead><tr><th>Picture</th><th class="num">Pixels</th><th class="num">Read tiles</th><th class="num">Draw</th><th class="num">Encode</th><th class="num">Total</th><th class="num">Size, KB</th></tr></thead>
+            <tbody>
+              {data.renderer.scenes.map((scene) => (
+                <tr>
+                  <td>{sceneNames[scene.name] ?? scene.name}</td>
+                  <td class="num">{scene.width * scene.pixelRatio}×{scene.height * scene.pixelRatio}</td>
+                  <td class="num">{show(scene.decodeMs.median, 1)}</td>
+                  <td class="num">{show(scene.renderMs.median, 1)}</td>
+                  <td class="num">{show(scene.jpegMs.median, 1)}</td>
+                  <td class="num">{show(scene.totalJpegMs.median, 1)}</td>
+                  <td class="num">{show(scene.jpegBytes / 1024)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )
+  }
+
+  <section aria-labelledby="method-title">
+    <h2 id="method-title">How this was measured</h2>
+    <ul class="checks two">
+      <li class="panel"><h3>The machine</h3><p>{data.machine.cpu}, {data.machine.cores} cores, {data.machine.memoryGb} GB of memory, {({ darwin: "macOS", linux: "Linux", win32: "Windows" } as Record<string, string>)[data.machine.os] ?? data.machine.os}, {data.machine.arch}. Source at commit <a href={`${REPO}/commit/${data.commit}`}><code>{data.commit}</code></a>.</p></li>
+      <li class="panel"><h3>No network in the way</h3><p>The image service and the map data run on the test machine, so results do not depend on a connection or on what happens to be cached elsewhere. The phone profiles add a network limit on purpose.</p></li>
+      <li class="panel"><h3>The slower path to the first image</h3><p>The test page lets the script create the first image. A page that puts the image in its HTML, as the guides recommend, shows it sooner, because nothing waits for a script.</p></li>
+      <li class="panel"><h3>Medians, fresh every time</h3><p>Each visit starts in a new browser profile with an empty cache, against an image service that has already drawn the pictures, as a service in use has. The tables show the median; the result file also holds the fastest run and the 90th percentile.</p></li>
+    </ul>
+    <p class="fine">Timings change from machine to machine and from run to run. Compare numbers measured on the same machine, and treat differences of a few percent as noise.</p>
+  </section>
+
+  <section aria-labelledby="run-title">
+    <div class="split">
+      <div>
+        <h2 id="run-title">Run it yourself</h2>
+        <p class="lead">One command runs the renderer, server and browser benchmarks and writes a JSON file. Another records a profile, so you can see where the time goes.</p>
+        <a class="more" href={`${REPO}/tree/master/bench`}>Benchmark and profiling guide on GitHub</a>
+        <br />
+        <a class="more" href={`${REPO}/blob/master/bench/results/published.json`}>The full result file</a>
+      </div>
+      <div class="codeblock">
+        <div class="codeblock-head"><h3>Terminal</h3><button type="button" class="copy" data-copy={commands}>Copy</button></div>
+        <pre><code>{commands}</code></pre>
+      </div>
+    </div>
+  </section>
+</Site>
+
+<style>
+  th.num,
+  td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .plain {
+    margin-top: 12px;
+    padding-left: 20px;
+    max-width: 78ch;
+  }
+  .plain li {
+    margin-top: 6px;
+  }
+  h3 {
+    margin-top: 28px;
+  }
+  .checks h3 {
+    margin-top: 0;
+  }
+</style>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instant Map benchmark page</title>
+<meta name="robots" content="noindex">
+<script type="module" src="/instant-map.js"></script>
+<style>html,body{margin:0;height:100%}instant-map{height:100%}</style>
+</head>
+<body>
+<instant-map id="map" scroll-zoom="always" aria-label="Benchmark map"></instant-map>
+<script>
+  // The page the benchmarks and profiles drive (see bench/README.md). Address parameters:
+  //   center=lng,lat  zoom=n  markers=n  theme=name
+  // The default view is covered by the vector tiles in fixtures/, so it needs no network.
+  const query = new URLSearchParams(location.search);
+  const center = (query.get("center") || "-96.80,32.79").split(",").map(Number);
+  const map = document.getElementById("map");
+  map.setAttribute("center", center.join(","));
+  map.setAttribute("zoom", query.get("zoom") || "12");
+  if (query.get("theme")) map.setAttribute("theme", query.get("theme"));
+  // Deterministic listings around the centre, so every run draws the same thing.
+  window.benchMarkers = (count) => {
+    let seed = 7;
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    return Array.from({ length: count }, (_, index) => ({
+      id: index,
+      lng: center[0] + (random() - 0.5) * 0.3,
+      lat: center[1] + (random() - 0.5) * 0.2,
+      label: `$${Math.round(150 + random() * 400)}`,
+      title: `Listing ${index}`,
+      subtitle: `${1 + (index % 3)} bed`,
+    }));
+  };
+  map.markers = window.benchMarkers(Number(query.get("markers") || 400));
+</script>
+</body>
+</html>

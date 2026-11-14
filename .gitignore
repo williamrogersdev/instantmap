@@ -8,3 +8,6 @@ worker/pkg/
 .wrangler-dev.log
 verify-out/
 *.log
+bench/profiles/
+bench/results/*
+!bench/results/published.json

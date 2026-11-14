@@ -1,5 +1,5 @@
 ---
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import Site from "../layouts/Site.astro";
 import { sanFranciscoListings } from "../data/listings.ts";
 import { AGENT_PROMPT, FAQ, kb, REPO, SHARE_IMAGE, SITE, sizes, VERSION } from "../data/site.ts";
@@ -25,7 +25,7 @@ const schema = [
     softwareVersion: VERSION,
     license: "https://opensource.org/licenses/MIT",
     codeRepository: REPO,
-    downloadUrl: "https://www.npmjs.com/package/instantmap",
+    downloadUrl: "https://www.npmjs.com/package/instantmap-js",
     softwareHelp: `${SITE}/docs/start/quick-start/`,
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     featureList: ["First view is a server-rendered image", "Interactive map loads on first touch", "Markers, clusters and customisable cards", "Brand colours from a style guide", "Works in any framework", "Self-hostable on Cloudflare Workers"],
@@ -62,8 +62,8 @@ const schema = [
         </div>
       </dl>
       <div class="install">
-        <code>npm install instantmap</code>
-        <button type="button" class="copy" data-copy="npm install instantmap">Copy</button>
+        <code>npm install instantmap-js</code>
+        <button type="button" class="copy" data-copy="npm install instantmap-js">Copy</button>
       </div>
       <div class="actions">
         <a class="button primary" href="/docs/start/quick-start/">Read the quick start</a>
@@ -120,14 +120,14 @@ const schema = [
   <section class="closing" aria-labelledby="closing-title">
     <h2 id="closing-title">Put a map on your page in a minute</h2>
     <div class="install">
-      <code>npm install instantmap</code>
-      <button type="button" class="copy" data-copy="npm install instantmap">Copy</button>
+      <code>npm install instantmap-js</code>
+      <button type="button" class="copy" data-copy="npm install instantmap-js">Copy</button>
     </div>
     <a class="button primary" href="/docs/start/quick-start/">Read the quick start</a>
   </section>
 
   <script>
-    import type { InstantMapElement } from "instantmap";
+    import type { InstantMapElement } from "instantmap-js";
     import { sanFranciscoListings } from "../data/listings.ts";
     import { byId } from "../scripts/shared.ts";
 

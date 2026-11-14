@@ -5,18 +5,18 @@ sidebar:
   order: 3
 ---
 
-Use `instantmap/react` in any React 18 or 19 client app. This page uses Vite.
+Use `instantmap-js/react` in any React 18 or 19 client app. This page uses Vite.
 
 ## Install
 
 ```sh
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
 
 ```tsx title="src/app.tsx"
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 import { listings } from "./listings";
 
 export function App() {
@@ -39,8 +39,8 @@ The handle on `ref` controls the map. `highlight(id)` marks one marker, and `hig
 
 ```tsx title="src/app.tsx"
 import { useRef, useState } from "react";
-import { InstantMap, type InstantMapHandle } from "instantmap/react";
-import type { Marker } from "instantmap";
+import { InstantMap, type InstantMapHandle } from "instantmap-js/react";
+import type { Marker } from "instantmap-js";
 import { listings, type Listing } from "./listings";
 
 export function App() {
@@ -88,12 +88,12 @@ A client-only Vite app has no server HTML, so there is no first image to render 
 
 - Creating the markers array inside the component body on every render. Memoize it, or define it outside the component.
 - Giving the map no height. It collapses to nothing.
-- Two copies of React in the bundle, which fails with `Cannot read properties of null (reading 'useRef')`. This happens when `instantmap` is installed from a local folder. Add `resolve: { dedupe: ["react", "react-dom"] }` to `vite.config.ts`.
+- Two copies of React in the bundle, which fails with `Cannot read properties of null (reading 'useRef')`. This happens when `instantmap-js` is installed from a local folder. Add `resolve: { dedupe: ["react", "react-dom"] }` to `vite.config.ts`.
 
 ## Prompt for your agent
 
 ```text
-Add an Instant Map to my React and Vite app. Follow https://instantmap.org/docs/frameworks/react.md exactly. Use InstantMap from instantmap/react with a fixed height, renderPopup for the popup card, and a ref with highlight(id) to sync a list with the map. Memoize the markers array. Run the build and open the page to confirm the map loads with no console errors.
+Add an Instant Map to my React and Vite app. Follow https://instantmap.org/docs/frameworks/react.md exactly. Use InstantMap from instantmap-js/react with a fixed height, renderPopup for the popup card, and a ref with highlight(id) to sync a list with the map. Memoize the markers array. Run the build and open the page to confirm the map loads with no console errors.
 ```
 
 ## Full example

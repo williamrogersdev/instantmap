@@ -1,12 +1,12 @@
 ---
 title: React component
-description: Props, events and the imperative handle of <InstantMap> from instantmap/react.
+description: Props, events and the imperative handle of <InstantMap> from instantmap-js/react.
 sidebar:
   order: 2
 ---
 
 ```tsx
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 
 <InstantMap
   center={[-97.7431, 30.2672]}
@@ -69,7 +69,7 @@ const map = useRef<InstantMapHandle<Listing>>(null);
 `theme` and `colors` are the two props `brandTheme()` returns, so spread the result:
 
 ```tsx
-import { brandTheme } from "instantmap/server";
+import { brandTheme } from "instantmap-js/server";
 
 const brand = brandTheme({ primary: "#e11d48", background: "#fff7ed" }); // outside the component, or memoised
 

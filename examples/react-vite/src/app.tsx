@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
-import { InstantMap, type InstantMapHandle } from "instantmap/react";
-import type { Marker } from "instantmap";
+import { InstantMap, type InstantMapHandle } from "instantmap-js/react";
+import type { Marker } from "instantmap-js";
 import { makeListings, type Listing } from "./listings";
 
 const src = import.meta.env.VITE_INSTANTMAP_SRC as string | undefined;

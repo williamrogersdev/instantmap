@@ -4,5 +4,5 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [reactRouter()],
   resolve: { dedupe: ["react", "react-dom"] },
-  ssr: { noExternal: ["instantmap"] },
+  ssr: { noExternal: ["instantmap-js"] },
 });

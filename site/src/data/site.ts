@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import { sanFranciscoListings } from "./listings.ts";
 
 export const SITE = "https://instantmap.org";
@@ -46,7 +46,7 @@ export const FRAMEWORKS = [
 export const AGENT_PROMPT = `Add an Instant Map to this project.
 
 1. Read https://instantmap.org/llms.txt, then the framework guide for this project's stack from https://instantmap.org/docs/frameworks/ (append .md to any docs URL for Markdown).
-2. Install the package: npm install instantmap
+2. Install the package: npm install instantmap-js
 3. Render the map where I ask, with an explicit height, centred on my data, and pass my records as markers: { id, lng, lat, label, title, subtitle, image, href }.
 4. If the framework renders on the server, render the first image on the server as the guide shows, so the map appears before any JavaScript runs.
 5. If the project has brand colours or design tokens, build the map colours from them with brandTheme() and use the same result for the first image and the live map.

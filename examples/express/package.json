@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "express": "^5.1.0",
-    "instantmap": "file:../../packages/instantmap"
+    "instantmap-js": "file:../../packages/instantmap"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -194,15 +194,15 @@ Return an element or an HTML string, or return `null` or an empty string to show
 A returned HTML string is inserted as markup. Escape any user content in it, or build elements and set `textContent`.
 :::
 
-If you need the built-in card inside your own renderer, import it from `instantmap/card`:
+If you need the built-in card inside your own renderer, import it from `instantmap-js/card`:
 
 ```js
-import { defaultCard } from "instantmap/card";
+import { defaultCard } from "instantmap-js/card";
 
 map.popup = (marker) => (marker.data.soldOut ? null : defaultCard(marker, { layout: "row" }));
 ```
 
-`instantmap/card` also exports `cardFromTemplate`, `safeUrl`, `escapeHtml` and `CARD_CSS`.
+`instantmap-js/card` also exports `cardFromTemplate`, `safeUrl`, `escapeHtml` and `CARD_CSS`.
 
 ### React
 

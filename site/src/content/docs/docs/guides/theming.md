@@ -19,7 +19,7 @@ The server reads layers 1 to 3 too, so the first image is painted in your colour
 `brandTheme()` turns a handful of colours into a whole map palette: land, water, parks, roads, labels, markers and clusters. Only `primary` is required.
 
 ```ts
-import { brandTheme } from "instantmap"; // or "instantmap/server", or "instantmap/brand"
+import { brandTheme } from "instantmap-js"; // or "instantmap-js/server", or "instantmap-js/brand"
 
 const brand = brandTheme({ primary: "#e11d48", background: "#fff7ed", foreground: "#1c1917" });
 // { theme: "daylight", colors: { marker: "#…", cluster: "#…", land: "#…", … } }
@@ -43,7 +43,7 @@ The result is `{ theme, colors }`. It builds on `daylight` (or `midnight` for da
 Spread it wherever you give a theme and colours:
 
 ```ts
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 
 const src = staticUrl({ center: [-122.42, 37.77], zoom: 12, width: 960, height: 480, ratio: 2, markers, ...brand });
 ```
@@ -53,7 +53,7 @@ const src = staticUrl({ center: [-122.42, 37.77], zoom: 12, width: 960, height: 
 ```
 
 ```ts
-import { posterHtml } from "instantmap/server";
+import { posterHtml } from "instantmap-js/server";
 
 const html = posterHtml({ center: [-122.42, 37.77], zoom: 12, width: 960, height: 480, ...brand });
 ```
@@ -94,7 +94,7 @@ const brand = brandTheme({
 **In the browser**, `brandThemeFromCss()` reads the variables for you. It accepts any CSS colour syntax, including `oklch()`.
 
 ```js
-import { brandThemeFromCss } from "instantmap";
+import { brandThemeFromCss } from "instantmap-js";
 
 const brand = brandThemeFromCss({ primary: "--primary", background: "--background", foreground: "--foreground" });
 map.theme = brand.theme;
@@ -113,7 +113,7 @@ If your tokens live in a JSON file, read them with your own code and pass the va
 
 ```ts
 import tokens from "./design-tokens.json";
-import { brandTheme } from "instantmap/server";
+import { brandTheme } from "instantmap-js/server";
 
 const brand = brandTheme({
   primary: tokens.color.brand.primary,
@@ -161,7 +161,7 @@ Use `mono` when your markers carry the meaning and the map is only context:
 To see every colour a theme and your overrides produce, call `resolvePalette()`. The map element has no palette property.
 
 ```ts
-import { resolvePalette } from "instantmap"; // or "instantmap/server"
+import { resolvePalette } from "instantmap-js"; // or "instantmap-js/server"
 
 const palette = resolvePalette(map.theme, map.colors);
 palette.water; // "#…"

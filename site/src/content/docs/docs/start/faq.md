@@ -15,11 +15,11 @@ About 7 KB gzipped before anyone touches the map, and about 11 KB more on first 
 
 ## How does the first image appear without JavaScript?
 
-The first image is a plain `<img>` whose address describes the whole map, so it appears as soon as the HTML does. In a server-rendered page you build that address with `staticUrl()` from `instantmap/server`, or use the React component, which does it for you. The image is drawn by a Worker from vector tiles and cached at the edge. See [How it works](/docs/start/how-it-works/).
+The first image is a plain `<img>` whose address describes the whole map, so it appears as soon as the HTML does. In a server-rendered page you build that address with `staticUrl()` from `instantmap-js/server`, or use the React component, which does it for you. The image is drawn by a Worker from vector tiles and cached at the edge. See [How it works](/docs/start/how-it-works/).
 
 ## Which frameworks does it work with?
 
-Any framework, because `<instant-map>` is a standard custom element. There are guides for [Next.js](/docs/frameworks/nextjs/), [React](/docs/frameworks/react/), [React Router](/docs/frameworks/react-router/), [Astro](/docs/frameworks/astro/), [Vue](/docs/frameworks/vue/), [Nuxt](/docs/frameworks/nuxt/), [SvelteKit](/docs/frameworks/sveltekit/), [Angular](/docs/frameworks/angular/), [Solid](/docs/frameworks/solid/) and [plain HTML](/docs/frameworks/html/). React 18 and 19 also get a typed component from `instantmap/react`.
+Any framework, because `<instant-map>` is a standard custom element. There are guides for [Next.js](/docs/frameworks/nextjs/), [React](/docs/frameworks/react/), [React Router](/docs/frameworks/react-router/), [Astro](/docs/frameworks/astro/), [Vue](/docs/frameworks/vue/), [Nuxt](/docs/frameworks/nuxt/), [SvelteKit](/docs/frameworks/sveltekit/), [Angular](/docs/frameworks/angular/), [Solid](/docs/frameworks/solid/) and [plain HTML](/docs/frameworks/html/). React 18 and 19 also get a typed component from `instantmap-js/react`.
 
 ## Does it work without a server-rendered image?
 

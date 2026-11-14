@@ -1,6 +1,6 @@
 ---
 title: JavaScript API
-description: Exports of instantmap, instantmap/server, instantmap/card and instantmap/brand, including staticUrl, posterHtml, brandTheme, clusterAt, themes and types.
+description: Exports of instantmap, instantmap-js/server, instantmap-js/card and instantmap-js/brand, including staticUrl, posterHtml, brandTheme, clusterAt, themes and types.
 sidebar:
   order: 3
 ---
@@ -9,12 +9,12 @@ The package has these entry points:
 
 | Import | Use it in | Contains |
 | --- | --- | --- |
-| `instantmap` | Browser code | Defines `<instant-map>`, plus `staticUrl`, `tileUrl`, `clusterAt`, themes, `brandTheme` and `brandThemeFromCss`. `posterHtml` is in `instantmap/server`. |
-| `instantmap/server` | Servers, build scripts, edge functions, React Server Components | `staticUrl`, `tileUrl`, `posterHtml`, `clusterAt`, themes, colour helpers, `brandTheme` and `brandThemeFromCss`. Defines no element and never touches `window`. |
-| `instantmap/react` | React 18 and 19, Next.js, Remix | The [`<InstantMap>` component](/docs/reference/react/). |
-| `instantmap/card` | Code that builds its own card | `defaultCard`, `cardFromTemplate`, `safeUrl`, `escapeHtml`, `CARD_CSS`. |
-| `instantmap/brand` | Anywhere | `brandTheme`, `brandThemeFromCss`, and the `BrandInput` and `BrandTheme` types. |
-| `instantmap/instant-map.js` | A script tag | The ready-built loader that defines `<instant-map>`. It is what `https://instantmap.org/instant-map.js` serves. |
+| `instantmap-js` | Browser code | Defines `<instant-map>`, plus `staticUrl`, `tileUrl`, `clusterAt`, themes, `brandTheme` and `brandThemeFromCss`. `posterHtml` is in `instantmap-js/server`. |
+| `instantmap-js/server` | Servers, build scripts, edge functions, React Server Components | `staticUrl`, `tileUrl`, `posterHtml`, `clusterAt`, themes, colour helpers, `brandTheme` and `brandThemeFromCss`. Defines no element and never touches `window`. |
+| `instantmap-js/react` | React 18 and 19, Next.js, Remix | The [`<InstantMap>` component](/docs/reference/react/). |
+| `instantmap-js/card` | Code that builds its own card | `defaultCard`, `cardFromTemplate`, `safeUrl`, `escapeHtml`, `CARD_CSS`. |
+| `instantmap-js/brand` | Anywhere | `brandTheme`, `brandThemeFromCss`, and the `BrandInput` and `BrandTheme` types. |
+| `instantmap-js/instant-map.js` | A script tag | The ready-built loader that defines `<instant-map>`. It is what `https://instantmap.org/instant-map.js` serves. |
 
 All of them ship ES modules with TypeScript types.
 
@@ -25,7 +25,7 @@ The element is split in two. `instant-map.js` is a small loader, about 7 KB gzip
 Returns the URL of a finished map image. This is the function that makes the first paint instant: render the URL into an `<img>` on the server, and the browser shows the map before any JavaScript arrives.
 
 ```ts
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 
 const url = staticUrl({
   center: [-97.7431, 30.2672],
@@ -56,7 +56,7 @@ const url = staticUrl({
 Returns a complete `<instant-map>` element as an HTML string, with its poster image inside, for templates that are not React: Express, Hono, Astro's `set:html`, PHP, emails, Markdown.
 
 ```ts
-import { posterHtml } from "instantmap/server";
+import { posterHtml } from "instantmap-js/server";
 
 const html = posterHtml({ center: [-0.1276, 51.5072], zoom: 11, width: 1280, height: 720, markers });
 ```
@@ -75,7 +75,7 @@ The string sets `aspect-ratio` from `width` and `height`, so the map holds its s
 The clustering function the element and the server both run. Use it when you need the same groups outside the map, for example a list that says "12 listings in this area".
 
 ```ts
-import { clusterAt } from "instantmap";
+import { clusterAt } from "instantmap-js";
 
 for (const group of clusterAt(markers, Math.floor(map.camera.zoom))) {
   group.members; // Marker[]
@@ -86,14 +86,14 @@ Positions are in world pixels at that zoom. The result is the same whatever the 
 
 ## `defineInstantMap(tagName?)`
 
-`instantmap` calls this when imported. Call it yourself only to register the element under another tag name.
+`instantmap-js` calls this when imported. Call it yourself only to register the element under another tag name.
 
 ## `brandTheme(input)`
 
-Builds a map theme from the colours of a style guide. Available from `instantmap`, `instantmap/server` and `instantmap/brand`.
+Builds a map theme from the colours of a style guide. Available from `instantmap-js`, `instantmap-js/server` and `instantmap-js/brand`.
 
 ```ts
-import { brandTheme } from "instantmap/server";
+import { brandTheme } from "instantmap-js/server";
 
 const brand = brandTheme({ primary: "#e11d48", background: "#fff7ed", foreground: "#1c1917" });
 // { theme: "daylight", colors: { … } }
@@ -121,7 +121,7 @@ Use it in `staticUrl({ ...brand })`, `posterHtml({ ...brand })`, `<InstantMap {.
 Reads brand colours from CSS custom properties in the browser, so the map follows the same tokens as the rest of the page. Any CSS colour syntax works, including `oklch()`.
 
 ```ts
-import { brandThemeFromCss } from "instantmap/brand";
+import { brandThemeFromCss } from "instantmap-js/brand";
 
 const brand = brandThemeFromCss({ primary: "--primary", background: "--background", foreground: "--foreground" });
 ```
@@ -133,20 +133,20 @@ It runs after your CSS has loaded, so for a server-rendered first image pass the
 ## Themes
 
 ```ts
-import { THEMES, PALETTE_KEYS, resolvePalette } from "instantmap";
+import { THEMES, PALETTE_KEYS, resolvePalette } from "instantmap-js";
 
 resolvePalette("midnight", { accent: "#ff5a5f" }); // → full Palette
 resolvePalette(map.theme, map.colors);             // the colours a map is using now
 ```
 
-`resolvePalette(theme, colors?)` returns the full palette. The map element has no palette property. `instantmap/server` also exports `encodeColors`, `decodeColors`, `decodePaletteColors` and `paletteWords`.
+`resolvePalette(theme, colors?)` returns the full palette. The map element has no palette property. `instantmap-js/server` also exports `encodeColors`, `decodeColors`, `decodePaletteColors` and `paletteWords`.
 
-## `instantmap/card`
+## `instantmap-js/card`
 
 The pieces of the built-in card, for code that draws its own popup.
 
 ```ts
-import { defaultCard, cardFromTemplate, safeUrl, escapeHtml, CARD_CSS } from "instantmap/card";
+import { defaultCard, cardFromTemplate, safeUrl, escapeHtml, CARD_CSS } from "instantmap-js/card";
 ```
 
 | Export | What it does |
@@ -160,7 +160,7 @@ import { defaultCard, cardFromTemplate, safeUrl, escapeHtml, CARD_CSS } from "in
 ## Types
 
 ```ts
-import type { Marker, Camera, Bounds, LngLat, Cluster, Theme, Palette, PaletteKey, CardOptions, CardImages, BrandInput, BrandTheme, InstantMapElement } from "instantmap";
+import type { Marker, Camera, Bounds, LngLat, Cluster, Theme, Palette, PaletteKey, CardOptions, CardImages, BrandInput, BrandTheme, InstantMapElement } from "instantmap-js";
 ```
 
 `InstantMapElement<Data>` is generic over your marker `data` type:
@@ -172,4 +172,4 @@ map.addEventListener("markerclick", (event) => {
 });
 ```
 
-Importing `instantmap` registers `"instant-map"` in `HTMLElementTagNameMap`, so `document.querySelector("instant-map")` is typed for you.
+Importing `instantmap-js` registers `"instant-map"` in `HTMLElementTagNameMap`, so `document.querySelector("instant-map")` is typed for you.

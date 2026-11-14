@@ -1,7 +1,7 @@
 # Publishes the npm package and creates a GitHub release when a tag like v0.2.0 is pushed.
 #
 # Required: the NPM_TOKEN repository secret, an npm granular access token with publish rights
-# for the `instantmap` package. Alternatively, configure npm Trusted Publishing for this
+# for the `instantmap-js` package. Alternatively, configure npm Trusted Publishing for this
 # workflow on npmjs.com and remove the token (then drop NODE_AUTH_TOKEN below).
 name: Release
 

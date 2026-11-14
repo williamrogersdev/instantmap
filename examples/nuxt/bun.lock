@@ -5,7 +5,7 @@
     "": {
       "name": "instantmap-example-nuxt",
       "dependencies": {
-        "instantmap": "file:../../packages/instantmap",
+        "instantmap-js": "file:../../packages/instantmap",
         "nuxt": "^4.6.4",
         "vue": "^3.5.45",
       },
@@ -660,7 +660,7 @@
 
     "ini": ["ini@4.1.1", "", {}, "sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g=="],
 
-    "instantmap": ["instantmap@file:../../packages/instantmap", { "devDependencies": { "@types/react": "19.2.7", "@types/react-dom": "19.2.3", "react": "19.2.3", "react-dom": "19.2.3", "typescript": "5.9.3" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["react", "react-dom"] }],
+    "instantmap-js": ["instantmap-js@file:../../packages/instantmap", { "devDependencies": { "@types/react": "19.2.7", "@types/react-dom": "19.2.3", "react": "19.2.3", "react-dom": "19.2.3", "typescript": "5.9.3" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["react", "react-dom"] }],
 
     "ioredis": ["ioredis@5.11.1", "", { "dependencies": { "@ioredis/commands": "1.10.0", "cluster-key-slot": "1.1.1", "debug": "4.4.3", "denque": "2.1.0", "redis-errors": "1.2.0", "redis-parser": "3.0.0", "standard-as-callback": "2.1.0" } }, "sha512-ehuGcf94bQXhfagULNXrJdfnWO38v070jxSx/qE87Kjzmu2fU7ro5EFAb+OPituLqgfyuQaym5DlrNydW2sJ9A=="],
 

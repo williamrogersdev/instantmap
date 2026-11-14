@@ -6,7 +6,7 @@
 | --- | --- |
 | `crates/render` | The renderer library (Rust) |
 | `crates/wasm` | wasm-bindgen bindings for the renderer |
-| `packages/instantmap` | The `instantmap` npm package |
+| `packages/instantmap` | The `instantmap-js` npm package |
 | `worker/` | The Cloudflare Worker that renders tiles and serves the site. Not in the Bun workspace |
 | `site/` | instantmap.org pages and docs (Astro) |
 | `scripts/` | Build, size, fixture and end-to-end scripts |

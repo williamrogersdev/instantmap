@@ -7,7 +7,7 @@ Please do not open a public issue for a security problem.
 
 ## In scope
 
-- The `instantmap` npm package.
+- The `instantmap-js` npm package.
 - The Worker in `worker/`.
 - The renderer in `crates/`.
 

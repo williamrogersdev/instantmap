@@ -19,7 +19,7 @@ const htmlSample = `<script type="module"
     .then((response) => response.json());
 </script>`;
 
-const reactSample = `import { InstantMap } from "instantmap/react";
+const reactSample = `import { InstantMap } from "instantmap-js/react";
 
 export function ListingsMap({ listings }) {
   return (
@@ -33,7 +33,7 @@ export function ListingsMap({ listings }) {
   );
 }`;
 
-const serverSample = `import { staticUrl } from "instantmap/server";
+const serverSample = `import { staticUrl } from "instantmap-js/server";
 
 // Any server: build the address of the first image
 // and put it in the HTML as a plain <img>.
@@ -47,12 +47,12 @@ const poster = staticUrl({
 });`;
 
 const entries = [
-  ["instantmap", "The element, types and helpers"],
-  ["instantmap/react", "The React component"],
-  ["instantmap/server", "First-image addresses and palettes, no DOM needed"],
-  ["instantmap/brand", "Map colours from brand colours"],
-  ["instantmap/card", "The built-in card, to reuse or extend"],
-  ["instantmap/instant-map.js", "The script-tag build"],
+  ["instantmap-js", "The element, types and helpers"],
+  ["instantmap-js/react", "The React component"],
+  ["instantmap-js/server", "First-image addresses and palettes, no DOM needed"],
+  ["instantmap-js/brand", "Map colours from brand colours"],
+  ["instantmap-js/card", "The built-in card, to reuse or extend"],
+  ["instantmap-js/instant-map.js", "The script-tag build"],
 ];
 ---
 
@@ -62,8 +62,8 @@ const entries = [
     <h1>Works where you already work.</h1>
     <p class="lead">Instant Map is a standard web component with a React component and a server helper for the first image. Every guide is written from a working example app in the repository.</p>
     <div class="install" style="max-width:420px">
-      <code>npm install instantmap</code>
-      <button type="button" class="copy" data-copy="npm install instantmap">Copy</button>
+      <code>npm install instantmap-js</code>
+      <button type="button" class="copy" data-copy="npm install instantmap-js">Copy</button>
     </div>
   </div>
 

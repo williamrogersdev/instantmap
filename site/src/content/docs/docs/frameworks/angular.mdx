@@ -10,7 +10,7 @@ Use the `<instant-map>` element in a standalone Angular component. Server render
 ## Install
 
 ```sh
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
@@ -22,15 +22,15 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
 
-import('instantmap').then(() => bootstrapApplication(App, appConfig));
+import('instantmap-js').then(() => bootstrapApplication(App, appConfig));
 ```
 
 Allow the custom element in the component and build the poster URL.
 
 ```ts title="src/app/app.ts"
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import type { Marker } from 'instantmap';
-import { staticUrl } from 'instantmap/server';
+import type { Marker } from 'instantmap-js';
+import { staticUrl } from 'instantmap-js/server';
 import { listings } from './listings';
 
 @Component({
@@ -108,7 +108,7 @@ Listen with `(markerclick)` and call methods through a template reference. Use a
 
 ```ts title="src/app/app.ts"
 import { ElementRef, signal, ViewChild } from '@angular/core';
-import type { InstantMapElement } from 'instantmap';
+import type { InstantMapElement } from 'instantmap-js';
 
 export class App {
   @ViewChild('map') map?: ElementRef<InstantMapElement>;
@@ -133,7 +133,7 @@ export class App {
 
 ## Common mistakes
 
-- Starting Angular before `import('instantmap')` finishes. `markers` is then bound to an undefined element and never reaches the map.
+- Starting Angular before `import('instantmap-js')` finishes. `markers` is then bound to an undefined element and never reaches the map.
 - Putting `style="..."` on `<instant-map>`. Angular overwrites it and removes the theme variables the map sets on itself.
 - Leaving out `CUSTOM_ELEMENTS_SCHEMA`. Angular rejects the unknown tag.
 - Giving the map no height. It collapses to nothing.
@@ -142,7 +142,7 @@ export class App {
 ## Prompt for your agent
 
 ```text
-Add an Instant Map to my Angular app with server rendering. Follow https://instantmap.org/docs/frameworks/angular.md exactly. Import instantmap before bootstrapApplication, add CUSTOM_ELEMENTS_SCHEMA, build the poster URL with staticUrl from instantmap/server and render it as an img inside instant-map with ngSkipHydration, and size the element in CSS rather than with an inline style. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
+Add an Instant Map to my Angular app with server rendering. Follow https://instantmap.org/docs/frameworks/angular.md exactly. Import instantmap before bootstrapApplication, add CUSTOM_ELEMENTS_SCHEMA, build the poster URL with staticUrl from instantmap-js/server and render it as an img inside instant-map with ngSkipHydration, and size the element in CSS rather than with an inline style. Build, start the server, and confirm the HTML from curl contains an img with /static? in its src.
 ```
 
 ## Full example

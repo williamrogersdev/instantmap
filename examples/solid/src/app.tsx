@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
-import type { InstantMapElement } from "instantmap";
-import { staticUrl } from "instantmap/server";
+import type { InstantMapElement } from "instantmap-js";
+import { staticUrl } from "instantmap-js/server";
 import { listings } from "./listings";
 
 const src = import.meta.env.VITE_INSTANTMAP_SRC || "https://instantmap.org";

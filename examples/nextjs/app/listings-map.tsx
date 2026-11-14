@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { InstantMap, type InstantMapHandle } from "instantmap/react";
-import type { Marker } from "instantmap";
+import { InstantMap, type InstantMapHandle } from "instantmap-js/react";
+import type { Marker } from "instantmap-js";
 import type { Listing } from "../lib/listings";
 
 export function ListingsMap({ listings, src }: { listings: Marker<Listing>[]; src?: string }) {

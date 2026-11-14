@@ -12,7 +12,7 @@ Use the `<instant-map>` element on any page. Load it from a script tag, or insta
 For a plain page there is nothing to install. With a bundler:
 
 ```sh
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
@@ -33,21 +33,21 @@ Load the element with a script tag, place it on the page, and set the markers fr
 </script>
 ```
 
-With a bundler, import the package and call `defineInstantMap()` once. A bare `import "instantmap"` is dropped by the bundler.
+With a bundler, import the package and call `defineInstantMap()` once. A bare `import "instantmap-js"` is dropped by the bundler.
 
 ```ts title="main.ts"
-import { defineInstantMap } from "instantmap";
+import { defineInstantMap } from "instantmap-js";
 
 defineInstantMap();
 ```
 
 ## Render the first image on the server
 
-Without a poster the element builds its own first image in the browser. To have the image in the server HTML, put an `<img>` inside the element that points at `/static`. `posterHtml()` from `instantmap/server` returns the whole element with the image inside.
+Without a poster the element builds its own first image in the browser. To have the image in the server HTML, put an `<img>` inside the element that points at `/static`. `posterHtml()` from `instantmap-js/server` returns the whole element with the image inside.
 
 ```ts title="server.ts"
 import express from "express";
-import { posterHtml } from "instantmap/server";
+import { posterHtml } from "instantmap-js/server";
 
 const center: [number, number] = [-97.74, 30.27];
 const markers = [
@@ -164,7 +164,7 @@ listItem.addEventListener("click", () => map.select(1));
 ## Prompt for your agent
 
 ```text
-Add an Instant Map to my website. Follow https://instantmap.org/docs/frameworks/html.md exactly. Load the element from the script tag or import defineInstantMap from instantmap, give the element a fixed height, set markers as a property after customElements.whenDefined, and render the first image on the server as an img inside the element pointing at /static, using posterHtml from instantmap/server when the server is Node or Bun. Start the site and confirm the HTML from curl contains an img with /static? in its src.
+Add an Instant Map to my website. Follow https://instantmap.org/docs/frameworks/html.md exactly. Load the element from the script tag or import defineInstantMap from instantmap, give the element a fixed height, set markers as a property after customElements.whenDefined, and render the first image on the server as an img inside the element pointing at /static, using posterHtml from instantmap-js/server when the server is Node or Bun. Start the site and confirm the HTML from curl contains an img with /static? in its src.
 ```
 
 ## Full example

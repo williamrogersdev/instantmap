@@ -11,7 +11,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Tile retry.
 - Redesigned built-in card with layouts, CSS custom properties, `<template data-card>` and image warming.
 - `brandTheme()` and `brandThemeFromCss()`.
-- New entry points `instantmap/card` and `instantmap/brand`.
+- New entry points `instantmap-js/card` and `instantmap-js/brand`.
 - Worker: canonical cache keys, upstream timeout and retry, lighter 2x JPEGs, an optional R2 tile store, an optional rate limit and `/health`.
 
 ### Changed
@@ -21,7 +21,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 ### Removed
 
 - `map.palette`. Use `resolvePalette`.
-- `defaultPopup`. Use `defaultCard` from `instantmap/card`.
+- `defaultPopup`. Use `defaultCard` from `instantmap-js/card`.
 
 ## [0.1.0]
 

@@ -5,12 +5,12 @@ sidebar:
   order: 2
 ---
 
-Use `instantmap/react` in the App Router. The map works in a Server Component and sends its first image in the HTML.
+Use `instantmap-js/react` in the App Router. The map works in a Server Component and sends its first image in the HTML.
 
 ## Install
 
 ```sh
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Add the map
@@ -18,7 +18,7 @@ npm install instantmap
 Render `InstantMap` in a Server Component. Do not wrap it in `dynamic(..., { ssr: false })`.
 
 ```tsx title="app/page.tsx"
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 import { listings } from "../lib/listings";
 
 export default function Page() {
@@ -46,8 +46,8 @@ Event handlers and refs need a Client Component. Mark the file `"use client"` an
 "use client";
 
 import { useRef, useState } from "react";
-import { InstantMap, type InstantMapHandle } from "instantmap/react";
-import type { Marker } from "instantmap";
+import { InstantMap, type InstantMapHandle } from "instantmap-js/react";
+import type { Marker } from "instantmap-js";
 import type { Listing } from "../lib/listings";
 
 export function ListingsMap({ listings }: { listings: Marker<Listing>[] }) {
@@ -85,7 +85,7 @@ Pass `listings` from the Server Component as a prop. Each marker needs `id`, `ln
 ## Prompt for your agent
 
 ```text
-Add an Instant Map to my Next.js App Router project. Follow https://instantmap.org/docs/frameworks/nextjs.md exactly. Render InstantMap from instantmap/react in a Server Component with a fixed height, and put onMarkerClick and refs in a separate "use client" file. Do not use next/dynamic with ssr: false. Run the build and confirm the server HTML contains an img with /static? in its src.
+Add an Instant Map to my Next.js App Router project. Follow https://instantmap.org/docs/frameworks/nextjs.md exactly. Render InstantMap from instantmap-js/react in a Server Component with a fixed height, and put onMarkerClick and refs in a separate "use client" file. Do not use next/dynamic with ssr: false. Run the build and confirm the server HTML contains an img with /static? in its src.
 ```
 
 ## Full example

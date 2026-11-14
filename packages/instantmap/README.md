@@ -3,12 +3,12 @@
 A map for the web that is on the page before your JavaScript is. It arrives as one image with your markers drawn in, then turns into a fast, clickable map on first touch. About 7 KB gzipped before anyone touches the map and about 11 KB more on first touch, no dependencies, any framework.
 
 ```bash
-npm install instantmap
+npm install instantmap-js
 ```
 
 ## Any page
 
-Import the package once in your bundled JavaScript (`import "instantmap";`), or load the hosted build without a bundler:
+Import the package once in your bundled JavaScript (`import "instantmap-js";`), or load the hosted build without a bundler:
 
 ```html
 <script type="module" src="https://instantmap.org/instant-map.js"></script>
@@ -27,7 +27,7 @@ Markers are `{ id, lng, lat, label, title, subtitle, image, badge, href }`. A ma
 ## React and Next.js
 
 ```tsx
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 
 export function ListingsMap({ listings }) {
   return <InstantMap center={[-122.42, 37.77]} zoom={12} markers={listings} style={{ height: 480 }} />;
@@ -39,7 +39,7 @@ The component renders the first image on the server, so the map paints with the 
 ## Server-rendered first image anywhere
 
 ```ts
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 
 const src = staticUrl({ center: [-122.42, 37.77], zoom: 12, width: 960, height: 480, markers });
 // Put <img src={src}> inside <instant-map>.
@@ -59,7 +59,7 @@ Card images are fetched ahead of the click for up to 8 markers nearest the centr
 ## Brand colours
 
 ```ts
-import { brandTheme } from "instantmap/server";
+import { brandTheme } from "instantmap-js/server";
 
 const brand = brandTheme({ primary: "#e11d48", background: "#fff7ed", foreground: "#1c1917" });
 
@@ -73,12 +73,12 @@ staticUrl({ center: [-122.42, 37.77], zoom: 12, width: 960, height: 480, ...bran
 
 | Import | Contains |
 | --- | --- |
-| `instantmap` | The `<instant-map>` element, `staticUrl`, `clusterAt`, themes, `resolvePalette`, `brandTheme` |
-| `instantmap/server` | `staticUrl`, `posterHtml`, themes, `brandTheme`. No element, no `window`. |
-| `instantmap/react` | The `<InstantMap>` component |
-| `instantmap/card` | `defaultCard`, `cardFromTemplate`, `safeUrl`, `escapeHtml`, `CARD_CSS` |
-| `instantmap/brand` | `brandTheme`, `brandThemeFromCss` |
-| `instantmap/instant-map.js` | The ready-built script-tag loader |
+| `instantmap-js` | The `<instant-map>` element, `staticUrl`, `clusterAt`, themes, `resolvePalette`, `brandTheme` |
+| `instantmap-js/server` | `staticUrl`, `posterHtml`, themes, `brandTheme`. No element, no `window`. |
+| `instantmap-js/react` | The `<InstantMap>` component |
+| `instantmap-js/card` | `defaultCard`, `cardFromTemplate`, `safeUrl`, `escapeHtml`, `CARD_CSS` |
+| `instantmap-js/brand` | `brandTheme`, `brandThemeFromCss` |
+| `instantmap-js/instant-map.js` | The ready-built script-tag loader |
 
 ## Develop
 

@@ -1,5 +1,5 @@
 ---
-import { posterHtml } from "instantmap/server";
+import { posterHtml } from "instantmap-js/server";
 
 const src = import.meta.env.PUBLIC_INSTANTMAP_SRC ?? "https://instantmap.org";
 const map = posterHtml({
@@ -20,7 +20,7 @@ const map = posterHtml({
   <body style="margin:0">
     <Fragment set:html={map} />
     <script>
-      import { defineInstantMap } from "instantmap";
+      import { defineInstantMap } from "instantmap-js";
 
       defineInstantMap();
     </script>

@@ -1,5 +1,5 @@
 ---
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import Site from "../layouts/Site.astro";
 import { sanFranciscoListings } from "../data/listings.ts";
 
@@ -132,7 +132,7 @@ map.addEventListener("markerclick", (event) => {
   </section>
 
   <script>
-    import type { InstantMapElement } from "instantmap";
+    import type { InstantMapElement } from "instantmap-js";
     import { sanFranciscoListings } from "../data/listings.ts";
 
     const listings = sanFranciscoListings(36);

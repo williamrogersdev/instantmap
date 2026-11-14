@@ -70,8 +70,8 @@ The search-results pattern Airbnb, Zillow and most marketplaces use takes three 
 ```tsx
 "use client";
 import { useMemo, useRef, useState } from "react";
-import { InstantMap, type InstantMapHandle } from "instantmap/react";
-import type { Bounds } from "instantmap";
+import { InstantMap, type InstantMapHandle } from "instantmap-js/react";
+import type { Bounds } from "instantmap-js";
 
 export function SearchResults({ listings }: { listings: Listing[] }) {
   const map = useRef<InstantMapHandle<Listing>>(null);

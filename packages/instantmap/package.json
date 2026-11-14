@@ -1,5 +1,5 @@
 {
-  "name": "instantmap",
+  "name": "instantmap-js",
   "version": "0.1.0",
   "description": "A map that arrives as one image and becomes interactive when you touch it. About 7 KB of JavaScript up front, no dependencies, any framework.",
   "license": "MIT",

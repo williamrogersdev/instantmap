@@ -10,7 +10,7 @@ You will end up with a Nuxt page that ships the first map image in the server HT
 ## Install
 
 ```bash
-npm install instantmap
+npm install instantmap-js
 ```
 
 Tell Vue that `instant-map` is a custom element.
@@ -27,7 +27,7 @@ Register the element in the browser with a client plugin.
 
 ```ts
 // app/plugins/instantmap.client.ts
-import { defineInstantMap } from "instantmap";
+import { defineInstantMap } from "instantmap-js";
 
 export default defineNuxtPlugin(() => {
   defineInstantMap();
@@ -38,8 +38,8 @@ export default defineNuxtPlugin(() => {
 
 ```vue
 <script setup lang="ts">
-import type { InstantMapElement, Marker } from "instantmap";
-import { staticUrl } from "instantmap/server";
+import type { InstantMapElement, Marker } from "instantmap-js";
+import { staticUrl } from "instantmap-js/server";
 
 const center: [number, number] = [-97.7431, 30.2672];
 const zoom = 12;
@@ -113,14 +113,14 @@ You should see an `<img src="https://.../static?...">` inside `<instant-map>`. V
 - Wrapping the map in `<ClientOnly>`. You lose the server-rendered image, which is the point.
 - Mismatched poster and element. Use the same `center`, `zoom` and size, or the image jumps on hydration.
 - No height. Set one on the element.
-- Calling `defineInstantMap()` from server code. Keep it in the client plugin. `instantmap/server` is the only entry that is safe there.
+- Calling `defineInstantMap()` from server code. Keep it in the client plugin. `instantmap-js/server` is the only entry that is safe there.
 
 ## Prompt for your agent
 
 ```text
 Add Instant Map to my Nuxt 4 app. Follow https://instantmap.org/docs/frameworks/nuxt.md
 Set isCustomElement in nuxt.config.ts, register the element in app/plugins/instantmap.client.ts,
-render the first image on the server with staticUrl from instantmap/server,
+render the first image on the server with staticUrl from instantmap-js/server,
 and bind markers with :markers.prop.
 ```
 

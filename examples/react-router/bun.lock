@@ -7,7 +7,7 @@
       "dependencies": {
         "@react-router/node": "8.5.1",
         "@react-router/serve": "8.5.1",
-        "instantmap": "file:../../packages/instantmap",
+        "instantmap-js": "file:../../packages/instantmap",
         "isbot": "5.2.3",
         "react": "19.3.1",
         "react-dom": "19.3.1",
@@ -242,7 +242,7 @@
 
     "inherits": ["inherits@2.0.4", "", {}, "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ=="],
 
-    "instantmap": ["instantmap@file:../../packages/instantmap", { "devDependencies": { "@types/react": "19.2.7", "@types/react-dom": "19.2.3", "react": "19.2.3", "react-dom": "19.2.3", "typescript": "5.9.3" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["react", "react-dom"] }],
+    "instantmap-js": ["instantmap-js@file:../../packages/instantmap", { "devDependencies": { "@types/react": "19.2.7", "@types/react-dom": "19.2.3", "react": "19.2.3", "react-dom": "19.2.3", "typescript": "5.9.3" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["react", "react-dom"] }],
 
     "ipaddr.js": ["ipaddr.js@1.9.1", "", {}, "sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g=="],
 

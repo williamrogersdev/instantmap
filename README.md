@@ -11,7 +11,7 @@ Instant Map sends a finished image of your map first, markers and all, as a plai
 ## Use it
 
 ```bash
-npm install instantmap
+npm install instantmap-js
 ```
 
 ```html
@@ -28,7 +28,7 @@ npm install instantmap
 With a server-rendered framework, render the first image on the server so it paints with the HTML:
 
 ```tsx
-import { InstantMap } from "instantmap/react";
+import { InstantMap } from "instantmap-js/react";
 
 <InstantMap center={[-122.42, 37.77]} zoom={12} markers={listings} style={{ height: 480 }} />;
 ```
@@ -40,13 +40,13 @@ Click a marker and a card opens from its `title`, `subtitle`, `image`, `badge`, 
 Match your brand by passing style-guide colours to `brandTheme()` and spreading the result into `staticUrl()`, `<InstantMap />` or `posterHtml()`:
 
 ```ts
-import { brandTheme } from "instantmap/server";
+import { brandTheme } from "instantmap-js/server";
 
 const brand = brandTheme({ primary: "#e11d48", background: "#fff7ed", foreground: "#1c1917" });
 // staticUrl({ ..., ...brand })   <InstantMap {...brand} />
 ```
 
-The package exports `instantmap`, `instantmap/server`, `instantmap/react`, `instantmap/card`, `instantmap/brand` and `instantmap/instant-map.js`.
+The package exports `instantmap-js`, `instantmap-js/server`, `instantmap-js/react`, `instantmap-js/card`, `instantmap-js/brand` and `instantmap-js/instant-map.js`.
 
 ## How it works
 

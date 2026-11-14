@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineInstantMap, type InstantMapElement, type Marker } from "instantmap";
+import { defineInstantMap, type InstantMapElement, type Marker } from "instantmap-js";
 import { ref } from "vue";
 import { center, listings, zoom } from "./listings";
 

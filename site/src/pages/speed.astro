@@ -1,5 +1,5 @@
 ---
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import Site from "../layouts/Site.astro";
 import { sanFranciscoListings } from "../data/listings.ts";
 import { kb, sizes } from "../data/site.ts";
@@ -121,7 +121,7 @@ console.log(Math.round(image.responseEnd), "ms");
   </section>
 
   <script>
-    import type { InstantMapElement } from "instantmap";
+    import type { InstantMapElement } from "instantmap-js";
     import { sanFranciscoListings } from "../data/listings.ts";
     import { byId, formatMs } from "../scripts/shared.ts";
 

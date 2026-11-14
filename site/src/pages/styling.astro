@@ -1,5 +1,5 @@
 ---
-import { staticUrl } from "instantmap/server";
+import { staticUrl } from "instantmap-js/server";
 import Site from "../layouts/Site.astro";
 import { sanFranciscoListings } from "../data/listings.ts";
 
@@ -13,7 +13,7 @@ const tokensSample = `/* Your style guide, as CSS custom properties */
   --background: #fff7ed;
   --foreground: #1c1917;
 }`;
-const cssSample = `import { brandThemeFromCss } from "instantmap/brand";
+const cssSample = `import { brandThemeFromCss } from "instantmap-js/brand";
 
 // Reads the same tokens the rest of your page uses.
 const brand = brandThemeFromCss({
@@ -25,7 +25,7 @@ const brand = brandThemeFromCss({
 const map = document.querySelector("instant-map");
 map.theme = brand.theme;
 map.colors = brand.colors;`;
-const serverSample = `import { brandTheme, staticUrl } from "instantmap/server";
+const serverSample = `import { brandTheme, staticUrl } from "instantmap-js/server";
 import tokens from "./design-tokens.json";
 
 // On the server, so the first image is already in your colours.
@@ -141,9 +141,9 @@ const presets = [
   </section>
 
   <script>
-    import type { InstantMapElement } from "instantmap";
-    import { brandTheme } from "instantmap/brand";
-    import { resolvePalette } from "instantmap/server";
+    import type { InstantMapElement } from "instantmap-js";
+    import { brandTheme } from "instantmap-js/brand";
+    import { resolvePalette } from "instantmap-js/server";
     import { sanFranciscoListings } from "../data/listings.ts";
     import { byId, setupTabs } from "../scripts/shared.ts";
 
@@ -183,13 +183,13 @@ const presets = [
       const extra = Object.keys(overrides).length ? overrides : undefined;
       if (mode === "theme") {
         const colors = extra ? Object.entries(extra).map(([key, value]) => `${key}:${value.slice(1)}`).join(",") : "";
-        if (tab === "react") return `import { InstantMap } from "instantmap/react";\n\n<InstantMap\n  center={[-122.42, 37.77]}\n  zoom={13}\n  theme="${theme}"${extra ? `\n  colors={${literal(extra, "    ")}}` : ""}\n  markers={listings}\n  style={{ height: 480 }}\n/>`;
+        if (tab === "react") return `import { InstantMap } from "instantmap-js/react";\n\n<InstantMap\n  center={[-122.42, 37.77]}\n  zoom={13}\n  theme="${theme}"${extra ? `\n  colors={${literal(extra, "    ")}}` : ""}\n  markers={listings}\n  style={{ height: 480 }}\n/>`;
         if (tab === "js") return `const map = document.querySelector("instant-map");\nmap.theme = "${theme}";${extra ? `\nmap.colors = ${literal(extra)};` : ""}`;
         return `<instant-map\n  center="-122.42,37.77"\n  zoom="13"\n  theme="${theme}"${colors ? `\n  colors="${colors}"` : ""}\n  style="height:480px">\n</instant-map>`;
       }
       const call = `brandTheme(${literal(brandInput())})`;
       const merged = extra ? `\nconst colors = { ...brand.colors, ...${literal(extra)} };` : "";
-      if (tab === "react") return `import { brandTheme } from "instantmap/brand";\nimport { InstantMap } from "instantmap/react";\n\nconst brand = ${call};${merged}\n\n<InstantMap\n  center={[-122.42, 37.77]}\n  zoom={13}\n  ${extra ? "theme={brand.theme}\n  colors={colors}" : "{...brand}"}\n  markers={listings}\n  style={{ height: 480 }}\n/>`;
+      if (tab === "react") return `import { brandTheme } from "instantmap-js/brand";\nimport { InstantMap } from "instantmap-js/react";\n\nconst brand = ${call};${merged}\n\n<InstantMap\n  center={[-122.42, 37.77]}\n  zoom={13}\n  ${extra ? "theme={brand.theme}\n  colors={colors}" : "{...brand}"}\n  markers={listings}\n  style={{ height: 480 }}\n/>`;
       if (tab === "html") {
         const result = brandTheme(brandInput());
         const colors = Object.entries({ ...result.colors, ...overrides })
@@ -198,7 +198,7 @@ const presets = [
           .join(",");
         return `<!-- The output of brandTheme(), written out. -->\n<instant-map\n  center="-122.42,37.77"\n  zoom="13"\n  theme="${result.theme}"\n  colors="${colors}"\n  style="height:480px">\n</instant-map>`;
       }
-      return `import { brandTheme } from "instantmap/brand";\n\nconst brand = ${call};${merged}\n\nconst map = document.querySelector("instant-map");\nmap.theme = brand.theme;\nmap.colors = ${extra ? "colors" : "brand.colors"};`;
+      return `import { brandTheme } from "instantmap-js/brand";\n\nconst brand = ${call};${merged}\n\nconst map = document.querySelector("instant-map");\nmap.theme = brand.theme;\nmap.colors = ${extra ? "colors" : "brand.colors"};`;
     }
 
     function render(wake = true): void {

@@ -5,12 +5,12 @@ sidebar:
   order: 1
 ---
 
-`<instant-map>` is a standard custom element. Importing `instantmap` (or loading `https://instantmap.org/instant-map.js`) defines it once; importing it twice is harmless.
+`<instant-map>` is a standard custom element. Importing `instantmap-js` (or loading `https://instantmap.org/instant-map.js`) defines it once; importing it twice is harmless.
 
 What loads, and when: the element and its first image come to about 7 KB gzipped before anyone touches the map. The engine (tiles, gestures, markers and cards) is about 11 KB more, fetched on the first sign of intent: pointer enter, touch, focus or wheel, or as the `load` attribute says. A press or tap that lands while the engine is loading is replayed, so it is not lost.
 
 ```ts
-import "instantmap";
+import "instantmap-js";
 ```
 
 ## Sizing
@@ -79,7 +79,7 @@ The `colors` attribute lists `token:hex` pairs without the `#`. Tokens are sorte
 | `selected` | `Marker \| null` | Read-only. Use `select()` to change. |
 | `interactive` | `boolean` | Read-only. `true` once the interactive map has taken over. |
 
-The resolved colours are not a property. Call `resolvePalette(map.theme, map.colors)` from `instantmap` or `instantmap/server`.
+The resolved colours are not a property. Call `resolvePalette(map.theme, map.colors)` from `instantmap-js` or `instantmap-js/server`.
 
 ### CardOptions
 

@@ -6,7 +6,7 @@ body:
     id: version
     attributes:
       label: Package version
-      description: The `instantmap` version, or "script tag" with the URL you load.
+      description: The `instantmap-js` version, or "script tag" with the URL you load.
       placeholder: 0.1.0
     validations:
       required: true

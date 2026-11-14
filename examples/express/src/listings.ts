@@ -1,4 +1,4 @@
-import type { Marker } from 'instantmap';
+import type { Marker } from 'instantmap-js';
 
 const NEIGHBOURHOODS = ['Downtown', 'East Austin', 'Zilker', 'Hyde Park', 'Clarksville', 'South Congress', 'Bouldin Creek'];
 

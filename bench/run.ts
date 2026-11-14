@@ -7,6 +7,7 @@
 //   bun run bench --browsers all               chromium, firefox and webkit (default: chromium)
 //   bun run bench --profiles desktop,phone-low pick device profiles (default: all)
 //   bun run bench --runs 9                     visits per browser and profile (default 5)
+//   bun run bench --source archive             read map data from a PMTiles archive in local R2, not a tile server
 //   bun run bench --source-delay 150           make the local tile source answer after 150 ms, like a distant one
 //   bun run bench --publish                    also write bench/results/published.json, which the site shows
 //   bun run bench --markdown summary.md        also write the tables as Markdown
@@ -47,6 +48,8 @@ export interface Results {
   renderer?: { iterations: number; scenes: RendererScene[] };
   /** Milliseconds the local tile source waited before each answer. Absent when it answered at once. */
   sourceDelayMs?: number;
+  /** "archive" when the local Worker read map data from a PMTiles archive in R2. Absent for a tile server over HTTP. */
+  source?: "archive";
   server?: ServerResult[];
   browser?: BrowserResult[];
 }
@@ -95,8 +98,9 @@ if (sourceDelay && !options.get("url")) {
   results.sourceDelayMs = sourceDelay;
 }
 
+if (options.get("source") === "archive" && !options.get("url")) results.source = "archive";
 if (parts.has("server") || parts.has("browser")) {
-  const stack = await startStack(options.get("url"));
+  const stack = await startStack(options.get("url"), { source: options.get("source") === "archive" ? "archive" : "http" });
   try {
     if (parts.has("server")) {
       console.error(`server (${stack.local ? "local Worker, fixture tiles" : stack.base})`);
@@ -115,7 +119,7 @@ const out = options.get("out") ?? join(root, "bench/results/latest.json");
 await Bun.write(out, `${JSON.stringify(results, null, 2)}\n`);
 console.error(`\nwrote ${out}`);
 if (options.has("publish")) {
-  if (results.target !== "local" || parts.size < 3 || skipped.length || sourceDelay) console.error("not published: only a full local run with every requested browser is published, so the published numbers are always comparable");
+  if (results.target !== "local" || parts.size < 3 || skipped.length || sourceDelay || results.source) console.error("not published: only a full local run with every requested browser is published, so the published numbers are always comparable");
   else {
     await Bun.write(join(root, "bench/results/published.json"), `${JSON.stringify(results, null, 2)}\n`);
     console.error("wrote bench/results/published.json (commit it to publish on the site)");

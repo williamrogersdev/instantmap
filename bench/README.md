@@ -34,6 +34,7 @@ Options:
 | --- | --- |
 | `--quick` | Two visits on the desktop and mid-range phone profiles. About half a minute. |
 | `--only renderer,server` | Run only some parts. |
+| `--source archive` | Have the local Worker read map data from a PMTiles archive in local R2 (the `MAP_DATA` setup), not from a tile server. Not published. |
 | `--source-delay 150` | Make the local tile source wait 150 ms before each answer, like a distant one. Not published. |
 | `--browsers all` | Chromium, Firefox and WebKit. The default is Chromium. |
 | `--profiles desktop,phone-low` | Choose device profiles. The default is all four. |

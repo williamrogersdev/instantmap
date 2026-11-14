@@ -1,6 +1,6 @@
 // Starts what a benchmark or profile runs against: a fixture tile server and the Worker under `wrangler dev`,
 // with no network dependency. Pass a url to measure something already running instead (a deployment, a preview).
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -19,7 +19,11 @@ export interface Stack {
 
 export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function startStack(url?: string): Promise<Stack> {
+/**
+ * `source: "archive"` has the Worker read map data from a PMTiles archive in (local) R2, as a deployment with the
+ * MAP_DATA bucket does. The default is the fixture tile server over HTTP.
+ */
+export async function startStack(url?: string, options: { source?: "http" | "archive" } = {}): Promise<Stack> {
   if (url) return { base: url.replace(/\/$/, ""), local: false, stop() {} };
   for (const needed of ["worker/pkg/instantmap_wasm.js", "site/dist/index.html", "packages/instantmap/dist/cdn/instant-map.js"]) {
     if (!(await Bun.file(join(root, needed)).exists())) throw new Error(`${needed} is missing. Run \`bun run build\` first.`);
@@ -47,8 +51,26 @@ export async function startStack(url?: string): Promise<Stack> {
   children.push(Bun.spawn(["bun", "run", "scripts/fixture-tiles.ts", String(tilePort)], { cwd: root, stdout: quiet, stderr: quiet }));
   // A fresh state directory, so nothing cached by an earlier run is counted as a fast render.
   const state = mkdtempSync(join(tmpdir(), "instantmap-bench-state-"));
+  const extra: string[] = [];
+  if (options.source === "archive") {
+    // The same configuration with one more bucket, written next to the real one so its relative paths still hold.
+    const config = join(root, "worker/.wrangler-bench.jsonc");
+    const base = readFileSync(join(root, "worker/wrangler.jsonc"), "utf8");
+    const marker = '"r2_buckets": [';
+    if (!base.includes(marker)) throw new Error("worker/wrangler.jsonc has no r2_buckets list to add the map data bucket to");
+    writeFileSync(config, base.replace(marker, `${marker}{ "binding": "MAP_DATA", "bucket_name": "instantmap-bench-map-data" }, `));
+    const archive = join(state, "fixtures.pmtiles");
+    const { buildFixtureArchive } = await import("../worker/test/fixture-archive.ts");
+    writeFileSync(archive, buildFixtureArchive());
+    const put = Bun.spawnSync(["bunx", "wrangler", "r2", "object", "put", "instantmap-bench-map-data/fixtures.pmtiles", "--file", archive, "--local", "--persist-to", state, "-c", config], {
+      cwd: join(root, "worker"),
+      env: { ...process.env, WRANGLER_SEND_METRICS: "false", CI: "1" },
+    });
+    if (put.exitCode !== 0) throw new Error(`could not store the fixture archive in local R2: ${put.stderr.toString()}`);
+    extra.push("-c", config, "--var", "MAP_ARCHIVE:fixtures.pmtiles");
+  }
   children.push(
-    Bun.spawn(["bunx", "wrangler", "dev", "--port", String(port), "--inspector-port", String(inspectorPort), "--persist-to", state, "--var", `TILE_URL:http://localhost:${tilePort}/{z}/{x}/{y}.mvt`], {
+    Bun.spawn(["bunx", "wrangler", "dev", ...extra, "--port", String(port), "--inspector-port", String(inspectorPort), "--persist-to", state, "--var", `TILE_URL:http://localhost:${tilePort}/{z}/{x}/{y}.mvt`], {
       cwd: join(root, "worker"),
       stdout: quiet,
       stderr: quiet,

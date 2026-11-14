@@ -1081,7 +1081,6 @@ fn draw_markers(scene: &Scene, pixmap: &mut Pixmap) {
     }
 }
 
-
 #[allow(clippy::too_many_arguments)]
 fn draw_centered_text(
     canvas: &mut Canvas,

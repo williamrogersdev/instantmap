@@ -1,5 +1,5 @@
 import { CARD_CSS, CARD_STYLE_ID, cardFromTemplate, defaultCard, safeUrl } from "./card.ts";
-import { boundsOf, clusterAt, type Group, latitudeOf, longitudeOf, MAX_LABEL_LENGTH, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
+import { boundsOf, clusterAt, type Group, MAX_LABEL_LENGTH, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
 import { type Bridge, type EngineHandle, type InstantMapElement, type MapState, MAX_ZOOM } from "./element.ts";
 import { tileUrl } from "./static-url.ts";
 import { type Palette, resolvePalette } from "./themes.ts";

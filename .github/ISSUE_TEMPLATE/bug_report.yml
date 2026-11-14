@@ -1,0 +1,43 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: The `instantmap` version, or "script tag" with the URL you load.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: framework
+    attributes:
+      label: Framework
+      description: React, Astro, Next.js, Vue, plain HTML, and so on, with its version.
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Safari 19 on iOS 26
+    validations:
+      required: true
+  - type: dropdown
+    id: hosting
+    attributes:
+      label: Hosted service or self-hosted
+      options:
+        - Hosted service (instantmap.org)
+        - Self-hosted Worker
+        - Package only
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: The smallest HTML or code that shows the problem, or a link to it. Say what you expected and what happened.
+    validations:
+      required: true

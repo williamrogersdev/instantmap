@@ -1,0 +1,38 @@
+# Manual deploy of the Worker and site to Cloudflare.
+#
+# Required: the CLOUDFLARE_API_TOKEN secret (put it on the `production` environment), a token that can
+# edit Workers Scripts. The Worker name, account and route come from worker/wrangler.jsonc.
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain from rust-toolchain.toml
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen-cli@0.2.129
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile
+        working-directory: worker
+      - name: Build wasm, package and site
+        run: bun run build
+      - name: Deploy
+        run: bunx wrangler deploy
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

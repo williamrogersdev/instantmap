@@ -167,7 +167,7 @@ fn prepare(spec: &Spec) -> Prepared<'_> {
         owned,
         clustered,
         quality: if spec.camera.pixel_ratio >= 2.0 {
-            72
+            60
         } else {
             86
         },

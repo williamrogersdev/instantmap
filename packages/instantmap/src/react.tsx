@@ -4,7 +4,7 @@ import { type CSSProperties, forwardRef, type ReactNode, useEffect, useImperativ
 import { createPortal } from "react-dom";
 import { defineInstantMap, type InstantMapElement } from "./index.ts";
 import { staticUrl } from "./static-url.ts";
-import type { Camera, CardImages, CardOptions, Cluster, LngLat, LoadMode, Marker, ScrollZoom, Theme } from "./types.ts";
+import type { Camera, CardImages, CardOptions, Cluster, Detail, LngLat, LoadMode, Marker, ScrollZoom, Theme } from "./types.ts";
 
 export interface InstantMapProps<Data = unknown> {
   center: LngLat;
@@ -17,6 +17,8 @@ export interface InstantMapProps<Data = unknown> {
   src?: string;
   load?: LoadMode;
   scrollZoom?: ScrollZoom;
+  /** Picture density on dense screens. Default "auto": 1x on a slow connection or when the visitor saves data. */
+  detail?: Detail;
   /** Options for the built-in card: layout, link text, link target. */
   card?: CardOptions;
   /** When card images are fetched ahead of a click. Default "visible". */
@@ -60,6 +62,7 @@ declare module "react" {
         src?: string;
         load?: string;
         "scroll-zoom"?: string;
+        detail?: string;
         cluster?: string;
         "card-images"?: string;
         class?: string;
@@ -158,6 +161,7 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
       src={props.src}
       load={props.load}
       scroll-zoom={props.scrollZoom}
+      detail={props.detail}
       cluster={props.cluster === false ? "off" : props.cluster === undefined ? undefined : String(props.cluster)}
       card-images={props.cardImages}
       class={props.className}

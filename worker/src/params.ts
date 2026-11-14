@@ -144,8 +144,8 @@ export function cacheKey(request: MapRequest, version: string, rawQuery: URLSear
   return `${version}/static/${style}/${parts.map(encodeURIComponent).join("/")}`;
 }
 
-/** JPEG quality. A 2x picture is shown at half size, which hides compression that would show at 1x, so it can be a third smaller. */
-export const jpegQuality = (ratio: number): number => (ratio >= 2 ? 72 : 86);
+/** JPEG quality. A 2x picture is shown at half size, which hides compression that would show at 1x, so it can be far smaller. */
+export const jpegQuality = (ratio: number): number => (ratio >= 2 ? 60 : 86);
 
 export const fingerprint = (text: string): string => {
   let hash = 2166136261;

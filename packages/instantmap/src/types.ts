@@ -63,6 +63,8 @@ export type PopupRenderer<Data = unknown> = (marker: Marker<Data>) => PopupConte
 export type LoadMode = "intent" | "visible" | "eager" | "none";
 
 export type ScrollZoom = "cooperative" | "always" | "off";
+/** Picture density on dense screens. "auto" drops to 1x on a slow connection or when the visitor saves data. */
+export type Detail = "auto" | "high" | "low";
 
 /** When card images are fetched ahead of a click: for markers in view, on hover or press only, or never. */
 export type CardImages = "visible" | "hover" | "off";

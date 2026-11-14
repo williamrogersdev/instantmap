@@ -34,6 +34,17 @@ params = { center: "#{lng},#{lat}", zoom: 13, size: "640x360", r: 2, markers: "#
 url = "https://instantmap.org/static?#{URI.encode_www_form(params)}"
 ```
 
+## Lighter images on slow connections
+
+A 2× image is about three times the bytes of a 1× image. The element chooses for itself (see the [`detail` attribute](/docs/reference/element/)). When your server builds the address, it can do the same: browsers that support it send a `Save-Data: on` request header when the visitor has asked to save data.
+
+```ts
+const saveData = request.headers.get("save-data") === "on";
+const src = staticUrl({ center, zoom, width: 640, height: 360, ratio: saveData ? 1 : 2 });
+```
+
+If you cache the page, add `Vary: Save-Data` to its response so the two versions are kept apart.
+
 ## Email
 
 Email clients block scripts and many block CSS, but they all show images. Use `r=2`, keep the width at 600 or less, and link the image to the full page:

@@ -9,6 +9,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Smaller loader: about 7 KB gzipped up front, and the engine, about 11 KB, loads on first intent.
 - Sprite-based marker drawing.
 - Tile retry.
+- `detail` attribute (`auto`, `high`, `low`): on a slow connection or with data saving on, pictures are requested at 1× instead of 2×.
 - Benchmarks (`bun run bench`), a comparison tool and one-command profiling (`bun run profile`), with results published at `/benchmarks/`.
 - Worker: Cloudflare Workers Cache in front of the Worker, a rate limit on uncached renders, and one log line per render with fetch and draw times.
 - Redesigned built-in card with layouts, CSS custom properties, `<template data-card>` and image warming.
@@ -18,6 +19,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ### Changed
 
+- 2× JPEGs use quality 60 instead of 72, about 16% smaller.
 - No tile requests for zoom levels an animation only passes through.
 
 ### Removed

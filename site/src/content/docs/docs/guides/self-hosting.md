@@ -75,6 +75,22 @@ The Worker caches upstream tiles for 7 days, so your tile source sees roughly on
 
 Each picture is drawn from nine vector tiles, and neighbouring pictures share most of them. The Worker keeps the vector tiles it has fetched in memory, so a screen of nine pictures fetches 25 vector tiles, not 81.
 
+## Fastest: read map data from R2
+
+If your map data is a [PMTiles](https://docs.protomaps.com/pmtiles/) archive in an R2 bucket in the same Cloudflare account, bind the bucket to the Worker. The Worker then reads tiles straight out of the archive: no HTTP request to a tile server, and one ranged read per tile once the archive's directories are in memory. `TILE_URL` is not used.
+
+Add the bucket to `r2_buckets` and name the archive in `vars`, in `worker/wrangler.jsonc`:
+
+```jsonc
+"vars": { "MAP_ARCHIVE": "v1/north-america.pmtiles" },
+"r2_buckets": [
+  { "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" },
+  { "binding": "MAP_DATA", "bucket_name": "your-map-bucket" }
+]
+```
+
+The archive must use the Protomaps basemap schema. To refresh the map, overwrite the archive: the Worker notices the change and no deployment is needed. Places outside the archive's coverage are drawn without map data.
+
 ## How pictures are cached
 
 The Worker is set up for Cloudflare's own cache, with three layers. Workers Cache and the per-data-centre cache need no provisioning; create the R2 bucket as described below.

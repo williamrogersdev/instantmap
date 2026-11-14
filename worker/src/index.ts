@@ -4,6 +4,7 @@ import regular from "../../fixtures/noto-sans-regular-0-255.pbf";
 import medium from "../../fixtures/noto-sans-medium-0-255.pbf";
 import italic from "../../fixtures/noto-sans-italic-0-255.pbf";
 import { THEMES } from "../../packages/instantmap/src/themes.ts";
+import { archiveTile } from "./archive.ts";
 import { BadRequest, cacheKey, fingerprint, jpegQuality, type MapRequest, parseRequest } from "./params.ts";
 
 interface RateLimit {
@@ -13,6 +14,10 @@ interface RateLimit {
 interface Env {
   /** Vector tile source, Protomaps schema: https://example.com/{z}/{x}/{y}.mvt */
   TILE_URL: string;
+  /** Optional. An R2 bucket holding a PMTiles archive of the map data. When bound, tiles are read from it and TILE_URL is not used. */
+  MAP_DATA?: R2Bucket;
+  /** The archive's name in MAP_DATA, for example "v1/north-america.pmtiles". */
+  MAP_ARCHIVE?: string;
   ASSETS: Fetcher;
   /** Optional. An R2 bucket that keeps rendered tiles, so each is drawn once for the whole world rather than once per data centre. */
   TILE_CACHE?: R2Bucket;
@@ -69,7 +74,7 @@ const VECTOR_REFRESH_MS = 30 * 24 * 60 * 60 * 1000;
 // A tile the source did not have is asked for again sooner, in case it was only missing for a moment.
 const VECTOR_EMPTY_REFRESH_MS = 24 * 60 * 60 * 1000;
 
-/** Gets one vector tile: from this isolate, then from R2 (kept for the whole world), then from the tile source. */
+/** Gets one vector tile: from this isolate, then from the map archive in R2 if there is one, else from R2's copy of the tile source, else from the tile source. */
 function vectorTile(env: Env, context: ExecutionContext, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
   const key = `${z}/${x}/${y}`;
   const known = vectorTiles.get(key);
@@ -103,6 +108,11 @@ function vectorTile(env: Env, context: ExecutionContext, z: number, x: number, y
 }
 
 async function loadVectorTile(env: Env, context: ExecutionContext, key: string, z: number, x: number, y: number): Promise<Uint8Array | undefined> {
+  if (env.MAP_DATA) {
+    // Already in R2, one read away: keeping a second copy under mvt/ would only add a lookup.
+    if (!env.MAP_ARCHIVE) throw new Error("MAP_DATA is bound but MAP_ARCHIVE, the archive's name in the bucket, is not set");
+    return archiveTile(env.MAP_DATA, env.MAP_ARCHIVE, z, x, y);
+  }
   const store = env.TILE_CACHE;
   if (!store) return fetchFromSource(env, z, x, y);
   const name = `mvt/${fingerprint(env.TILE_URL)}/${key}`;

@@ -11,6 +11,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Tile retry.
 - `detail` attribute (`auto`, `high`, `low`): on a slow connection or with data saving on, pictures are requested at 1× instead of 2×.
 - Benchmarks (`bun run bench`), a comparison tool and one-command profiling (`bun run profile`), with results published at `/benchmarks/`.
+- Worker: optional `MAP_DATA` bucket and `MAP_ARCHIVE` name. Map data is read straight from a PMTiles archive in R2, with no request to a tile server.
 - Worker: fetched vector tiles are shared between neighbouring pictures and kept in the R2 bucket, so a screen of nine uncached tiles makes 25 requests to the tile source instead of 81, and none once the area has been seen.
 - Benchmarks: a whole-screen case that counts requests to the tile source, and `--source-delay`.
 - Worker: Cloudflare Workers Cache in front of the Worker, a rate limit on uncached renders, and one log line per render with fetch and draw times.

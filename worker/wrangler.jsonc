@@ -11,12 +11,17 @@
     "TILE_URL": "https://www.repackify.com/map-tiles/v1/tiles/{z}/{x}/{y}.mvt"
   },
   "routes": [{ "pattern": "instantmap.org", "custom_domain": true }],
+  // Cloudflare keeps finished pictures in front of the Worker and answers repeats without running it. The cache is
+  // tiered, so a picture drawn for one visitor is shared with every other location, and simultaneous requests for
+  // the same picture are drawn once. Each deployment starts its own cache. With this on, requests for the site's
+  // static files are billed as Worker requests too.
+  "cache": { "enabled": true },
+  // No address may ask for more than 600 uncached pictures a minute at one Cloudflare location. Cached pictures are
+  // never limited. The namespace_id is any number unique within your account.
+  "ratelimits": [{ "name": "RENDER_LIMIT", "namespace_id": "1001", "simple": { "limit": 600, "period": 60 } }],
   "limits": { "cpu_ms": 1000 },
   "observability": { "enabled": true },
   "upload_source_maps": true,
 
-  "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }],
-
-  // Optional. Limit how many uncached pictures one address may ask for. Cached pictures are never limited.
-  // "ratelimits": [{ "name": "RENDER_LIMIT", "namespace_id": "1001", "simple": { "limit": 600, "period": 60 } }]
+  "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }]
 }

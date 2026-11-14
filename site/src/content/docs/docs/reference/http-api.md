@@ -16,8 +16,9 @@ Every image response sends `Access-Control-Allow-Origin: *` and `Cache-Control: 
 
 | Header | Value |
 | --- | --- |
-| `x-instantmap-cache` | `hit` when the picture came from the edge cache, `store` when it came from the optional `TILE_CACHE` R2 bucket, `miss` when it was just drawn. |
-| `server-timing` | `upstream;dur=…` on a miss: the milliseconds spent fetching vector tiles. |
+| `cf-cache-status` | `HIT` when Cloudflare's cache answered without running the Worker. The other headers in this table are then the ones stored with the picture when it was first served. |
+| `x-instantmap-cache` | How the Worker produced the picture: `miss` when it was just drawn, `hit` when it came from the Worker's own cache, `store` when it came from the optional `TILE_CACHE` R2 bucket. |
+| `server-timing` | When the picture was drawn: `upstream;dur=…` is the milliseconds spent fetching vector tiles and `render;dur=…` the milliseconds spent drawing. |
 | `timing-allow-origin` | `*`, so pages on other origins can read the timing. |
 | `x-attribution` | The attribution text. |
 

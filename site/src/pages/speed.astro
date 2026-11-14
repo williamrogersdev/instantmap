@@ -16,7 +16,7 @@ console.log(Math.round(image.responseEnd), "ms");
 
 // From a terminal: was it drawn now or served from cache?
 // curl -sI "https://instantmap.org/static?center=-122.42,37.77&zoom=12" \\
-//   | grep -i -e x-instantmap-cache -e server-timing`;
+//   | grep -i -e cf-cache-status -e server-timing`;
 ---
 
 <Site title="Speed" description={description} path="/speed/" preload={[{ href: poster }]}>

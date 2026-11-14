@@ -5,7 +5,7 @@
     "": {
       "name": "instantmap-worker",
       "dependencies": {
-        "pmtiles": "^4.5.0",
+        "pmtiles": "4.5.0",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "4.20251231.0",

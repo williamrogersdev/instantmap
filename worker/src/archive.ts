@@ -11,6 +11,9 @@ export interface RangedBucket {
 // library when the archive's etag changes, so replacing the archive needs no deployment.
 const directories = new ResolvedValueCache(256);
 
+/** The bucket has no archive under the configured name. */
+export class ArchiveMissing extends Error {}
+
 class BucketSource implements Source {
   constructor(
     private readonly bucket: RangedBucket,
@@ -23,7 +26,7 @@ class BucketSource implements Source {
 
   async getBytes(offset: number, length: number): Promise<RangeResponse> {
     const object = await this.bucket.get(this.key, { range: { offset, length } });
-    if (!object) throw new Error(`the map archive ${this.key} is not in the MAP_DATA bucket`);
+    if (!object) throw new ArchiveMissing(`the map archive ${this.key} is not in the MAP_DATA bucket`);
     return { data: await object.arrayBuffer(), etag: object.etag };
   }
 }

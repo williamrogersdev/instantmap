@@ -75,13 +75,13 @@ The Worker caches upstream tiles for 7 days, so your tile source sees roughly on
 
 ## Optional: keep tiles in R2
 
-By default each Cloudflare data centre draws a tile the first time someone near it asks. To draw every tile once for the whole world, add an R2 bucket named `TILE_CACHE`. Tiles then come from the bucket first and are drawn only when the bucket does not have them.
+The checked-in Worker configuration binds `TILE_CACHE` to an R2 bucket named `instantmap-tiles`. Create that bucket in your own account before deploying, or remove the `r2_buckets` block to use only the per-data-centre edge cache. With R2 enabled, an edge-cache miss checks the bucket before drawing a tile.
 
 ```bash
 cd worker && bunx wrangler r2 bucket create instantmap-tiles
 ```
 
-Then uncomment the `r2_buckets` block in `worker/wrangler.jsonc`:
+The binding in `worker/wrangler.jsonc` is:
 
 ```jsonc
 "r2_buckets": [{ "binding": "TILE_CACHE", "bucket_name": "instantmap-tiles" }]

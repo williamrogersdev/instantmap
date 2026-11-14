@@ -107,7 +107,7 @@ A request that has to be drawn costs CPU time. The `ratelimits` block in `worker
 
 ## Logs
 
-Each picture that is drawn writes one JSON line to [Workers Logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/): the tile or image size, the milliseconds spent fetching vector tiles (`upstreamMs`) and drawing (`renderMs`), the size in bytes and the Cloudflare location (`colo`). Cached pictures write nothing, because the Worker does not run for them.
+Each picture that is drawn writes one JSON line to [Workers Logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/): the tile or image size, the milliseconds spent fetching vector tiles (`upstreamMs`), the size in bytes and the Cloudflare location (`colo`). Cloudflare records the CPU time of each request alongside it. Cached pictures write nothing, because the Worker does not run for them.
 
 ## Check it
 

@@ -82,3 +82,7 @@ To run your own server, set `TILE_URL` in `worker/wrangler.jsonc` to a Protomaps
 Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL). Show this credit wherever the map appears; the element adds it for you. Type is Noto Sans (SIL Open Font License). The fixtures in `fixtures/` carry the same terms.
 
 MIT licensed.
+
+### Production tile cache
+
+The Worker binds `TILE_CACHE` to the private `instantmap-tiles` R2 bucket. Rendered tiles are shared across data centres, with a 90-day object expiration rule (`expire-rendered-tiles`). Static map requests continue to use the edge cache.

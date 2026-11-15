@@ -91,7 +91,7 @@ jobs:
           E2E_OUT_DIR: ${{ github.workspace }}/verify-out
       - name: Upload screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-screenshots
           path: verify-out
@@ -121,7 +121,7 @@ jobs:
       - name: Benchmarks (quick)
         run: bun run bench --quick --markdown "$GITHUB_STEP_SUMMARY"
       - name: Upload results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: bench/results/latest.json

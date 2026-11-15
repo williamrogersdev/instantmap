@@ -47,6 +47,10 @@ export interface AnimationOptions {
 export interface FitOptions extends AnimationOptions {
   padding?: number | { top?: number; right?: number; bottom?: number; left?: number };
   maxZoom?: number;
+  /** Never zoom out further than this. Default 0. */
+  minZoom?: number;
+  /** Round the zoom down to a whole level, so tiles and the poster draw at their sharpest. */
+  wholeZoom?: boolean;
 }
 
 export interface Cluster<Data = unknown> {

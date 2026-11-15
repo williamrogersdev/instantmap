@@ -36,6 +36,7 @@ Works with React 18 and 19, on the client and on the server. The file starts wit
 | `src` | `string` | `"https://instantmap.org"` | Your image server. |
 | `load` | `"intent" \| "visible" \| "eager" \| "none"` | `"intent"` | |
 | `scrollZoom` | `"cooperative" \| "always" \| "off"` | `"cooperative"` | |
+| `detail` | `"auto" \| "high" \| "low"` | `"auto"` | Picture density on dense screens. With `auto` the poster offers 1× and 2× and the browser picks by screen density, and tiles drop to 1× when the visitor saves data or the connection is slow. |
 | `posterWidth`, `posterHeight` | `number` | `1280`, `720` | Size of the first image. Match your container's aspect ratio. |
 | `alt` | `string` | `"Map"` | |
 | `className`, `style` | | | Give the map a height here. |

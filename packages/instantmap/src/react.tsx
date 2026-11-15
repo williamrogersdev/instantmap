@@ -3,7 +3,7 @@
 import { type CSSProperties, forwardRef, type ReactNode, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { defineInstantMap, type InstantMapElement } from "./index.ts";
-import { staticUrl } from "./static-url.ts";
+import { posterSources } from "./static-url.ts";
 import type { Camera, CardImages, CardOptions, Cluster, Detail, LngLat, LoadMode, Marker, ScrollZoom, Theme } from "./types.ts";
 
 export interface InstantMapProps<Data = unknown> {
@@ -137,19 +137,21 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
   // Building the address clusters every marker, so it is only redone when something it depends on changes.
   const poster = useMemo(
     () =>
-      staticUrl({
-        ...(props.src ? { src: props.src } : {}),
-        center: props.center,
-        zoom: props.zoom,
-        width,
-        height,
-        ratio: 2,
-        ...(props.theme ? { theme: props.theme } : {}),
-        ...(props.colors ? { colors: props.colors } : {}),
-        ...(props.markers ? { markers: props.markers } : {}),
-        ...(props.cluster !== undefined ? { cluster: props.cluster } : {}),
-      }),
-    [props.src, props.center[0], props.center[1], props.zoom, width, height, props.theme, props.colors, props.markers, props.cluster],
+      posterSources(
+        {
+          ...(props.src ? { src: props.src } : {}),
+          center: props.center,
+          zoom: props.zoom,
+          width,
+          height,
+          ...(props.theme ? { theme: props.theme } : {}),
+          ...(props.colors ? { colors: props.colors } : {}),
+          ...(props.markers ? { markers: props.markers } : {}),
+          ...(props.cluster !== undefined ? { cluster: props.cluster } : {}),
+        },
+        props.detail,
+      ),
+    [props.src, props.center[0], props.center[1], props.zoom, width, height, props.theme, props.colors, props.markers, props.cluster, props.detail],
   );
 
   return (
@@ -168,7 +170,7 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
       style={{ display: "block", position: "relative", ...props.style }}
       suppressHydrationWarning
     >
-      <img src={poster} alt={props.alt ?? "Map"} width={width} height={height} decoding="async" fetchPriority="high" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      <img src={poster.src} srcSet={poster.srcset} alt={props.alt ?? "Map"} width={width} height={height} decoding="async" fetchPriority="high" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       {popup && props.renderPopup ? createPortal(props.renderPopup(popup.marker), popup.host) : null}
     </instant-map>
   );

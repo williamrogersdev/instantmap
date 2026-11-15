@@ -1,6 +1,6 @@
 import { clusterAt, DEFAULT_CLUSTER_DISTANCE, latitudeOf, longitudeOf, MAX_LABEL_LENGTH, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
 import { encodeColors } from "./colors.ts";
-import type { Marker, StaticUrlOptions } from "./types.ts";
+import type { Detail, Marker, StaticUrlOptions } from "./types.ts";
 
 declare const INSTANT_MAP_FROM_SCRIPT: boolean | undefined;
 
@@ -91,6 +91,18 @@ export function pixelRatio(detail?: string | null): 1 | 2 {
   const connection = (globalThis.navigator as { connection?: Connection } | undefined)?.connection;
   if (!connection) return 2;
   return connection.saveData || /2g|3g/.test(connection.effectiveType ?? "") || (connection.downlink ?? 10) < 2.5 ? 1 : 2;
+}
+
+/**
+ * The poster's src and srcset. With detail "auto" the browser picks 1x or 2x by screen density, so the markup is the
+ * same on the server and in the browser; "low" and "high" ask for one density only. An explicit ratio wins.
+ */
+export function posterSources(options: StaticUrlInput, detail: Detail = "auto"): { src: string; srcset?: string } {
+  if (options.ratio) return { src: staticUrl(options) };
+  if (detail === "low") return { src: staticUrl({ ...options, ratio: 1 }) };
+  if (detail === "high") return { src: staticUrl({ ...options, ratio: 2 }) };
+  const single = staticUrl({ ...options, ratio: 1 });
+  return { src: single, srcset: `${single} 1x, ${staticUrl({ ...options, ratio: 2 })} 2x` };
 }
 
 export function tileUrl(src: string, z: number, x: number, y: number, ratio: number, theme?: string, colors?: Partial<Record<string, string>>): string {

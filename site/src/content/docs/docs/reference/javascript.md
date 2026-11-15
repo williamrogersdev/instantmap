@@ -9,8 +9,8 @@ The package has these entry points:
 
 | Import | Use it in | Contains |
 | --- | --- | --- |
-| `instantmap-js` | Browser code | Defines `<instant-map>`, plus `staticUrl`, `tileUrl`, `clusterAt`, themes, `brandTheme` and `brandThemeFromCss`. `posterHtml` is in `instantmap-js/server`. |
-| `instantmap-js/server` | Servers, build scripts, edge functions, React Server Components | `staticUrl`, `tileUrl`, `posterHtml`, `clusterAt`, themes, colour helpers, `brandTheme` and `brandThemeFromCss`. Defines no element and never touches `window`. |
+| `instantmap-js` | Browser code | Defines `<instant-map>`, plus `staticUrl`, `posterSources`, `fitView`, `tileUrl`, `clusterAt`, themes, `brandTheme` and `brandThemeFromCss`. `posterHtml` is in `instantmap-js/server`. |
+| `instantmap-js/server` | Servers, build scripts, edge functions, React Server Components | `staticUrl`, `posterSources`, `fitView`, `tileUrl`, `posterHtml`, `clusterAt`, themes, colour helpers, `brandTheme` and `brandThemeFromCss`. Defines no element and never touches `window`. |
 | `instantmap-js/react` | React 18 and 19, Next.js, Remix | The [`<InstantMap>` component](/docs/reference/react/). |
 | `instantmap-js/card` | Code that builds its own card | `defaultCard`, `cardFromTemplate`, `safeUrl`, `escapeHtml`, `CARD_CSS`. |
 | `instantmap-js/brand` | Anywhere | `brandTheme`, `brandThemeFromCss`, and the `BrandInput` and `BrandTheme` types. |
@@ -65,10 +65,32 @@ It takes every `staticUrl` option, plus:
 - `alt`
 - `className`
 - `load`
+- `detail`
 
-It writes `center`, `zoom`, `theme`, `colors`, `load` and `src` as attributes on the element, so the live map starts with the same look as the image.
+It writes `center`, `zoom`, `theme`, `colors`, `load`, `detail` and `src` as attributes on the element, so the live map starts with the same look as the image.
 
-The string sets `aspect-ratio` from `width` and `height`, so the map holds its space before it loads. `ratio` defaults to `2` here.
+The string sets `aspect-ratio` from `width` and `height`, so the map holds its space before it loads. Without a `ratio`, the image carries a `srcset` from [`posterSources`](#postersourcesoptions-detail) so the browser picks 1× or 2×.
+
+## `posterSources(options, detail?)`
+
+The `src` and `srcset` for a poster `<img>`, from every `staticUrl` option. With `detail` `"auto"` (the default) it returns a 1× `src` and a `srcset` offering 1× and 2×, so the browser picks by screen density and the markup is the same on the server and in the browser. `"low"` and `"high"` return one density and no `srcset`; an explicit `ratio` wins. `<InstantMap>` and `posterHtml` use it.
+
+## `fitView(boundsOrMarkers, { width, height }, options?)`
+
+The `{ center, zoom }` that fits `[west, south, east, north]` or an array of markers into a frame of that size, computed without a map. `fitBounds` uses it; call it yourself to build the poster for the view `fitBounds` would show, so the first image and the live map agree.
+
+```ts
+import { fitView } from "instantmap-js/server";
+
+const { center, zoom } = fitView(listings, { width: 960, height: 540 }, { padding: 64, maxZoom: 15, wholeZoom: true });
+```
+
+| Option | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `padding` | `number \| { top?, right?, bottom?, left? }` | `48` | Space kept clear around the points, in CSS pixels. |
+| `maxZoom` | `number` | `16` | |
+| `minZoom` | `number` | `0` | |
+| `wholeZoom` | `boolean` | `false` | Round the zoom down to a whole level, where tiles and the poster are sharpest. |
 
 ## `clusterAt(markers, zoom, distance?)`
 

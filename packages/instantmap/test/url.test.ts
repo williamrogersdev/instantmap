@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { decodeColors, encodeColors, parseColor } from "../src/colors.ts";
 import { CHROME, CHROME_KEYS, parseMarkerList } from "../src/element.ts";
 import { posterHtml } from "../src/poster-html.ts";
+import { posterSources } from "../src/static-url.ts";
 import { pixelRatio, staticUrl, tileUrl } from "../src/static-url.ts";
 import { decodePaletteColors, PALETTE_KEYS, paletteWords, resolvePalette, THEMES } from "../src/themes.ts";
 
@@ -136,5 +137,25 @@ describe("pixelRatio", () => {
     expect(pixelRatio("high")).toBe(2);
     setConnection({ downlink: 10 });
     expect(pixelRatio("low")).toBe(1);
+  });
+});
+
+describe("posterSources", () => {
+  const input = { center: [-122.42, 37.77] as [number, number], zoom: 12, width: 640, height: 400 };
+  test("auto offers 1x and 2x so the browser picks by screen density", () => {
+    const { src, srcset } = posterSources(input);
+    expect(src).not.toContain("r=2");
+    expect(srcset).toBe(`${src} 1x, ${staticUrl({ ...input, ratio: 2 })} 2x`);
+  });
+  test("low and high ask for one density, and an explicit ratio wins", () => {
+    expect(posterSources(input, "low")).toEqual({ src: staticUrl({ ...input, ratio: 1 }) });
+    expect(posterSources(input, "high")).toEqual({ src: staticUrl({ ...input, ratio: 2 }) });
+    expect(posterSources({ ...input, ratio: 2 }, "low")).toEqual({ src: staticUrl({ ...input, ratio: 2 }) });
+  });
+  test("posterHtml writes the srcset and the detail attribute", () => {
+    const html = posterHtml({ ...input, detail: "low" });
+    expect(html).toContain('detail="low"');
+    expect(html).not.toContain("srcset");
+    expect(posterHtml(input)).toContain(" 2x\"");
   });
 });

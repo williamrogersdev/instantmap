@@ -59,6 +59,8 @@ Attributes are for HTML and server templates. Every attribute also has a JavaScr
 | `card-layout` | `stacked` · `row` | `stacked` | Layout of the built-in card. |
 | `card-action` | text, `off` or empty | `View details` | Text of the card's link to `href`. An empty value or `off` hides the link. |
 | `card-target` | `_blank` | `_self` | Where the card's link opens. |
+| `agent-tools` | prefix, or empty | none | Offer `describe`, `find` and `show` tools to the browser's AI agent through WebMCP, where the browser has it. The value prefixes their names (empty: `map_`). See [Maps AI agents can read](/docs/guides/ai-agents/). |
+| `agent-noun` | text | `places` | What the markers are, in the tools' descriptions: `listings`, `stores`. |
 | `card-images` | `visible` · `hover` · `off` | `visible` | When card images are fetched ahead of a click. See [Cards and popups](/docs/guides/popups/#fast-card-images). |
 | `aria-label` | text | `Map` | Accessible name. Also the first image's `alt`. |
 

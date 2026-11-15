@@ -6,7 +6,7 @@ const shared = { target: "browser" as const, format: "esm" as const, minify: tru
 // The package: one file per entry point, shared code in chunks, for bundlers.
 const library = await Bun.build({
   ...shared,
-  entrypoints: ["src/index.ts", "src/server.ts", "src/react.tsx", "src/card.ts", "src/brand.ts"],
+  entrypoints: ["src/index.ts", "src/server.ts", "src/react.tsx", "src/card.ts", "src/brand.ts", "src/agent.ts"],
   outdir: "dist",
   external: ["react", "react-dom", "react/jsx-runtime"],
 });
@@ -33,7 +33,7 @@ for (const output of cdn.outputs) {
   const name = output.path.split("/").pop()!;
   const text = await Bun.file(output.path).text();
   // The entry is a stub that imports the element; the element is what a page pays for up front.
-  const role = name === "instant-map.js" ? "entry" : text.includes("card-layout") ? "engine" : "element";
+  const role = name === "instant-map.js" ? "entry" : text.includes("card-layout") ? "engine" : text.includes("Describe the map") ? "agent" : "element";
   sizes[role] = await gzip(output.path);
 }
 sizes.upfront = (sizes.entry ?? 0) + (sizes.element ?? 0);

@@ -11,7 +11,7 @@ sidebar:
 | --- | --- |
 | **A name** | The element has `role="application"`, `aria-roledescription="map"`, and an `aria-label` (default "Map"; set your own). |
 | **Keyboard use** | Tab to the map; arrow keys pan and `+` / `-` zoom. Tab on to the zoom buttons, then to each visible marker. |
-| **A marker list** | The map keeps a hidden list with a button for each visible marker (up to 50), named by its title and label, for example "Sunny loft, $420". Enter opens its card. |
+| **A marker list** | `posterHtml()` and `<InstantMap>` render a hidden list of the places in the first picture, as links, with the page. Once live, the map keeps a button for each visible marker (up to 50) in the same list, named by its title and label, for example "Sunny loft, $420". Enter opens its card. See [Maps AI agents can read](/docs/guides/ai-agents/). |
 | **Focus is visible** | Focus rings use the theme's `accent` colour. |
 | **Touch targets** | Zoom buttons are 44×44 px, and markers accept taps 6 px beyond their edge. |
 | **Reduced motion** | `flyTo`, flings, the wake ripple and card animations turn off under `prefers-reduced-motion`. |

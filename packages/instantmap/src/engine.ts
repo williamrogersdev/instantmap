@@ -146,13 +146,21 @@ export class Engine<Data = unknown> implements EngineHandle {
     style.textContent = CSS;
     root.insertBefore(style, root.firstChild);
     const template = document.createElement("template");
-    template.innerHTML = `<div class="tiles"></div><canvas></canvas><div class="popups"><slot name="popup"></slot></div><div class="controls" part="controls"><button type="button" data-zoom="1" aria-label="Zoom in">${ICON_PLUS}</button><button type="button" data-zoom="-1" aria-label="Zoom out">${ICON_MINUS}</button></div><div class="hint" aria-hidden="true"></div><ul class="sr" aria-label="Places on the map"></ul>`;
+    template.innerHTML = `<div class="tiles"></div><canvas></canvas><div class="popups"><slot name="popup"></slot></div><div class="controls" part="controls"><button type="button" data-zoom="1" aria-label="Zoom in">${ICON_PLUS}</button><button type="button" data-zoom="-1" aria-label="Zoom out">${ICON_MINUS}</button></div><div class="hint" aria-hidden="true"></div>`;
     bridge.viewport.append(template.content);
     this.#tileLayer = root.querySelector(".tiles")!;
     this.#canvas = root.querySelector("canvas")!;
     this.#context = this.#canvas.getContext("2d")!;
     this.#hint = root.querySelector(".hint")!;
-    this.#list = root.querySelector(".sr")!;
+    // A list rendered with the page (posterHtml, <InstantMap>) is kept and updated, so places are never listed twice.
+    const rendered = host.querySelector<HTMLUListElement>(":scope > ul[data-im-places]");
+    if (rendered) this.#list = rendered;
+    else {
+      this.#list = document.createElement("ul");
+      this.#list.className = "sr";
+      this.#list.setAttribute("aria-label", "Places on the map");
+      bridge.viewport.append(this.#list);
+    }
     this.#controls = root.querySelector(".controls")!;
     for (const button of root.querySelectorAll<HTMLButtonElement>("[data-zoom]")) {
       button.addEventListener("click", (event) => {

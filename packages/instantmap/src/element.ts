@@ -63,6 +63,7 @@ const CSS = `
 ::slotted(img){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;transform-origin:50% 50%;transition:opacity .32s ease}
 ::slotted(picture){position:absolute;inset:0;z-index:3}
 ::slotted(template){display:none}
+::slotted(ul[data-im-places]){position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;margin:0;padding:0}
 .credit{position:absolute;right:0;bottom:0;z-index:7;font:11px/18px system-ui,sans-serif;padding:0 7px;border-top-left-radius:8px;background:color-mix(in srgb,var(--im-card) 82%,transparent);color:var(--im-muted)}
 .credit a{color:inherit;text-decoration:none}
 .credit a:hover{text-decoration:underline}
@@ -169,10 +170,12 @@ export class InstantMapElement<Data = unknown> extends Base {
   #posterQueued = false;
   #held: { event: PointerEvent; x: number; y: number; moved: number } | null = null;
   #tapped: { x: number; y: number } | null = null;
+  #agent: AbortController | null = null;
 
   connectedCallback(): void {
     if (this.#connected) {
       this.#engine?.schedule();
+      this.#offerTools();
       return;
     }
     this.#upgradeProperties();
@@ -180,10 +183,25 @@ export class InstantMapElement<Data = unknown> extends Base {
     this.#build();
     this.#readAttributes();
     queueMicrotask(() => this.#start());
+    this.#offerTools();
+  }
+
+  // With the agent-tools attribute, the map's tools are offered to the browser's own agent (WebMCP) where it has one.
+  #offerTools(): void {
+    if (this.#agent || !this.hasAttribute("agent-tools")) return;
+    const scope = globalThis as { document?: { modelContext?: unknown }; navigator?: { modelContext?: unknown } };
+    if (!scope.document?.modelContext && !scope.navigator?.modelContext) return;
+    const controller = (this.#agent = new AbortController());
+    const prefix = this.getAttribute("agent-tools") || "map_";
+    void import("./agent.ts").then(({ registerMapTools }) => {
+      if (!controller.signal.aborted) registerMapTools(this, { prefix, noun: this.getAttribute("agent-noun") ?? "places", signal: controller.signal });
+    });
   }
 
   disconnectedCallback(): void {
     this.#engine?.pause();
+    this.#agent?.abort();
+    this.#agent = null;
   }
 
   attributeChangedCallback(name: string, previous: string | null, value: string | null): void {

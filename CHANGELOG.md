@@ -4,6 +4,20 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.2.0]
+
+### Added
+
+- The places in the first picture as a hidden list inside the element (`<ul data-im-places>`), rendered by `posterHtml()` and `<InstantMap>`, so crawlers, screen readers and AI agents read them before any script runs. The live map adopts the list and keeps it current. `places` option to change the limit or leave it out.
+- `agent-tools` attribute (`agentTools` prop, `agentTools` option): offers `describe`, `find` and `show` tools to the browser's AI agent through WebMCP (`document.modelContext`, or `navigator.modelContext` in early previews). Loaded in its own 2.7 KB file, only when the browser has WebMCP.
+- `instantmap-js/agent`: `mapTools(map)`, `registerMapTools(map, options)` and `describeMap(map)`, for an app's own assistant.
+- `describeView`, `markersIn`, `nearest`, `distanceKm`, `viewBounds`, `viewGroups`, `placesHtml` and `placeItemsHtml` in `instantmap-js` and `instantmap-js/server`.
+- Worker: `GET /describe`, the same address as `/static`, answers with what that picture shows as JSON.
+
+### Changed
+
+- The engine's place list is in the element's light DOM rather than its shadow root, so it is reachable by tools that do not enter shadow roots.
+
 ## [0.1.1]
 
 ### Added

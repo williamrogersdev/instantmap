@@ -1,4 +1,5 @@
-import { clusterAt, DEFAULT_CLUSTER_DISTANCE, latitudeOf, longitudeOf, MAX_LABEL_LENGTH, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
+import { DEFAULT_CLUSTER_DISTANCE, MAX_LABEL_LENGTH } from "./cluster.ts";
+import { viewGroups } from "./view-groups.ts";
 import { encodeColors } from "./colors.ts";
 import type { Detail, Marker, StaticUrlOptions } from "./types.ts";
 
@@ -39,36 +40,21 @@ export function staticUrl(options: StaticUrlInput): string {
   if (options.theme && options.theme !== "daylight") params.set("theme", options.theme);
   const colors = options.colors ? encodeColors(options.colors) : "";
   if (colors) params.set("colors", colors);
-  const markers = options.markers ?? [];
-  if (markers.length) {
-    const distance = options.cluster === false ? 0 : (options.cluster ?? DEFAULT_CLUSTER_DISTANCE);
-    const groupZoom = Math.floor(options.zoom);
-    const world = TILE_SIZE * 2 ** options.zoom;
-    const centerX = mercatorX(options.center[0]) * world;
-    const centerY = mercatorY(options.center[1]) * world;
-    const scale = 2 ** (options.zoom - groupZoom);
-    const singles: string[] = [];
-    const clusters: string[] = [];
-    for (const group of clusterAt(markers as Marker[], groupZoom, distance)) {
-      let dx = group.x * scale - centerX;
-      if (dx > world / 2) dx -= world;
-      if (dx < -world / 2) dx += world;
-      const dy = group.y * scale - centerY;
-      const margin = group.radius + 8;
-      if (Math.abs(dx) > width / 2 + margin || Math.abs(dy) > height / 2 + margin) continue;
-      const worldAtGroup = TILE_SIZE * 2 ** groupZoom;
-      const lng = coordinate(longitudeOf(group.x / worldAtGroup));
-      const lat = coordinate(latitudeOf(group.y / worldAtGroup));
-      if (group.members.length > 1) clusters.push(`${lng},${lat},${group.members.length}`);
-      else {
-        const label = cleanLabel(group.members[0]!.label);
-        singles.push(label ? `${lng},${lat},${label}` : `${lng},${lat}`);
-      }
+  const singles: string[] = [];
+  const clusters: string[] = [];
+  const groups = viewGroups({ center: options.center, zoom: options.zoom, width, height, markers: (options.markers ?? []) as Marker[], cluster: options.cluster ?? DEFAULT_CLUSTER_DISTANCE });
+  for (const group of groups) {
+    const lng = coordinate(group.lng);
+    const lat = coordinate(group.lat);
+    if (group.members.length > 1) clusters.push(`${lng},${lat},${group.members.length}`);
+    else {
+      const label = cleanLabel(group.members[0]!.label);
+      singles.push(label ? `${lng},${lat},${label}` : `${lng},${lat}`);
     }
-    if (singles.length) params.set("markers", singles.join(";"));
-    if (clusters.length) params.set("clusters", clusters.join(";"));
-    params.set("cluster", "0");
   }
+  if (singles.length) params.set("markers", singles.join(";"));
+  if (clusters.length) params.set("clusters", clusters.join(";"));
+  if (options.markers?.length) params.set("cluster", "0");
   if (options.format === "png") params.set("format", "png");
   params.set("v", STYLE_VERSION);
   return `${src}/static?${params}`;

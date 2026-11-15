@@ -5,6 +5,7 @@
 const BUDGETS = {
   upfront: 8192, // loader plus element, fetched on every page that uses the map
   engine: 13312, // fetched on first intent (hover, touch or scroll into view)
+  agent: 3072, // fetched only with the agent-tools attribute, in a browser that has WebMCP
 } as const;
 
 const file = new URL("../packages/instantmap/dist/cdn/sizes.json", import.meta.url);

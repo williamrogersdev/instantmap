@@ -35,6 +35,8 @@ import { InstantMap } from "instantmap-js/react";
 
 Guides with a working example app for each: [Next.js](https://instantmap.org/docs/frameworks/nextjs/), [React](https://instantmap.org/docs/frameworks/react/), [React Router](https://instantmap.org/docs/frameworks/react-router/), [Astro](https://instantmap.org/docs/frameworks/astro/), [Vue](https://instantmap.org/docs/frameworks/vue/), [Nuxt](https://instantmap.org/docs/frameworks/nuxt/), [SvelteKit](https://instantmap.org/docs/frameworks/sveltekit/), [Angular](https://instantmap.org/docs/frameworks/angular/), [Solid](https://instantmap.org/docs/frameworks/solid/) and [plain HTML](https://instantmap.org/docs/frameworks/html/). The apps are in [`examples/`](examples/).
 
+AI agents can read and steer the map: the places in the first picture are a plain list in the HTML, a browser's agent gets `describe`, `find` and `show` tools through WebMCP with `agent-tools`, and `/describe` returns any `/static` picture as JSON. See [Maps AI agents can read](https://instantmap.org/docs/guides/ai-agents/).
+
 Click a marker and a card opens from its `title`, `subtitle`, `image`, `badge`, `label` and `href`. Change its layout with `card-layout="row"`, its link with `card-action`, its look with `--im-card-*` CSS variables, or write your own with a `<template data-card>`. Card images are fetched ahead of the click for the markers nearest the centre, so serve them about 560 px wide.
 
 Match your brand by passing style-guide colours to `brandTheme()` and spreading the result into `staticUrl()`, `<InstantMap />` or `posterHtml()`:
@@ -46,7 +48,7 @@ const brand = brandTheme({ primary: "#e11d48", background: "#fff7ed", foreground
 // staticUrl({ ..., ...brand })   <InstantMap {...brand} />
 ```
 
-The package exports `instantmap-js`, `instantmap-js/server`, `instantmap-js/react`, `instantmap-js/card`, `instantmap-js/brand` and `instantmap-js/instant-map.js`.
+The package exports `instantmap-js`, `instantmap-js/server`, `instantmap-js/react`, `instantmap-js/card`, `instantmap-js/brand`, `instantmap-js/agent` and `instantmap-js/instant-map.js`.
 
 ## How it works
 

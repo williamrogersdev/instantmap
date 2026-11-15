@@ -35,6 +35,9 @@ Works with React 18 and 19, on the client and on the server. The file starts wit
 | `renderPopup` | `(marker) => ReactNode` or `null` | built-in card | Your own card, rendered through a portal, so context, state and Tailwind all work. `null` turns cards off. |
 | `src` | `string` | `"https://instantmap.org"` | Your image server. |
 | `load` | `"intent" \| "visible" \| "eager" \| "none"` | `"intent"` | |
+| `places` | `boolean \| { label?, limit? }` | `true` | A hidden list of the places in the first picture, rendered with the page. See [Maps AI agents can read](/docs/guides/ai-agents/). |
+| `agentTools` | `boolean \| string` | none | Offer `describe`, `find` and `show` tools to the browser's AI agent (WebMCP). A string is the tool-name prefix. |
+| `agentNoun` | `string` | `"places"` | What the markers are, in the tools' descriptions. |
 | `scrollZoom` | `"cooperative" \| "always" \| "off"` | `"cooperative"` | |
 | `detail` | `"auto" \| "high" \| "low"` | `"auto"` | Picture density on dense screens. With `auto` the poster offers 1× and 2× and the browser picks by screen density, and tiles drop to 1× when the visitor saves data or the connection is slow. |
 | `posterWidth`, `posterHeight` | `number` | `1280`, `720` | Size of the first image. Match your container's aspect ratio. |

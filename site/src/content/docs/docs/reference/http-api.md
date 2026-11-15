@@ -54,6 +54,10 @@ https://instantmap.org/static?center=-97.74,30.27&zoom=12&size=1200x630&r=2&mark
 
 Build these URLs with [`staticUrl()`](/docs/reference/javascript/#staticurl) rather than by hand. `staticUrl()` clusters your markers in the same way the browser does and drops the ones outside the frame, so a URL for 50,000 markers stays short.
 
+## `GET /describe`
+
+The same parameters as `/static`. Returns what that picture shows as JSON instead of drawing it: `bounds`, `count`, `markers` and `clusters` with their pixel positions, a `summary` sentence and the `image` address. See [Maps AI agents can read](/docs/guides/ai-agents/#get-describe).
+
 ## `GET /tiles/{z}/{x}/{y}.jpg`
 
 512 px raster tiles for the interactive map. `{z}` runs 0 to 15. Beyond zoom 15 the map scales the zoom 15 tile.

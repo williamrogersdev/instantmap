@@ -3,6 +3,7 @@
 import { type CSSProperties, forwardRef, type ReactNode, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { defineInstantMap, type InstantMapElement } from "./index.ts";
+import { PLACES_LABEL, placeItemsHtml } from "./places.ts";
 import { posterSources } from "./static-url.ts";
 import type { Camera, CardImages, CardOptions, Cluster, Detail, LngLat, LoadMode, Marker, ScrollZoom, Theme } from "./types.ts";
 
@@ -26,6 +27,15 @@ export interface InstantMapProps<Data = unknown> {
   posterWidth?: number;
   posterHeight?: number;
   alt?: string;
+  /**
+   * A hidden list of the places in the first picture, rendered with the page so crawlers, screen readers and AI agents
+   * can read them before any script runs. The live map keeps it current. Default true; `false` leaves it out.
+   */
+  places?: boolean | { label?: string; limit?: number };
+  /** Offer the map's tools (describe, find, show) to the browser's AI agent through WebMCP. A string is the tool-name prefix. */
+  agentTools?: boolean | string;
+  /** What the markers are, in the agent tools' descriptions: "listings", "stores". */
+  agentNoun?: string;
   className?: string;
   style?: CSSProperties;
   renderPopup?: ((marker: Marker<Data>) => ReactNode) | null;
@@ -65,6 +75,8 @@ declare module "react" {
         detail?: string;
         cluster?: string;
         "card-images"?: string;
+        "agent-tools"?: string;
+        "agent-noun"?: string;
         class?: string;
       };
     }
@@ -154,6 +166,15 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
     [props.src, props.center[0], props.center[1], props.zoom, width, height, props.theme, props.colors, props.markers, props.cluster, props.detail],
   );
 
+  const places = props.places ?? true;
+  const placeItems = useMemo(
+    () =>
+      places === false || !props.markers?.length
+        ? null
+        : placeItemsHtml({ center: props.center, zoom: props.zoom, width, height, markers: props.markers, ...(props.cluster !== undefined ? { cluster: props.cluster } : {}) }, typeof places === "object" ? places.limit : undefined),
+    [places, props.center[0], props.center[1], props.zoom, width, height, props.markers, props.cluster],
+  );
+
   return (
     <instant-map
       ref={element as React.Ref<HTMLElement>}
@@ -166,11 +187,17 @@ function InstantMapInner<Data>(props: InstantMapProps<Data>, ref: React.Forwarde
       detail={props.detail}
       cluster={props.cluster === false ? "off" : props.cluster === undefined ? undefined : String(props.cluster)}
       card-images={props.cardImages}
+      agent-tools={props.agentTools === undefined || props.agentTools === false ? undefined : props.agentTools === true ? "" : props.agentTools}
+      agent-noun={props.agentNoun}
       class={props.className}
       style={{ display: "block", position: "relative", ...props.style }}
       suppressHydrationWarning
     >
       <img src={poster.src} srcSet={poster.srcset} alt={props.alt ?? "Map"} width={width} height={height} decoding="async" fetchPriority="high" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      {placeItems === null ? null : (
+        // The live map rewrites this list as it moves, so React sets it once and leaves its children alone.
+        <ul data-im-places="" aria-label={typeof places === "object" && places.label ? places.label : PLACES_LABEL} dangerouslySetInnerHTML={{ __html: placeItems }} suppressHydrationWarning />
+      )}
       {popup && props.renderPopup ? createPortal(props.renderPopup(popup.marker), popup.host) : null}
     </instant-map>
   );

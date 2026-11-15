@@ -16,6 +16,8 @@ await map.fitBounds([-74.05, 40.68, -73.9, 40.82]);              // [west, south
 
 The animations follow `prefers-reduced-motion`: they jump instead.
 
+To start on the fitted view, so the poster already shows every marker, work the camera out before the map exists with `fitView(markers, { width, height }, options)` from `instantmap-js` or `instantmap-js/server`, and give its `center` and `zoom` to the element or `staticUrl`.
+
 ## Reading the view
 
 ```js

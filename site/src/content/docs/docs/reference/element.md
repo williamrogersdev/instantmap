@@ -118,7 +118,7 @@ A marker with a `label` draws as a pill; without one it draws as a dot. Markers 
 | --- | --- | --- |
 | `setCamera({ center?, zoom? })` | `this` | Jump without animation. |
 | `flyTo({ center?, zoom?, duration?, animate? })` | `Promise<void>` | Animate there. Zooms out mid-flight for long trips. Respects `prefers-reduced-motion`. |
-| `fitBounds(boundsOrMarkers, { padding?, maxZoom?, duration?, animate? })` | `Promise<void>` | Fit `[west, south, east, north]` or an array of markers. |
+| `fitBounds(boundsOrMarkers, { padding?, maxZoom?, minZoom?, wholeZoom?, duration?, animate? })` | `Promise<void>` | Fit `[west, south, east, north]` or an array of markers. [`fitView`](/docs/reference/javascript/) gives the same view without a map. |
 | `select(id \| null)` | `void` | Select a marker and open its card; `null` closes it. Fires `select` when the selection changes. |
 | `highlight(id \| null)` | `void` | Emphasise a marker without opening anything. Use it for list hover. |
 | `getMarker(id)` | `Marker \| undefined` | Look up by id. |

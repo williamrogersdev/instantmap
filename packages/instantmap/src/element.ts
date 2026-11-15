@@ -1,4 +1,5 @@
 import { boundsOf, DEFAULT_CLUSTER_DISTANCE, latitudeOf, longitudeOf, mercatorX, mercatorY, TILE_SIZE } from "./cluster.ts";
+import { fitView } from "./fit.ts";
 import { DEFAULT_SRC, MAX_STATIC_SIZE, pixelRatio, staticUrl } from "./static-url.ts";
 import { decodeColors, parseColor } from "./colors.ts";
 import type { AnimationOptions, Bounds, Camera, CameraOptions, CardOptions, FitOptions, InstantMapEventMap, LngLat, LoadMode, Marker, PopupRenderer, Theme } from "./types.ts";
@@ -295,18 +296,8 @@ export class InstantMapElement<Data = unknown> extends Base {
   }
 
   fitBounds(target: Bounds | readonly Pick<Marker, "lng" | "lat">[], options: FitOptions = {}): Promise<void> {
-    const bounds: Bounds = Array.isArray(target) && typeof target[0] === "number" ? (target as Bounds) : boundsOf(target as Pick<Marker, "lng" | "lat">[]);
-    const padding = typeof options.padding === "number" ? { top: options.padding, right: options.padding, bottom: options.padding, left: options.padding } : { top: 48, right: 48, bottom: 48, left: 48, ...options.padding };
-    const width = Math.max(1, (this.clientWidth || 640) - padding.left - padding.right);
-    const height = Math.max(1, (this.clientHeight || 400) - padding.top - padding.bottom);
-    const [west, south, east, north] = bounds;
-    const spanX = Math.max(1e-9, mercatorX(east) - mercatorX(west));
-    const spanY = Math.max(1e-9, mercatorY(south) - mercatorY(north));
-    const zoom = Math.min(options.maxZoom ?? 16, Math.log2(Math.min(width / spanX, height / spanY) / TILE_SIZE));
-    const world = TILE_SIZE * 2 ** zoom;
-    const centerX = (mercatorX(west) + mercatorX(east)) / 2 + (padding.right - padding.left) / 2 / world;
-    const centerY = (mercatorY(north) + mercatorY(south)) / 2 + (padding.bottom - padding.top) / 2 / world;
-    return this.flyTo({ center: [longitudeOf(centerX), latitudeOf(centerY)], zoom, ...options });
+    const view = fitView(target, { width: this.clientWidth || 640, height: this.clientHeight || 400 }, options);
+    return this.flyTo({ ...options, ...view });
   }
 
   select(id: string | number | null | undefined): void {

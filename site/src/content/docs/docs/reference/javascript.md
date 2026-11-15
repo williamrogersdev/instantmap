@@ -13,6 +13,7 @@ The package has these entry points:
 | `instantmap-js/server` | Servers, build scripts, edge functions, React Server Components | `staticUrl`, `posterSources`, `fitView`, `tileUrl`, `posterHtml`, `clusterAt`, themes, colour helpers, `brandTheme` and `brandThemeFromCss`. Defines no element and never touches `window`. |
 | `instantmap-js/react` | React 18 and 19, Next.js, Remix | The [`<InstantMap>` component](/docs/reference/react/). |
 | `instantmap-js/card` | Code that builds its own card | `defaultCard`, `cardFromTemplate`, `safeUrl`, `escapeHtml`, `CARD_CSS`. |
+| `instantmap-js/agent` | Your own AI assistant | `mapTools`, `registerMapTools`, `describeMap`. See [Maps AI agents can read](/docs/guides/ai-agents/). |
 | `instantmap-js/brand` | Anywhere | `brandTheme`, `brandThemeFromCss`, and the `BrandInput` and `BrandTheme` types. |
 | `instantmap-js/instant-map.js` | A script tag | The ready-built loader that defines `<instant-map>`. It is what `https://instantmap.org/instant-map.js` serves. |
 

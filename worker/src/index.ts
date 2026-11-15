@@ -5,6 +5,7 @@ import medium from "../../fixtures/noto-sans-medium-0-255.pbf";
 import italic from "../../fixtures/noto-sans-italic-0-255.pbf";
 import { THEMES } from "../../packages/instantmap/src/themes.ts";
 import { ArchiveMissing, archiveTile } from "./archive.ts";
+import { describeStatic } from "./describe.ts";
 import { BadRequest, cacheKey, fingerprint, jpegQuality, type MapRequest, parseRequest } from "./params.ts";
 
 interface RateLimit {
@@ -215,6 +216,20 @@ export default {
   async fetch(request, env, context): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/health") return Response.json({ ok: true, renderer: CACHE_VERSION }, { headers: { ...SHARED, "cache-control": "no-store" } });
+    if (url.pathname === "/describe") {
+      if (request.method !== "GET" && request.method !== "HEAD") return text("method not allowed", 405, { allow: "GET, HEAD" });
+      try {
+        const image = new URL(url);
+        image.pathname = "/static";
+        const parsed = parseRequest(image);
+        if (parsed?.kind !== "static") return text("not found", 404);
+        // Cheap to answer, and the same address always describes the same picture.
+        return Response.json(describeStatic(parsed, url), { headers: { ...SHARED, "cache-control": `public, max-age=${IMAGE_TTL}, immutable` } });
+      } catch (error) {
+        if (error instanceof BadRequest) return text(error.message, 400);
+        throw error;
+      }
+    }
     let parsed: MapRequest | undefined;
     try {
       parsed = parseRequest(url);

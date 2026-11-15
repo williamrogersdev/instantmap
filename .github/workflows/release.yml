@@ -1,8 +1,8 @@
 # Publishes the npm package and creates a GitHub release when a tag like v0.2.0 is pushed.
 #
-# Required: the NPM_TOKEN repository secret, an npm granular access token with publish rights
-# for the `instantmap-js` package. Alternatively, configure npm Trusted Publishing for this
-# workflow on npmjs.com and remove the token (then drop NODE_AUTH_TOKEN below).
+# Publishes through npm Trusted Publishing (OIDC): no npm token. instantmap-js on npmjs.com trusts
+# GitHub Actions, user williamrogersdev, repository instantmap, workflow release.yml, with direct
+# `npm publish` allowed. Needs npm 11.5.1 or later and the id-token: write permission below.
 name: Release
 
 on:
@@ -26,6 +26,8 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
+      - name: npm with Trusted Publishing support
+        run: npm install -g npm@11.21.2 && npm --version
       - run: bun install --frozen-lockfile
       - name: Check the tag matches the package version
         run: |
@@ -43,8 +45,6 @@ jobs:
       - name: Publish to npm
         run: npm publish --provenance --access public
         working-directory: packages/instantmap
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create GitHub release
         run: gh release create "$GITHUB_REF_NAME" --generate-notes
         env:
